@@ -1,17 +1,7 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   main.cpp                                           :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: sabras <sabras@student.42.fr>              +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/01/18 15:10:01 by sabras            #+#    #+#             */
-/*   Updated: 2025/01/20 11:13:43 by sabras           ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #include <iostream>
+#include "colors.h"
 #include "webserv.hpp"
+#include "socket.hpp"
 
 int main(int ac, char **av) {
 	if (ac != 2) {
@@ -19,8 +9,11 @@ int main(int ac, char **av) {
 		return 1;
 	}
 	try {
+		t_config serverConfig;
 		readFile(av[1]);
-	} catch (std::exception &e) {
+		handle_socket(serverConfig);
+	}
+	catch(const std::exception& e) {
 		std::cerr << RED "Error: " << e.what() << RESET << std::endl;
 	}
 	return 0;
