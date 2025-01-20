@@ -19,10 +19,11 @@ struct s_config {
 
 // --- Parsing ---
 // Reader
-void readFile(std::string filename);
+void	readFile(std::string filename);
 
 // Utils
-void trim(std::string &str);
+void	trim(std::string &str);
 
 // socket
-void handle_socket(t_config serverConfig);
+void	handleSocket(t_config serverConfig, t_socket &socketConfig);
+void	handleSocketClient(t_socket &socketConfig);

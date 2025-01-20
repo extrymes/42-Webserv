@@ -10,8 +10,10 @@ int main(int ac, char **av) {
 	}
 	try {
 		t_config serverConfig;
+		t_socket socketConfig;
 		readFile(av[1]);
-		handle_socket(serverConfig);
+		handleSocket(serverConfig, socketConfig);
+		handleSocketClient(socketConfig);
 	}
 	catch(const std::exception& e) {
 		std::cerr << RED "Error: " << e.what() << RESET << std::endl;

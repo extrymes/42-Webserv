@@ -9,14 +9,14 @@ sockaddr_in init_sockaddr_in(t_config serverConfig) {
 	return (server_addr);
 }
 
-void handle_socket(t_config serverConfig)
+void handleSocket(t_config serverConfig, t_socket &socketConfig)
 {
-	int server_fd = socket(AF_INET, SOCK_STREAM, 0);
-	if (server_fd < 0)
+	socketConfig.server_fd = socket(AF_INET, SOCK_STREAM, 0);
+	if (socketConfig.server_fd < 0)
 		throw std::runtime_error("socket fail");
-	sockaddr_in server_addr = init_sockaddr_in(serverConfig);
-	if (bind(server_fd, (struct sockaddr*)&server_addr, sizeof(server_addr)) < 0)
+	socketConfig.server_addr = init_sockaddr_in(serverConfig);
+	if (bind(socketConfig.server_fd, (struct sockaddr*)&socketConfig.server_addr, sizeof(socketConfig.server_addr)) < 0)
 		throw std::runtime_error("bind fail");
-	if (listen(server_fd, 5) < 0)
+	if (listen(socketConfig.server_fd, 5) < 0)
 		throw std::runtime_error("listen fail");
 }
