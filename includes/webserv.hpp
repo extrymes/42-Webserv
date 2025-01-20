@@ -26,4 +26,4 @@ void	trim(std::string &str);
 
 // socket
 void	handleSocket(t_config serverConfig, t_socket &socketConfig);
-void	handleSocketClient(t_socket &socketConfig);
+void	handleSocketClient(t_socket &socketConfig, t_config serverConfig);

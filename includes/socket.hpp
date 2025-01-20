@@ -10,7 +10,10 @@
 typedef struct s_socket t_socket;
 
 struct s_socket {
-    int server_fd;
-    sockaddr_in server_addr;
-    int client_fd;
+	int server_fd;
+	sockaddr_in server_addr;
+	int client_fd;
+	sockaddr_in client_addr;
 };
+
+sockaddr_in init_sockaddr_in(t_config serverConfig);
