@@ -1,27 +1,29 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   main.cpp                                           :+:      :+:    :+:   */
+/*   reader.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: sabras <sabras@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/01/18 15:10:01 by sabras            #+#    #+#             */
-/*   Updated: 2025/01/20 11:13:43 by sabras           ###   ########.fr       */
+/*   Created: 2025/01/20 10:47:43 by sabras            #+#    #+#             */
+/*   Updated: 2025/01/20 12:57:24 by sabras           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <iostream>
 #include "webserv.hpp"
 
-int main(int ac, char **av) {
-	if (ac != 2) {
-		std::cerr << RED "Usage:\n\t./webserv <config_file>" RESET << std::endl;
-		return 1;
+void readFile(std::string filename) {
+	std::ifstream file(filename.c_str());
+	if (!file.is_open())
+		throw std::runtime_error("cannot open config file");
+	std::string line;
+	while (std::getline(file, line)) {
+		if (line.empty())
+			continue;
+		trim(line);
+		if (line[0] == '#')
+			continue;
+		std::cout << line << std::endl;
 	}
-	try {
-		readFile(av[1]);
-	} catch (std::exception &e) {
-		std::cerr << RED "Error: " << e.what() << RESET << std::endl;
-	}
-	return 0;
+	file.close();
 }
