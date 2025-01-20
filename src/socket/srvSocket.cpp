@@ -9,7 +9,7 @@ sockaddr_in init_sockaddr_in(t_config serverConfig) {
 	return (server_addr);
 }
 
-void handle_socket(t_config serverConfig)
+void handleSocket(t_config serverConfig)
 {
 	int server_fd = socket(AF_INET, SOCK_STREAM, 0);
 	if (server_fd < 0)

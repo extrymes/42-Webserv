@@ -8,10 +8,10 @@ int main(int ac, char **av) {
 		std::cerr << RED "Usage:\n\t./webserv <config_file>" RESET << std::endl;
 		return 1;
 	}
+	t_config serverConfig;
 	try {
-		t_config serverConfig;
 		readFile(av[1]);
-		handle_socket(serverConfig);
+		// handleSocket(serverConfig);
 	}
 	catch(const std::exception& e) {
 		std::cerr << RED "Error: " << e.what() << RESET << std::endl;
