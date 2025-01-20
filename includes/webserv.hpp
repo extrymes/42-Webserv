@@ -1,6 +1,7 @@
 #pragma once
 # include <iostream>
 # include <fstream>
+# include <sstream>
 # include <exception>
 # include "colors.h"
 
@@ -25,4 +26,4 @@ void readFile(std::string filename);
 void trim(std::string &str);
 
 // socket
-void handle_socket(t_config serverConfig);
+void handleSocket(t_config serverConfig);
