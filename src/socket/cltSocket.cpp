@@ -1,7 +1,7 @@
 #include "socket.hpp"
 #include "webserv.hpp"
 
-void	handleSocketClient(t_socket &socketConfig, t_config serverConfig) {
+void handleSocketClient(t_socket &socketConfig, t_config serverConfig) {
 	socketConfig.client_fd = socket(AF_INET, SOCK_STREAM, 0);
 	if (socketConfig.client_fd < 0)
 		throw std::runtime_error("socket fail");
