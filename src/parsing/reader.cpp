@@ -6,15 +6,13 @@ void readFile(std::string filename) {
 		throw std::runtime_error("cannot open config file");
 	std::string line;
 	while (std::getline(file, line)) {
+		trim(line);
 		if (line.empty())
 			continue;
-		trim(line);
-		if (line[0] == '#')
-			continue;
-		std::istringstream iss(line);
-		std::string directive;
-		iss >> directive;
-		std::cout << BLUE "directive: " << directive << RESET << std::endl;
+		std::string directive, value;
+		extractData(line, directive, value);
+		std::cout << RED "directive: " << directive << RESET << std::endl;
+		std::cout << BLUE "value: " << value << RESET << std::endl;
 		std::cout << line << std::endl;
 	}
 	file.close();
