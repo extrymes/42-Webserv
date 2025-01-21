@@ -1,13 +1,19 @@
 #pragma once
 # include <iostream>
+# include <string>
 # include <fstream>
 # include <sstream>
 # include <exception>
+# include <algorithm>
 # include "colors.h"
+# include "socket.hpp"
+# include <fcntl.h>
+#include <sstream>
 
 // --- Structures ---
 typedef struct data data;
 typedef struct s_config t_config;
+typedef struct s_socket t_socket;
 
 struct s_config {
 	std::string serverHost;

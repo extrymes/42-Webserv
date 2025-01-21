@@ -13,7 +13,6 @@ int main(int ac, char **av) {
 	try {
 		readFile(av[1]);
 		handleSocket(serverConfig, socketConfig);
-		handleSocketClient(socketConfig, serverConfig);
 	}
 	catch(const std::exception& e) {
 		std::cerr << RED "Error: " << e.what() << RESET << std::endl;

@@ -11,11 +11,7 @@ void readFile(std::string filename) {
 		trim(line);
 		if (line[0] == '#')
 			continue;
-		std::istringstream iss(line);
-		std::string directive;
-		iss >> directive;
-		std::cout << BLUE "directive: " << directive << RESET << std::endl;
-		std::cout << line << std::endl;
+		// std::cout << line << std::endl;
 	}
 	file.close();
 }

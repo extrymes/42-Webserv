@@ -1,0 +1,57 @@
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>titre</title>
+</head>
+<body>
+	<div id="run"></div>
+	<style>
+		section {
+			width: 100vw;
+		}
+		#run {
+			border-radius: 50px;
+		}
+	</style>
+</body>
+<script>
+	const run = document.getElementById("run");
+
+	run.style.position = "absolute";
+	run.style.width = "100px";
+	run.style.height = "100px";
+	run.style.backgroundColor = "red";
+	run.style.top = "50%";
+	run.style.left = "50%";
+	run.style.transform = "translate(-50%, -50%)";
+
+	function moveDivAway() {
+		const viewportWidth = window.innerWidth;
+		const viewportHeight = window.innerHeight;
+
+		const newX = Math.random() * (viewportWidth - run.offsetWidth);
+		const newY = Math.random() * (viewportHeight - run.offsetHeight);
+
+		run.style.left = `${newX}px`;
+		run.style.top = `${newY}px`;
+	}
+
+	function handleMouseMove(event) {
+		const rect = run.getBoundingClientRect();
+		const mouseX = event.clientX;
+		const mouseY = event.clientY;
+
+		const distanceX = Math.abs(mouseX - (rect.left + rect.width / 2));
+		const distanceY = Math.abs(mouseY - (rect.top + rect.height / 2));
+
+		const threshold = 60;
+
+		if (distanceX < threshold && distanceY < threshold) {
+			moveDivAway();
+		}
+	}
+
+	document.addEventListener("mousemove", handleMouseMove);
+</script>
+</html>
