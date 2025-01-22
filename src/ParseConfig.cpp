@@ -31,11 +31,8 @@ void ParseConfig::fillServer(t_server &server) {
 		std::string directive, value;
 		if (!parseLine(line, directive, value))
 			continue;
-		if (directive == "listen") {
-			if (value.empty())
-				error("invalid number of arguments in \"" + directive + "\" directive");
-			extractHostPort(value, server.host, server.port);
-		}
+		if (directive == "listen")
+			parseListen(value, server.host, server.port);
 		else if (directive == "server_name") {
 			if (value.empty())
 				error("invalid number of arguments in \"" + directive + "\" directive");
@@ -107,35 +104,37 @@ bool ParseConfig::parseLine(std::string line, std::string &directive, std::strin
 	return true;
 }
 
-void ParseConfig::extractHostPort(std::string str, std::string &host, int &port) {
-	std::istringstream iss(str);
+void ParseConfig::parseListen(std::string value, std::string &host, int &port) {
+	if (value.empty())
+		error("invalid number of arguments in \"listen\" directive");
+	std::istringstream issValue(value);
 	std::string portStr;
 	// Extract host and port
-	std::getline(iss, host, ':');
-	std::getline(iss, portStr);
+	std::getline(issValue, host, ':');
+	std::getline(issValue, portStr);
 	// Check if host is valid
 	if (host.empty() || portStr.empty())
-		error("invalid host \"" + str + "\"");
+		error("invalid host \"" + value + "\"");
 	std::vector<std::string> splitedHost;
 	std::istringstream issHost(host);
 	std::string segment;
 	while (std::getline(issHost, segment, '.'))
 		splitedHost.push_back(segment);
 	if (splitedHost.size() != 4)
-		error("invalid host \"" + str + "\"");
+		error("invalid host \"" + value + "\"");
 	std::vector<std::string>::iterator it;
 	char *end;
 	for (it = splitedHost.begin(); it != splitedHost.end(); it++) {
 		if (it->empty())
-			error("invalid host \"" + str + "\"");
+			error("invalid host \"" + value + "\"");
 		int byte = std::strtol(it->c_str(), &end, 10);
 		if (end != it->c_str() + it->length() || byte < 0 || byte > 255)
-			error("invalid host \"" + str + "\"");
+			error("invalid host \"" + value + "\"");
 	}
 	// Check if port is valid
 	port = std::strtol(portStr.c_str(), &end, 10);
 	if (end != portStr.c_str() + portStr.length() || port < 1 || port > 65535)
-		error("invalid port in \"" + str + "\"");
+		error("invalid port in \"" + value + "\"");
 }
 
 void ParseConfig::trim(std::string &str) {
