@@ -7,9 +7,11 @@
 # include <algorithm>
 # include <fcntl.h>
 # include <sstream>
+# include <csignal>
 # include "Config.hpp"
 # include "socket.hpp"
 # include "colors.h"
+# include <map>
 
 typedef struct s_socket t_socket;
 typedef struct s_config t_config;

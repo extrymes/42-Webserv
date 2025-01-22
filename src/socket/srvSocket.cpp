@@ -40,8 +40,6 @@ void	parseBuffer(char *buffer, t_info_client &buffClient)
 		throw std::runtime_error("opening buffer failed");
 	std::getline(infileBuff, firstLine);
 	std::getline(infileBuff, secondLine);
-	// std::cout << "firstLine = " << firstLine << std::endl; 
-	// std::cout << "secondLine = " << secondLine << std::endl;
 	std::stringstream first(firstLine);
 	if (!first)
 		throw std::runtime_error("opening buffer failed");
@@ -53,14 +51,34 @@ void	parseBuffer(char *buffer, t_info_client &buffClient)
 	std::string tmp;
 	std::getline(second, tmp, ' ');
 	std::getline(second, buffClient.host);
-	// std::cout << "buffClient.method = " << buffClient.method << std::endl;
-	// std::cout << "buffClient.url = " << buffClient.url << std::endl;
-	// std::cout << "buffClient.host = " << buffClient.host << std::endl;
+	std::cout << "buffClient.method = " << buffClient.method << std::endl;
+	std::cout << "buffClient.url = " << buffClient.url << std::endl;
+	std::cout << "buffClient.host = " << buffClient.host << std::endl;
+}
+
+void	handleDeconnexionClient(int i, struct pollfd *clients)
+{
+	close(clients[i].fd);
+	clients[i].fd = 0;
+}
+
+void	checkEmptyPlace(t_socket &socketConfig, struct pollfd *clients)
+{
+	for (int i = 0; i < MAX_CLIENTS; ++i)
+	{
+		if (clients[i].fd == 0) {
+			clients[i].fd = accept(socketConfig.server_fd, (struct sockaddr *)&socketConfig.client_addr, &socketConfig.client_len);
+			clients[i].events = POLLIN;
+			break ;
+		}
+	}
 }
 
 void handleSocket(t_config serverConfig, t_socket &socketConfig)
 {
 	std::string	index = "./staticFiles/test.html";
+	// std::map<int, struct pollfd> mapPoll;
+	int client_count = 1;
 
 	socketConfig.server_fd = socket(AF_INET, SOCK_STREAM, 0);
 	if (socketConfig.server_fd < 0)
@@ -70,20 +88,38 @@ void handleSocket(t_config serverConfig, t_socket &socketConfig)
 		throw std::runtime_error("bind fail");
 	if (listen(socketConfig.server_fd, 5) < 0)
 		throw std::runtime_error("listen fail");
-	while (1) {
-		socketConfig.client_len = sizeof(socketConfig.client_addr);
-		socketConfig.client_fd = accept(socketConfig.server_fd, (struct sockaddr *)&socketConfig.client_addr, &socketConfig.client_len);
-		char buffer[1024];
-		if (recv(socketConfig.client_fd, buffer, sizeof(buffer), 0) < 0)
-			throw std::runtime_error("recv failed");
-		// std::cout << "buff = " << buffer << std::endl;
-		t_info_client buffClient;
-		parseBuffer(buffer, buffClient);
-		std::string finalFile = readHtml(index);
-		if (send(socketConfig.client_fd, finalFile.c_str(), finalFile.size(), 0) < 0)
-			throw std::runtime_error("send failed");
-		close(socketConfig.client_fd);
+	struct pollfd clients[MAX_CLIENTS]; //Create struct
+	memset(clients, 0, sizeof(clients));
+	clients[0].fd = socketConfig.server_fd;
+	clients[0].events = POLLIN;
+	while(1) {
+		if (poll(clients, client_count, -1) < 0)
+			throw std::runtime_error("poll failed");
+		for (int i = 0; i < client_count; i++) {
+			if (clients[i].revents & POLLIN) {
+				if (clients[i].fd == socketConfig.server_fd) {
+					socketConfig.client_len = sizeof(socketConfig.client_addr);
+					checkEmptyPlace(socketConfig, clients);
+					if (client_count <= MAX_CLIENTS)
+						client_count++;
+				}
+				else {
+					char buffer[1024];
+					if (recv(clients[i].fd, buffer, sizeof(buffer), 0) < 0)
+						handleDeconnexionClient(i, clients);
+					// std::cout << "buff = " << buffer << std::endl;
+					t_info_client buffClient;
+					parseBuffer(buffer, buffClient);
+					std::string finalFile = readHtml(index);
+					// std::cout << clients[i].fd << " " << socketConfig.server_fd << std::endl;
+					if (send(clients[i].fd, finalFile.c_str(), finalFile.size(), 0) < 0)
+						perror("send: ");
+				}
+			}
+		}
+		// close(clients[i].fd);
 	}
-	close(socketConfig.server_fd);
+	std::cout << "test8" << std::endl;
+	// close(socketConfig.server_fd);
 }
 

@@ -7,6 +7,9 @@
 # include <string>
 # include <netinet/in.h>
 # include "webserv.hpp"
+# include <poll.h>
+
+# define MAX_CLIENTS 100
 
 typedef struct s_socket t_socket;
 typedef struct s_config t_config;
