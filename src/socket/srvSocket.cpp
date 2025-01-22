@@ -1,11 +1,11 @@
 #include "socket.hpp"
 #include "webserv.hpp"
 
-sockaddr_in init_sockaddr_in(t_config serverConfig) {
+sockaddr_in init_sockaddr_in(std::vector<t_server> servers) {
 	sockaddr_in server_addr;
 	server_addr.sin_family = AF_INET;
 	server_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-	(void)serverConfig;
+	(void)servers;
 	server_addr.sin_port = htons(8082); // tmp
 	return (server_addr);
 }
@@ -33,14 +33,14 @@ std::string readHtml(std::string index)
 	return httpResponse;
 }
 
-void handleSocket(t_config serverConfig, t_socket &socketConfig)
+void handleSocket(std::vector<t_server> servers, t_socket &socketConfig)
 {
 	std::string	index = "./staticFiles/test.html";
 
 	socketConfig.server_fd = socket(AF_INET, SOCK_STREAM, 0);
 	if (socketConfig.server_fd < 0)
 		throw std::runtime_error("socket fail");
-	socketConfig.server_addr = init_sockaddr_in(serverConfig);
+	socketConfig.server_addr = init_sockaddr_in(servers);
 	if (bind(socketConfig.server_fd, (const struct sockaddr *)&socketConfig.server_addr, sizeof(socketConfig.server_addr)) < 0)
 		throw std::runtime_error("bind fail");
 	if (listen(socketConfig.server_fd, 5) < 0)

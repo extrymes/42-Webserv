@@ -17,5 +17,5 @@ struct s_socket {
 	socklen_t client_len;
 };
 
-sockaddr_in init_sockaddr_in(t_config serverConfig);
+sockaddr_in init_sockaddr_in(std::vector<t_server> servers);
 void makeSocketNonBlocking(int socket_fd);
