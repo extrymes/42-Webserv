@@ -7,11 +7,9 @@ ParseConfig::ParseConfig(std::string filename, std::vector<t_server> &servers) :
 	std::string line;
 	while (std::getline(_file, line)) {
 		++_lineId;
-		line = parseLine(line);
-		if (line.empty())
-			continue;
 		std::string directive, value;
-		extractDirectiveValue(line, directive, value);
+		if (!parseLine(line, directive, value))
+			continue;
 		if (directive == "server") {
 			if (value != "{")
 				error("directive \"" + directive + "\" is not terminated by \"{\"");
@@ -30,18 +28,19 @@ void ParseConfig::fillServer(t_server &server) {
 	std::string line;
 	while (std::getline(_file, line)) {
 		++_lineId;
-		line = parseLine(line);
-		if (line.empty())
-			continue;
 		std::string directive, value;
-		extractDirectiveValue(line, directive, value);
+		if (!parseLine(line, directive, value))
+			continue;
 		if (directive == "listen") {
 			if (value.empty())
-				error("directive \"" + directive + "\" must have an argument");
+				error("invalid number of arguments in \"" + directive + "\" directive");
 			extractHostPort(value, server.host, server.port);
 		}
-		else if (directive == "server_name" && !value.empty())
+		else if (directive == "server_name") {
+			if (value.empty())
+				error("invalid number of arguments in \"" + directive + "\" directive");
 			server.name = value;
+		}
 		else if (directive == "error_page" && !value.empty())
 			continue; // code for error_page
 		else if (directive == "client_max_body_size" && !value.empty())
@@ -62,11 +61,9 @@ void ParseConfig::fillLocation(t_location &location) {
 	std::string line;
 	while (std::getline(_file, line)) {
 		++_lineId;
-		line = parseLine(line);
-		if (line.empty())
-			continue;
 		std::string directive, value;
-		extractDirectiveValue(line, directive, value);
+		if (!parseLine(line, directive, value))
+			continue;
 		if (directive == "root" && !value.empty())
 			location.root = value;
 		else if (directive == "index" && !value.empty())
@@ -84,9 +81,9 @@ void ParseConfig::fillLocation(t_location &location) {
 	}
 }
 
-std::string ParseConfig::parseLine(std::string line) {
+bool ParseConfig::parseLine(std::string line, std::string &directive, std::string &value) {
 	if (line.empty())
-		return line;
+		return false;
 	trim(line);
 	std::string::iterator begin = line.begin(), end = line.end(), it;
 	// Remove comment
@@ -94,20 +91,20 @@ std::string ParseConfig::parseLine(std::string line) {
 		if (*it == ';' || *it == '#')
 			break;
 	end = it;
+	if (begin == end)
+		return false;
 	// Check syntax
 	if (*begin == '}' && (begin + 1) != end)
 		error("syntax error \"" + line + "\"");
+	// Create new line
 	line = std::string(begin, end);
-	return line;
-}
-
-void ParseConfig::extractDirectiveValue(std::string line, std::string &directive, std::string &value) {
 	std::istringstream iss(line);
 	// Extract directive
 	iss >> directive;
 	// Extract value
 	std::getline(iss, value);
 	trim(value);
+	return true;
 }
 
 void ParseConfig::extractHostPort(std::string str, std::string &host, int &port) {
