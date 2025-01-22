@@ -1,16 +1,13 @@
 NAME = webserv
 
 SRC_DIR = src
-SRC_PARS_DIR = src/parsing
 SRC_SOCK_DIR = src/socket
 BIN_DIR = bin
 
-SRC_FILES = main.cpp
-SRC_PARS_FILES = reader.cpp utils.cpp
+SRC_FILES = main.cpp Config.cpp
 SRC_SOCK_FILES = cltSocket.cpp  srvSocket.cpp
 
 SRCS = $(addprefix $(SRC_DIR)/,$(SRC_FILES)) \
-		$(addprefix $(SRC_PARS_DIR)/,$(SRC_PARS_FILES)) \
 		$(addprefix $(SRC_SOCK_DIR)/,$(SRC_SOCK_FILES))
 
 OBJS = $(SRCS:%.cpp=$(BIN_DIR)/%.o)
