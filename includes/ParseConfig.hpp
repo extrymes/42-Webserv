@@ -4,13 +4,8 @@
 # include <map>
 
 // --- Structures ---
-typedef struct s_config t_config;
 typedef struct s_server t_server;
 typedef struct s_location t_location;
-
-struct s_config {
-	std::vector<t_server> servers;
-};
 
 struct s_server {
 	std::string host; // Server host
@@ -32,15 +27,18 @@ struct s_location {
 };
 
 // --- Classes ---
-class Config {
+class ParseConfig {
 	public:
-		static void parseConfigFile(std::string filename, t_config &config);
-		static void fillServer(std::ifstream &file, t_server &server);
-		static void fillLocation(std::ifstream &file, t_location &location);
-		static void trim(std::string &str);
-		static void extractDirectiveValue(std::string str, std::string &directive, std::string &value);
-		static void extractHostPort(std::string str, std::string &host, int &port);
+		ParseConfig(std::string filename, std::vector<t_server> &servers);
+		~ParseConfig();
 	private:
-		Config();
-		~Config();
+		void fillServer(std::ifstream &file, t_server &server);
+		void fillLocation(std::ifstream &file, t_location &location);
+		std::string parseLine(std::string line);
+		void trim(std::string &str);
+		void extractDirectiveValue(std::string str, std::string &directive, std::string &value);
+		void extractHostPort(std::string str, std::string &host, int &port);
+		void error(std::string message);
+		std::string _filename;
+		int _lineId;
 };
