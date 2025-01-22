@@ -4,7 +4,7 @@ SRC_DIR = src
 SRC_SOCK_DIR = src/socket
 BIN_DIR = bin
 
-SRC_FILES = main.cpp Config.cpp
+SRC_FILES = main.cpp ParseConfig.cpp
 SRC_SOCK_FILES = cltSocket.cpp  srvSocket.cpp
 
 SRCS = $(addprefix $(SRC_DIR)/,$(SRC_FILES)) \
