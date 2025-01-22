@@ -2,7 +2,7 @@
 
 # 42-Webserv
 ## Overview
-The **Webserv** project at **42 School** focuses on developing a lightweight **HTTP server** from scratch using C++, adhering to the HTTP/1.1 protocol.
+The **webserv** project at **42 School** focuses on developing a lightweight **HTTP server** from scratch using C++, adhering to the HTTP/1.1 protocol.
 It requires implementing core functionalities such as request parsing, response generation, CGI execution, and multi-client handling using sockets and non-blocking I/O.
 
 ## Getting started
@@ -17,6 +17,7 @@ cd 42-Webserv
 make
 ./webserv <config_file>
 ```
+The configuration file must only contain the server(s) specifications indicated in the subject. Take a look at `webserv.conf`.
 
 ## Contributing
 We welcome contributions from everyone! Whether you're fixing bugs, adding new features, improving documentation, or simply sharing your ideas, your input is greatly appreciated.
