@@ -2,6 +2,7 @@
 # include <string>
 # include <vector>
 # include <map>
+# include <fstream>
 
 // --- Structures ---
 typedef struct s_server t_server;
@@ -32,13 +33,15 @@ class ParseConfig {
 		ParseConfig(std::string filename, std::vector<t_server> &servers);
 		~ParseConfig();
 	private:
-		void fillServer(std::ifstream &file, t_server &server);
-		void fillLocation(std::ifstream &file, t_location &location);
-		std::string parseLine(std::string line);
+		void fillServer(t_server &server);
+		void fillLocation(t_location &location);
+		bool parseLine(std::string line, std::string &directive, std::string &value);
+		void parseListen(std::string value, std::string &host, int &port);
+		void parseServerName(std::string value, std::string &serverName);
+		void parseErrorPage(std::string value, std::map<int, std::string> &errorPages);
 		void trim(std::string &str);
-		void extractDirectiveValue(std::string str, std::string &directive, std::string &value);
-		void extractHostPort(std::string str, std::string &host, int &port);
 		void error(std::string message);
 		std::string _filename;
+		std::ifstream _file;
 		int _lineId;
 };
