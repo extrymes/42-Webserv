@@ -12,7 +12,7 @@ ParseConfig::ParseConfig(std::string filename, std::vector<t_server> &servers) :
 			continue;
 		if (directive == "server") {
 			if (value != "{")
-				error("directive \"" + directive + "\" is not terminated by \"{\"");
+				error("directive \"server\" is not terminated by \"{\"");
 			t_server server;
 			fillServer(server);
 			servers.push_back(server);
@@ -33,16 +33,15 @@ void ParseConfig::fillServer(t_server &server) {
 			continue;
 		if (directive == "listen")
 			parseListen(value, server.host, server.port);
-		else if (directive == "server_name") {
-			if (value.empty())
-				error("invalid number of arguments in \"" + directive + "\" directive");
-			server.name = value;
-		}
-		else if (directive == "error_page" && !value.empty())
-			continue; // code for error_page
-		else if (directive == "client_max_body_size" && !value.empty())
+		else if (directive == "server_name")
+			parseServerName(value, server.name);
+		else if (directive == "error_page")
+			parseErrorPage(value, server.errorPages);
+		else if (directive == "client_max_body_size")
 			continue; // code for client_max_body_size
-		else if (directive == "location" && !value.empty()) {
+		else if (directive == "location") {
+			// if (value != "{")
+			// 	error("directive \"location\" is not terminated by \"{\"");
 			t_location location;
 			location.path = value;
 			fillLocation(location);
@@ -131,10 +130,44 @@ void ParseConfig::parseListen(std::string value, std::string &host, int &port) {
 		if (end != it->c_str() + it->length() || byte < 0 || byte > 255)
 			error("invalid host \"" + value + "\"");
 	}
-	// Check if port is valid
+	// Convert port to number
 	port = std::strtol(portStr.c_str(), &end, 10);
+	// Check if port is valid
 	if (end != portStr.c_str() + portStr.length() || port < 1 || port > 65535)
 		error("invalid port in \"" + value + "\"");
+}
+
+void ParseConfig::parseServerName(std::string value, std::string &serverName) {
+	if (value.empty())
+		error("invalid number of arguments in \"listen\" directive");
+	// Check if server name is valid
+	std::string::iterator it;
+	for (it = value.begin(); it != value.end(); it++)
+		if (!std::isalnum(*it) && *it != '.')
+			error("invalid server name \"" + value + "\"");
+	serverName = value;
+}
+
+void ParseConfig::parseErrorPage(std::string value, std::map<int, std::string> &errorPages) {
+	std::istringstream iss(value);
+	std::string codeStr, path, rest;
+	// Extract error code and path
+	iss >> codeStr, iss >> path, iss >> rest;
+	if (codeStr.empty() || path.empty() || !rest.empty())
+		error("invalid number of arguments in \"error_page\" directive");
+	// Convert error code to number
+	char *end;
+	int code = std::strtol(codeStr.c_str(), &end, 10);
+	// Check if error code is valid
+	if (end != codeStr.c_str() + codeStr.length())
+		error("invalid error code \"" + codeStr + "\"");
+	if (code < 300 || code > 599)
+		error("error code must be between 300 and 599");
+	// Check if path is valid
+	std::ifstream file(path.c_str());
+	if (!file.good())
+		error("invalid path \"" + path + "\"");
+	errorPages.insert(std::pair<int, std::string>(code, path));
 }
 
 void ParseConfig::trim(std::string &str) {
