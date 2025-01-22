@@ -32,6 +32,31 @@ std::string readHtml(std::string index)
 	finalFile;
 	return httpResponse;
 }
+void	parseBuffer(char *buffer, t_info_client &buffClient)
+{
+	std::string	firstLine, secondLine;
+	std::stringstream infileBuff(buffer);
+	if (!infileBuff)
+		throw std::runtime_error("opening buffer failed");
+	std::getline(infileBuff, firstLine);
+	std::getline(infileBuff, secondLine);
+	// std::cout << "firstLine = " << firstLine << std::endl; 
+	// std::cout << "secondLine = " << secondLine << std::endl;
+	std::stringstream first(firstLine);
+	if (!first)
+		throw std::runtime_error("opening buffer failed");
+	std::getline(first, buffClient.method, ' ');
+	std::getline(first, buffClient.url, ' ');
+	std::stringstream second(secondLine);
+	if (!second)
+		throw std::runtime_error("opening buffer failed");
+	std::string tmp;
+	std::getline(second, tmp, ' ');
+	std::getline(second, buffClient.host);
+	// std::cout << "buffClient.method = " << buffClient.method << std::endl;
+	// std::cout << "buffClient.url = " << buffClient.url << std::endl;
+	// std::cout << "buffClient.host = " << buffClient.host << std::endl;
+}
 
 void handleSocket(t_config serverConfig, t_socket &socketConfig)
 {
@@ -50,8 +75,10 @@ void handleSocket(t_config serverConfig, t_socket &socketConfig)
 		socketConfig.client_fd = accept(socketConfig.server_fd, (struct sockaddr *)&socketConfig.client_addr, &socketConfig.client_len);
 		char buffer[1024];
 		if (recv(socketConfig.client_fd, buffer, sizeof(buffer), 0) < 0)
-			std::cerr << "bonjour" << std::endl;
+			throw std::runtime_error("recv failed");
 		// std::cout << "buff = " << buffer << std::endl;
+		t_info_client buffClient;
+		parseBuffer(buffer, buffClient);
 		std::string finalFile = readHtml(index);
 		if (send(socketConfig.client_fd, finalFile.c_str(), finalFile.size(), 0) < 0)
 			throw std::runtime_error("send failed");
@@ -59,3 +86,4 @@ void handleSocket(t_config serverConfig, t_socket &socketConfig)
 	}
 	close(socketConfig.server_fd);
 }
+
