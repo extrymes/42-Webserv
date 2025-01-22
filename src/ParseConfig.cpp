@@ -1,44 +1,45 @@
 #include "webserv.hpp"
 
 ParseConfig::ParseConfig(std::string filename, std::vector<t_server> &servers) : _filename(filename), _lineId(0) {
-	std::ifstream file(filename.c_str());
-	if (!file.is_open())
+	_file.open(filename.c_str());
+	if (!_file.is_open())
 		throw std::runtime_error("cannot open " + filename);
 	std::string line;
-	while (std::getline(file, line)) {
+	while (std::getline(_file, line)) {
 		++_lineId;
 		line = parseLine(line);
 		if (line.empty())
 			continue;
 		std::string directive, value;
 		extractDirectiveValue(line, directive, value);
-		std::cout << "directive: " << directive << " | value: " << value << " |" << std::endl;
 		if (directive == "server") {
 			if (value != "{")
-				error("directive \"server\" is not terminated by \"{\"");
+				error("directive \"" + directive + "\" is not terminated by \"{\"");
 			t_server server;
-			fillServer(file, server);
+			fillServer(server);
 			servers.push_back(server);
 		} else if (directive == "}")
 			continue;
 		else
 			error("unknown directive \"" + directive + "\"");
 	}
-	file.close();
+	_file.close();
 }
 
-void ParseConfig::fillServer(std::ifstream &file, t_server &server) {
+void ParseConfig::fillServer(t_server &server) {
 	std::string line;
-	while (std::getline(file, line)) {
+	while (std::getline(_file, line)) {
 		++_lineId;
 		line = parseLine(line);
 		if (line.empty())
 			continue;
 		std::string directive, value;
 		extractDirectiveValue(line, directive, value);
-		std::cout << BLUE << "directive: " << directive << " | value: " << value << " |" << RESET << std::endl;
-		if (directive == "listen" && !value.empty())
-			extractHostPort(line, server.host, server.port);
+		if (directive == "listen") {
+			if (value.empty())
+				error("directive \"" + directive + "\" must have an argument");
+			extractHostPort(value, server.host, server.port);
+		}
 		else if (directive == "server_name" && !value.empty())
 			server.name = value;
 		else if (directive == "error_page" && !value.empty())
@@ -48,7 +49,7 @@ void ParseConfig::fillServer(std::ifstream &file, t_server &server) {
 		else if (directive == "location" && !value.empty()) {
 			t_location location;
 			location.path = value;
-			fillLocation(file, location);
+			fillLocation(location);
 			server.locations.push_back(location);
 		} else if (directive == "}")
 			break;
@@ -57,16 +58,15 @@ void ParseConfig::fillServer(std::ifstream &file, t_server &server) {
 	}
 }
 
-void ParseConfig::fillLocation(std::ifstream &file, t_location &location) {
+void ParseConfig::fillLocation(t_location &location) {
 	std::string line;
-	while (std::getline(file, line)) {
+	while (std::getline(_file, line)) {
 		++_lineId;
 		line = parseLine(line);
 		if (line.empty())
 			continue;
 		std::string directive, value;
 		extractDirectiveValue(line, directive, value);
-		std::cout << YELLOW << "directive: " << directive << " | value: " << value << " |" << RESET << std::endl;
 		if (directive == "root" && !value.empty())
 			location.root = value;
 		else if (directive == "index" && !value.empty())
@@ -101,6 +101,46 @@ std::string ParseConfig::parseLine(std::string line) {
 	return line;
 }
 
+void ParseConfig::extractDirectiveValue(std::string line, std::string &directive, std::string &value) {
+	std::istringstream iss(line);
+	// Extract directive
+	iss >> directive;
+	// Extract value
+	std::getline(iss, value);
+	trim(value);
+}
+
+void ParseConfig::extractHostPort(std::string str, std::string &host, int &port) {
+	std::istringstream iss(str);
+	std::string portStr;
+	// Extract host and port
+	std::getline(iss, host, ':');
+	std::getline(iss, portStr);
+	// Check if host is valid
+	if (host.empty() || portStr.empty())
+		error("invalid host \"" + str + "\"");
+	std::vector<std::string> splitedHost;
+	std::istringstream issHost(host);
+	std::string segment;
+	while (std::getline(issHost, segment, '.'))
+		splitedHost.push_back(segment);
+	if (splitedHost.size() != 4)
+		error("invalid host \"" + str + "\"");
+	std::vector<std::string>::iterator it;
+	char *end;
+	for (it = splitedHost.begin(); it != splitedHost.end(); it++) {
+		if (it->empty())
+			error("invalid host \"" + str + "\"");
+		int byte = std::strtol(it->c_str(), &end, 10);
+		if (end != it->c_str() + it->length() || byte < 0 || byte > 255)
+			error("invalid host \"" + str + "\"");
+	}
+	// Check if port is valid
+	port = std::strtol(portStr.c_str(), &end, 10);
+	if (end != portStr.c_str() + portStr.length() || port < 1 || port > 65535)
+		error("invalid port in \"" + str + "\"");
+}
+
 void ParseConfig::trim(std::string &str) {
 	if (str.empty())
 		return;
@@ -114,24 +154,6 @@ void ParseConfig::trim(std::string &str) {
 		if (!std::isspace(*end))
 			break;
 	str = std::string(begin, end);
-}
-
-void ParseConfig::extractDirectiveValue(std::string str, std::string &directive, std::string &value) {
-	std::istringstream iss(str);
-	// Extract directive
-	iss >> directive;
-	// Extract value
-	std::getline(iss >> std::ws, value);
-}
-
-void ParseConfig::extractHostPort(std::string str, std::string &host, int &port) {
-	std::istringstream iss(str);
-	// Extract host
-	std::getline(iss, host, ':');
-	// Extract port
-	std::string portStr;
-	std::getline(iss, portStr);
-	port = std::atoi(portStr.c_str());
 }
 
 void ParseConfig::error(std::string message) {
