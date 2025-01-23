@@ -23,6 +23,8 @@ struct s_location {
 	std::string index; // Index files
 	std::string autoindex; // Directory listing
 	std::string allowedMethods; // Allowed HTTP methods
+	std::string cgiExtension; // CGI extension
+	std::string uploadSave; // Upload save location
 	std::string redirPath; // HTTP redirection
 	int redirCode; // HTTP redirection code
 };
@@ -45,6 +47,8 @@ class ParseConfig {
 		void parseLocationIndex(std::string value, std::string &index);
 		void parseLocationAutoindex(std::string value, std::string &autoindex);
 		void parseLocationAllowedMethods(std::string value, std::string &allowedMethods);
+		void parseLocationCgiExtension(std::string value, std::string &cgiExtension);
+		void parseLocationUploadSave(std::string value, std::string &uploadSave);
 		void parseLocationRedirection(std::string value, std::string &redirPath, int &redirCode);
 		void trim(std::string &str);
 		void error(std::string message);

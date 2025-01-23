@@ -68,6 +68,10 @@ void ParseConfig::fillLocation(t_location &location) {
 			parseLocationAllowedMethods(value, location.allowedMethods);
 		else if (directive == "return")
 			parseLocationRedirection(value, location.redirPath, location.redirCode);
+		else if (directive == "cgi_extension")
+			parseLocationCgiExtension(value, location.cgiExtension);
+		else if (directive == "upload_save")
+			parseLocationUploadSave(value, location.uploadSave);
 		else if (directive == "}")
 			break;
 		else
@@ -233,6 +237,20 @@ void ParseConfig::parseLocationAllowedMethods(std::string value, std::string &al
 		if (method != "GET" && method != "POST" && method != "DELETE")
 			error("invalid method \"" + method + "\"");
 	allowedMethods = value;
+}
+
+void ParseConfig::parseLocationCgiExtension(std::string value, std::string &cgiExtension) {
+	if (value.empty())
+		error("invalid number of arguments in \"cgi_extension\" directive");
+	if (value != ".php" && value != ".py")
+		error("invalid extension \"" + value + "\"");
+	cgiExtension = value;
+}
+
+void ParseConfig::parseLocationUploadSave(std::string value, std::string &uploadSave) {
+	if (value.empty())
+		error("invalid number of arguments in \"upload_save\" directive");
+	uploadSave = value;
 }
 
 void ParseConfig::parseLocationRedirection(std::string value, std::string &redirPath, int &redirCode) {
