@@ -25,18 +25,16 @@ std::string readHtml(std::string &index, t_config &serverConfig, std::string ext
 		finalFile += line + "\n";
 	oss << finalFile.size();
 	std::string contentLength = oss.str();
-	std::string httpResponse =
-	"HTTP/1.1 200 OK\r\n"
-	"Content-Type: " + ext + "\r\n"
-	"Content-Length: " + contentLength + "\r\n"
-	// "Connection: close\r\n"
-	"\r\n" +
-	finalFile;
+	std::string httpResponse = "HTTP/1.1 200 OK\r\n";
+	httpResponse += "Content-Type: " + ext + "\r\n";
+	httpResponse += "Content-Length: " + contentLength + "\r\n";
+	httpResponse += "Connection: close\r\n";
+	httpResponse += "\r\n" + finalFile;
 	return httpResponse;
 }
 
 void	handleDeconnexionClient(int i, struct pollfd *clients) {
-	std::cout << "-----------------------------------peut etre c'est sa--------------------------------------" << std::endl;
+	std::cout << "-----------------------------------peut etre c'est ça--------------------------------------" << std::endl;
 	close(clients[i].fd);
 	clients[i].fd = 0;
 }
@@ -69,7 +67,7 @@ void	parseBuffer(char *buffer, t_info_client &buffClient) {
 	std::string tmp;
 	std::getline(second, tmp, ' ');
 	std::getline(second, buffClient.host);
-	// std::cout << "buff = " << buffer << std::endl;
+	std::cout << "buff = " << buffer << std::endl;
 	// std::cout << "buffClient.method = " << buffClient.method << std::endl;
 	// std::cout << "buffClient.url = " << buffClient.url << std::endl;
 	// std::cout << "buffClient.host = " << buffClient.host << std::endl;

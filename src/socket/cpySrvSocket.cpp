@@ -3,20 +3,17 @@
 
 std::string checkExt(std::string file) {
 	const char *ext = strrchr(file.c_str(), '.');
-	std::string contentType;
-	// std::cout << "file = " << file << std::endl;
 	if (!ext)
-		contentType = "text/html";
+		return "text/html";
 	std::string str = ext;
 	if (str == ".js")
-		contentType = "application/javascript";
+		return "application/javascript";
 	else if (str == ".css")
-		contentType = "text/css";
+		return "text/css";
 	else if (str == ".html")
-		contentType = "text/html";
+		return "text/html";
 	else
-		contentType = "text/plain";
-	return contentType;
+		return "text/plain";
 }
 
 int handlePollout(t_socket &socketConfig, struct pollfd *clients, int i, t_config serverConfig) {
@@ -24,19 +21,15 @@ int handlePollout(t_socket &socketConfig, struct pollfd *clients, int i, t_confi
 	std::string root = "./web";
 	std::string index = "/test.html";
 	std::string	file;
-	std::cout << "je suis dans Pollout" << " id = " << i << std::endl;
-	std::cout << "socketConfig.buffClient.url = " << socketConfig.buffClient.url << std::endl;
-	if (socketConfig.buffClient.method != "GET")
-		return -1; //test
+	// std::cout << "socketConfig.buffClient.url = " << socketConfig.buffClient.url << std::endl;
 	if (socketConfig.buffClient.url == "/")
 		file = root + index;
 	else
 		file = root + socketConfig.buffClient.url;
 	std::cout << "file = " << file << std::endl;
-	// std::cout << "file = " << file << std::endl;
-	// std::cout << "url = " << socketConfig.buffClient.url << std::endl;
+	std::cout << "url = " << socketConfig.buffClient.url << std::endl;
 	std::string finalFile = readHtml(file, serverConfig, checkExt(file));
-	// std::cout << finalFile.c_str() << std::endl;
+	std::cout << finalFile.c_str() << std::endl;
 	if (send(clients[i].fd, finalFile.c_str(), finalFile.size(), 0) != (long)finalFile.length()) {
 		perror("send =");
 		handleDeconnexionClient(i, clients);
@@ -53,7 +46,6 @@ int	handlePollin(t_socket &socketConfig, struct pollfd *clients, int i, int &cli
 			client_count++;
 	}
 	else {
-		std::cout << "je suis dans PollIN" << " id = " << i << std::endl;
 		char buffer[4096];
 		if (recv(clients[i].fd, buffer, sizeof(buffer), 0) < 0) {
 			perror("recv =");
@@ -97,5 +89,7 @@ void handleSocket(t_config serverConfig, t_socket &socketConfig) {
 			}
 		}
 	}
+	std::cout << "test8" << std::endl;
+	// close(socketConfig.server_fd);
 }
 

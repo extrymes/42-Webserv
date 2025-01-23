@@ -3,7 +3,7 @@ let buttonSquares = document.querySelector(".buttonHowManySquares");
 let squaresPerSide = 16;
 
 function getRandomColor() {
-    var letters = '0123456789ABCDEF';
+    var letters = "0123456789ABCDEF";
     var color = '#';
     for (var i = 0; i < 6; i++) {
       color += letters[Math.floor(Math.random() * 16)];
@@ -27,7 +27,7 @@ function drawGrid() {
             Column.appendChild(cell);
             cell.addEventListener('mouseover', () => {
                 cell.style.backgroundColor = getRandomColor();
-              });
+            });
         }
     }
 }
@@ -41,7 +41,7 @@ buttonSquares.addEventListener('click', () => {
         squaresPerSide = nbSquares;
         while (container.hasChildNodes()) {
             container.removeChild(container.firstChild);
-          }
+        }
         drawGrid();
     }
 })
