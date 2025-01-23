@@ -117,6 +117,8 @@ bool ParseConfig::parseLine(std::string line, std::string &directive, std::strin
 	iss2 >> directive;
 	std::getline(iss2 >> std::ws, value);
 	// Check directive syntax
+	if (directive == "}")
+		return true;
 	for (it = directive.begin(); it != directive.end(); it++)
 		if (!std::isalpha(*it) && *it != '_')
 			error("syntax error \"" + line + "\"");
