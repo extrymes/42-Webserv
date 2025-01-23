@@ -11,8 +11,8 @@ ParseConfig::ParseConfig(std::string filename, std::vector<t_server> &servers) :
 		if (!parseLine(line, directive, value))
 			continue;
 		if (directive == "server") {
-			if (value != "{")
-				error("directive \"server\" is not terminated by \"{\"");
+			if (!value.empty())
+				error("syntax error \"" + line + "\"");
 			t_server server;
 			fillServer(server);
 			servers.push_back(server);
@@ -80,26 +80,44 @@ void ParseConfig::fillLocation(t_location &location) {
 bool ParseConfig::parseLine(std::string line, std::string &directive, std::string &value) {
 	if (line.empty())
 		return false;
-	trim(line);
 	std::string::iterator begin = line.begin(), end = line.end(), it;
 	// Remove comment
-	for (it = begin; it != end; it++)
-		if (*it == ';' || *it == '#')
-			break;
+	it = begin;
+	while (it != end && *it != '#')
+		++it;
 	end = it;
 	if (begin == end)
 		return false;
-	// Check syntax
-	if (*begin == '}' && (begin + 1) != end)
+	line.assign(begin, end);
+	// Trim line
+	trim(line);
+	if (line.empty())
+		return false;
+	// Check line syntax
+	if (line.find('}') != std::string::npos && line.size() != 1)
 		error("syntax error \"" + line + "\"");
-	// Create new line
-	line = std::string(begin, end);
-	std::istringstream iss(line);
 	// Extract directive
+	std::istringstream iss(line);
 	iss >> directive;
-	// Extract value
-	std::getline(iss, value);
-	trim(value);
+	// Check end character
+	if (directive == "server" || directive == "location") {
+		if (line[line.size() - 1] != '{')
+			error("directive \"" + directive + "\" is not terminated by opening \"{\"");
+	} else if (directive != "}") {
+		if (line[line.size() - 1] != ';')
+			error("line is not terminated by \";\"");
+	}
+	// Remove end character and trim line
+	line = line.substr(0, line.size() - 1);
+	trim(line);
+	// Extract directive and value
+	std::istringstream iss2(line);
+	iss2 >> directive;
+	std::getline(iss2 >> std::ws, value);
+	// Check directive syntax
+	for (it = directive.begin(); it != directive.end(); it++)
+		if (!std::isalpha(*it) && *it != '_')
+			error("syntax error \"" + line + "\"");
 	return true;
 }
 
@@ -173,16 +191,18 @@ void ParseConfig::parseErrorPage(std::string value, std::map<int, std::string> &
 void ParseConfig::trim(std::string &str) {
 	if (str.empty())
 		return;
-	std::string::iterator begin, end;
+	std::string::iterator begin = str.begin(), end = str.end();
 	// Remove leading spaces
-	for (begin = str.begin(); begin != str.end(); begin++)
-		if (!std::isspace(*begin))
-			break;
+	while (begin != end && std::isspace(*begin))
+		++begin;
 	// Remove trailing spaces
-	for (end = str.end(); end != begin; end--)
-		if (!std::isspace(*end))
-			break;
-	str = std::string(begin, end);
+	if (begin != end) {
+		do {
+			--end;
+		} while (begin != end && std::isspace(*end));
+		++end;
+	}
+	str.assign(begin, end);
 }
 
 void ParseConfig::error(std::string message) {
