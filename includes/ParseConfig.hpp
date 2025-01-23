@@ -41,6 +41,11 @@ class ParseConfig {
 		void parseErrorPage(std::string value, std::map<int, std::string> &errorPages);
 		void parseClientMaxBodySize(std::string value, long &clientMaxBodySize);
 		void parseLocationPath(std::string value, std::string &path);
+		void parseLocationRoot(std::string value, std::string &root);
+		void parseLocationIndex(std::string value, std::string &index);
+		void parseLocationAutoindex(std::string value, std::string &autoindex);
+		void parseLocationAllowedMethods(std::string value, std::string &allowedMethods);
+		void parseLocationRedirection(std::string value, std::string &redirPath, int &redirCode);
 		void trim(std::string &str);
 		void error(std::string message);
 		std::string _filename;

@@ -58,16 +58,16 @@ void ParseConfig::fillLocation(t_location &location) {
 		std::string directive, value;
 		if (!parseLine(line, directive, value))
 			continue;
-		if (directive == "root" && !value.empty())
-			location.root = value;
-		else if (directive == "index" && !value.empty())
-			location.index = value;
-		else if (directive == "autoindex" && !value.empty())
-			location.autoindex = value;
-		else if (directive == "allowed_methods" && !value.empty())
-			location.allowedMethods = value;
-		else if (directive == "return" && !value.empty())
-			location.redirPath = value;
+		if (directive == "root")
+			parseLocationRoot(value, location.root);
+		else if (directive == "index")
+			parseLocationIndex(value, location.index);
+		else if (directive == "autoindex")
+			parseLocationAutoindex(value, location.autoindex);
+		else if (directive == "allowed_methods")
+			parseLocationAllowedMethods(value, location.allowedMethods);
+		else if (directive == "return")
+			parseLocationRedirection(value, location.redirPath, location.redirCode);
 		else if (directive == "}")
 			break;
 		else
@@ -204,6 +204,49 @@ void ParseConfig::parseLocationPath(std::string value, std::string &path) {
 	iss >> path, iss >> rest;
 	if (path.empty() || !rest.empty())
 		error("invalid number of arguments in \"location\" directive");
+}
+
+void ParseConfig::parseLocationRoot(std::string value, std::string &root) {
+	if (value.empty())
+		error("invalid number of arguments in \"root\" directive");
+	root = value;
+}
+
+void ParseConfig::parseLocationIndex(std::string value, std::string &index) {
+	if (value.empty())
+		error("invalid number of arguments in \"index\" directive");
+	index = value;
+}
+
+void ParseConfig::parseLocationAutoindex(std::string value, std::string &autoindex) {
+	if (value.empty())
+		error("invalid number of arguments in \"autoindex\" directive");
+	autoindex = value;
+}
+
+void ParseConfig::parseLocationAllowedMethods(std::string value, std::string &allowedMethods) {
+	if (value.empty())
+		error("invalid number of arguments in \"allowed_methods\" directive");
+	std::istringstream iss(value);
+	std::string method;
+	while (iss >> method)
+		if (method != "GET" && method != "POST" && method != "DELETE")
+			error("invalid method \"" + method + "\"");
+	allowedMethods = value;
+}
+
+void ParseConfig::parseLocationRedirection(std::string value, std::string &redirPath, int &redirCode) {
+	std::istringstream iss(value);
+	std::string codeStr, rest;
+	iss >> codeStr, iss >> redirPath, iss >> rest;
+	if (codeStr.empty() || redirPath.empty() || !rest.empty())
+		error("invalid number of arguments in \"return\" directive");
+	// Convert redirection code to number
+	char *end;
+	redirCode = std::strtol(codeStr.c_str(), &end, 10);
+	// Check if redirection code is valid
+	if (end != codeStr.c_str() + codeStr.size() || codeStr.size() != 3)
+		error("invalid redirection code \"" + codeStr + "\"");
 }
 
 void ParseConfig::trim(std::string &str) {
