@@ -39,6 +39,8 @@ class ParseConfig {
 		void parseListen(std::string value, std::string &host, int &port);
 		void parseServerName(std::string value, std::string &serverName);
 		void parseErrorPage(std::string value, std::map<int, std::string> &errorPages);
+		void parseClientMaxBodySize(std::string value, long &clientMaxBodySize);
+		void parseLocationPath(std::string value, std::string &path);
 		void trim(std::string &str);
 		void error(std::string message);
 		std::string _filename;

@@ -38,12 +38,10 @@ void ParseConfig::fillServer(t_server &server) {
 		else if (directive == "error_page")
 			parseErrorPage(value, server.errorPages);
 		else if (directive == "client_max_body_size")
-			continue; // code for client_max_body_size
+			parseClientMaxBodySize(value, server.clientMaxBodySize);
 		else if (directive == "location") {
-			// if (value != "{")
-			// 	error("directive \"location\" is not terminated by \"{\"");
 			t_location location;
-			location.path = value;
+			parseLocationPath(value, location.path);
 			fillLocation(location);
 			server.locations.push_back(location);
 		} else if (directive == "}")
@@ -186,6 +184,26 @@ void ParseConfig::parseErrorPage(std::string value, std::map<int, std::string> &
 	if (!file.good())
 		error("invalid path \"" + path + "\"");
 	errorPages.insert(std::pair<int, std::string>(code, path));
+}
+
+void ParseConfig::parseClientMaxBodySize(std::string value, long &clientMaxBodySize) {
+	if (value.empty())
+		error("invalid number of arguments in \"client_max_body_size\" directive");
+	// Convert value to number
+	char *end;
+	clientMaxBodySize = std::strtol(value.c_str(), &end, 10);
+	// Check if value is valid
+	if (end != value.c_str() + value.size())
+		error("invalid value \"" + value + "\"");
+}
+
+void ParseConfig::parseLocationPath(std::string value, std::string &path) {
+	std::istringstream iss(value);
+	std::string rest;
+	// Extract path
+	iss >> path, iss >> rest;
+	if (path.empty() || !rest.empty())
+		error("invalid number of arguments in \"location\" directive");
 }
 
 void ParseConfig::trim(std::string &str) {
