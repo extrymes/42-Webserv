@@ -136,21 +136,23 @@ void ParseConfig::parseListen(std::string value, std::string &host, int &port) {
 	// Check if host is valid
 	if (host.empty() || portStr.empty())
 		error("invalid host \"" + value + "\"");
-	std::vector<std::string> splitedHost;
-	std::istringstream issHost(host);
-	std::string segment;
-	while (std::getline(issHost, segment, '.'))
-		splitedHost.push_back(segment);
-	if (splitedHost.size() != 4)
-		error("invalid host \"" + value + "\"");
-	std::vector<std::string>::iterator it;
 	char *end;
-	for (it = splitedHost.begin(); it != splitedHost.end(); it++) {
-		if (it->empty())
+	if (host != "localhost") {
+		std::vector<std::string> splitedHost;
+		std::istringstream iss2(host);
+		std::string segment;
+		while (std::getline(iss2, segment, '.'))
+			splitedHost.push_back(segment);
+		if (splitedHost.size() != 4)
 			error("invalid host \"" + value + "\"");
-		int byte = std::strtol(it->c_str(), &end, 10);
-		if (end != it->c_str() + it->length() || byte < 0 || byte > 255)
-			error("invalid host \"" + value + "\"");
+		std::vector<std::string>::iterator it;
+		for (it = splitedHost.begin(); it != splitedHost.end(); it++) {
+			if (it->empty())
+				error("invalid host \"" + value + "\"");
+			int byte = std::strtol(it->c_str(), &end, 10);
+			if (end != it->c_str() + it->length() || byte < 0 || byte > 255)
+				error("invalid host \"" + value + "\"");
+		}
 	}
 	// Convert port to number
 	port = std::strtol(portStr.c_str(), &end, 10);
