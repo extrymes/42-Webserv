@@ -19,6 +19,7 @@ struct s_info_client {
 	std::string method;
 	std::string	url;
 	std::string host;
+	std::string responseServer;
 };
 
 struct s_socket {
