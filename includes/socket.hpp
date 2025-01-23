@@ -29,5 +29,15 @@ struct s_info_client {
 	std::string host;
 };
 
-sockaddr_in init_sockaddr_in(t_config serverConfig);
-// void makeSocketNonBlocking(int socket_fd);
+
+// utilsSocket.cpp
+sockaddr_in	init_sockaddr_in(t_config serverConfig);
+std::string	readHtml(std::string index);
+void		handleDeconnexionClient(int i, struct pollfd *clients);
+void		checkEmptyPlace(t_socket &socketConfig, struct pollfd *clients);
+void	parseBuffer(char *buffer, t_info_client &buffClient);
+
+/* srvSocket.cpp */
+int		handlePollin(t_socket &socketConfig, struct pollfd *clients, int i, int &client_count);
+void	initSocket(t_socket &socketConfig, t_config serverConfig, struct pollfd *clients);
+void	handleSocket(t_config serverConfig, t_socket &socketConfig);
