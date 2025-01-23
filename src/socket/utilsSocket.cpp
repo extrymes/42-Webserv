@@ -9,29 +9,34 @@ sockaddr_in init_sockaddr_in(t_config serverConfig) {
 	return (server_addr);
 }
 
-std::string readHtml(std::string index) {
+std::string readHtml(std::string &index, t_config &serverConfig, std::string ext) {
+	(void)serverConfig;
 	std::string	line;
 	std::ifstream	infile(index.c_str());
 	std::string	finalFile;
 	std::ostringstream	oss;
 
-	if (!infile)
-		throw(std::invalid_argument("Failed to open the infile."));
+	// std::cout << "ext = " << ext << std::endl;
+	if (!infile) {
+		std::string str = "./web/404.html";
+		return readHtml(str, serverConfig, ".html"); //To modify
+	}
 	while (std::getline(infile, line))
 		finalFile += line + "\n";
 	oss << finalFile.size();
 	std::string contentLength = oss.str();
 	std::string httpResponse =
 	"HTTP/1.1 200 OK\r\n"
-	"Content-Type: text/html\r\n"
+	"Content-Type: " + ext + "\r\n"
 	"Content-Length: " + contentLength + "\r\n"
-	"Connection: close\r\n"
+	// "Connection: close\r\n"
 	"\r\n" +
 	finalFile;
 	return httpResponse;
 }
 
 void	handleDeconnexionClient(int i, struct pollfd *clients) {
+	std::cout << "-----------------------------------peut etre c'est sa--------------------------------------" << std::endl;
 	close(clients[i].fd);
 	clients[i].fd = 0;
 }
@@ -64,6 +69,7 @@ void	parseBuffer(char *buffer, t_info_client &buffClient) {
 	std::string tmp;
 	std::getline(second, tmp, ' ');
 	std::getline(second, buffClient.host);
+	// std::cout << "buff = " << buffer << std::endl;
 	// std::cout << "buffClient.method = " << buffClient.method << std::endl;
 	// std::cout << "buffClient.url = " << buffClient.url << std::endl;
 	// std::cout << "buffClient.host = " << buffClient.host << std::endl;
