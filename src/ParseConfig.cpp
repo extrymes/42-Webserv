@@ -7,11 +7,11 @@ ParseConfig::ParseConfig(std::string filename, std::vector<t_server> &servers) :
 	std::string line;
 	while (std::getline(_file, line)) {
 		++_lineId;
-		std::string directive, value;
-		if (!parseLine(line, directive, value))
+		std::string directive, args;
+		if (!parseLine(line, directive, args))
 			continue;
 		if (directive == "server") {
-			if (!value.empty())
+			if (!args.empty())
 				error("syntax error \"" + line + "\"");
 			t_server server;
 			fillServer(server);
@@ -28,20 +28,20 @@ void ParseConfig::fillServer(t_server &server) {
 	std::string line;
 	while (std::getline(_file, line)) {
 		++_lineId;
-		std::string directive, value;
-		if (!parseLine(line, directive, value))
+		std::string directive, args;
+		if (!parseLine(line, directive, args))
 			continue;
 		if (directive == "listen")
-			parseListen(value, server.host, server.port);
+			parseListen(args, server.host, server.port);
 		else if (directive == "server_name")
-			parseServerName(value, server.name);
+			parseServerName(args, server.name);
 		else if (directive == "error_page")
-			parseErrorPage(value, server.errorPages);
+			parseErrorPage(args, server.errorPages);
 		else if (directive == "client_max_body_size")
-			parseClientMaxBodySize(value, server.clientMaxBodySize);
+			parseClientMaxBodySize(args, server.clientMaxBodySize);
 		else if (directive == "location") {
 			t_location location;
-			parseLocationPath(value, location.path);
+			parseLocationPath(args, location.path);
 			fillLocation(location);
 			server.locations.push_back(location);
 		} else if (directive == "}")
@@ -55,23 +55,23 @@ void ParseConfig::fillLocation(t_location &location) {
 	std::string line;
 	while (std::getline(_file, line)) {
 		++_lineId;
-		std::string directive, value;
-		if (!parseLine(line, directive, value))
+		std::string directive, args;
+		if (!parseLine(line, directive, args))
 			continue;
 		if (directive == "root")
-			parseLocationRoot(value, location.root);
+			parseLocationRoot(args, location.root);
 		else if (directive == "index")
-			parseLocationIndex(value, location.index);
+			parseLocationIndex(args, location.index);
 		else if (directive == "autoindex")
-			parseLocationAutoindex(value, location.autoindex);
+			parseLocationAutoindex(args, location.autoindex);
 		else if (directive == "allowed_methods")
-			parseLocationAllowedMethods(value, location.allowedMethods);
+			parseLocationAllowedMethods(args, location.allowedMethods);
 		else if (directive == "return")
-			parseLocationRedirection(value, location.redirPath, location.redirCode);
+			parseLocationRedirection(args, location.redirPath, location.redirCode);
 		else if (directive == "cgi_extension")
-			parseLocationCgiExtension(value, location.cgiExtension);
+			parseLocationCgiExtension(args, location.cgiExtension);
 		else if (directive == "upload_save")
-			parseLocationUploadSave(value, location.uploadSave);
+			parseLocationUploadSave(args, location.uploadSave);
 		else if (directive == "}")
 			break;
 		else
@@ -79,7 +79,7 @@ void ParseConfig::fillLocation(t_location &location) {
 	}
 }
 
-bool ParseConfig::parseLine(std::string line, std::string &directive, std::string &value) {
+bool ParseConfig::parseLine(std::string line, std::string &directive, std::string &args) {
 	if (line.empty())
 		return false;
 	std::string::iterator begin = line.begin(), end = line.end(), it;
@@ -95,47 +95,36 @@ bool ParseConfig::parseLine(std::string line, std::string &directive, std::strin
 	trim(line);
 	if (line.empty())
 		return false;
-	// Check line syntax
-	if (line.find('}') != std::string::npos && line.size() != 1)
-		error("syntax error \"" + line + "\"");
-	// Extract directive
-	std::istringstream iss(line);
-	iss >> directive;
+	// Check closed bracket
+	if (line == "}")
+		return (directive = line, true);
 	// Check end character
-	if (directive == "server" || directive == "location") {
-		if (line[line.size() - 1] != '{')
-			error("directive \"" + directive + "\" is not terminated by opening \"{\"");
-	} else if (directive != "}") {
-		if (line[line.size() - 1] != ';')
-			error("line is not terminated by \";\"");
-	}
+	checkEndCharacter(line);
 	// Remove end character and trim line
 	line = line.substr(0, line.size() - 1);
 	trim(line);
-	// Extract directive and value
-	std::istringstream iss2(line);
-	iss2 >> directive;
-	std::getline(iss2 >> std::ws, value);
+	// Extract directive and args
+	std::istringstream iss(line);
+	iss >> directive;
+	std::getline(iss >> std::ws, args);
 	// Check directive syntax
-	if (directive == "}")
-		return true;
 	for (it = directive.begin(); it != directive.end(); it++)
 		if (!std::isalpha(*it) && *it != '_')
-			error("syntax error \"" + line + "\"");
+			error("syntaxe error \"" + line + "\"");
 	return true;
 }
 
-void ParseConfig::parseListen(std::string value, std::string &host, int &port) {
-	if (countArgs(value) != 1)
+void ParseConfig::parseListen(std::string args, std::string &host, int &port) {
+	if (countArgs(args) != 1)
 		error("invalid number of arguments in \"listen\" directive");
-	std::istringstream issValue(value);
+	std::istringstream iss(args);
 	std::string portStr;
-	// Extract host and port
-	std::getline(issValue, host, ':');
-	std::getline(issValue, portStr);
+	// Extract host
+	std::getline(iss, host, ':');
+	std::getline(iss, portStr);
 	// Check if host is valid
-	if (host.empty() || portStr.empty())
-		error("invalid host \"" + value + "\"");
+	if (host.empty())
+		error("invalid host \"" + args + "\"");
 	char *end;
 	if (host != "localhost") {
 		std::vector<std::string> splitedHost;
@@ -144,38 +133,42 @@ void ParseConfig::parseListen(std::string value, std::string &host, int &port) {
 		while (std::getline(iss2, segment, '.'))
 			splitedHost.push_back(segment);
 		if (splitedHost.size() != 4)
-			error("invalid host \"" + value + "\"");
+			error("invalid host \"" + args + "\"");
 		std::vector<std::string>::iterator it;
 		for (it = splitedHost.begin(); it != splitedHost.end(); it++) {
 			if (it->empty())
-				error("invalid host \"" + value + "\"");
+				error("invalid host \"" + args + "\"");
 			int byte = std::strtol(it->c_str(), &end, 10);
 			if (end != it->c_str() + it->length() || byte < 0 || byte > 255)
-				error("invalid host \"" + value + "\"");
+				error("invalid host \"" + args + "\"");
 		}
 	}
+	// Extract port
+	std::getline(iss, portStr);
+	if (portStr.empty())
+		error("missing port in \"" + args + "\"");
 	// Convert port to number
 	port = std::strtol(portStr.c_str(), &end, 10);
 	// Check if port is valid
 	if (end != portStr.c_str() + portStr.length() || port < 1 || port > 65535)
-		error("invalid port in \"" + value + "\"");
+		error("invalid port in \"" + args + "\"");
 }
 
-void ParseConfig::parseServerName(std::string value, std::string &serverName) {
-	if (countArgs(value) != 1)
+void ParseConfig::parseServerName(std::string args, std::string &serverName) {
+	if (countArgs(args) != 1)
 		error("invalid number of arguments in \"server_name\" directive");
 	// Check if server name is valid
 	std::string::iterator it;
-	for (it = value.begin(); it != value.end(); it++)
+	for (it = args.begin(); it != args.end(); it++)
 		if (!std::isalnum(*it) && *it != '.')
-			error("invalid server name \"" + value + "\"");
-	serverName = value;
+			error("invalid server name \"" + args + "\"");
+	serverName = args;
 }
 
-void ParseConfig::parseErrorPage(std::string value, std::map<int, std::string> &errorPages) {
-	if (countArgs(value) != 2)
+void ParseConfig::parseErrorPage(std::string args, std::map<int, std::string> &errorPages) {
+	if (countArgs(args) != 2)
 		error("invalid number of arguments in \"error_page\" directive");
-	std::istringstream iss(value);
+	std::istringstream iss(args);
 	std::string codeStr, path;
 	// Extract error code and path
 	iss >> codeStr, iss >> path;
@@ -194,70 +187,70 @@ void ParseConfig::parseErrorPage(std::string value, std::map<int, std::string> &
 	errorPages.insert(std::pair<int, std::string>(code, path));
 }
 
-void ParseConfig::parseClientMaxBodySize(std::string value, long &clientMaxBodySize) {
-	if (countArgs(value) != 1)
+void ParseConfig::parseClientMaxBodySize(std::string args, long &clientMaxBodySize) {
+	if (countArgs(args) != 1)
 		error("invalid number of arguments in \"client_max_body_size\" directive");
 	// Convert value to number
 	char *end;
-	clientMaxBodySize = std::strtol(value.c_str(), &end, 10);
+	clientMaxBodySize = std::strtol(args.c_str(), &end, 10);
 	// Check if value is valid
-	if (end != value.c_str() + value.size())
-		error("invalid value \"" + value + "\"");
+	if (end != args.c_str() + args.size())
+		error("invalid value \"" + args + "\"");
 }
 
-void ParseConfig::parseLocationPath(std::string value, std::string &path) {
-	if (countArgs(value) != 1)
+void ParseConfig::parseLocationPath(std::string args, std::string &path) {
+	if (countArgs(args) != 1)
 		error("invalid number of arguments in \"location\" directive");
-	path = value;
+	path = args;
 }
 
-void ParseConfig::parseLocationRoot(std::string value, std::string &root) {
-	if (countArgs(value) != 1)
+void ParseConfig::parseLocationRoot(std::string args, std::string &root) {
+	if (countArgs(args) != 1)
 		error("invalid number of arguments in \"root\" directive");
-	root = value;
+	root = args;
 }
 
-void ParseConfig::parseLocationIndex(std::string value, std::string &index) {
-	if (countArgs(value) < 1)
+void ParseConfig::parseLocationIndex(std::string args, std::string &index) {
+	if (countArgs(args) < 1)
 		error("invalid number of arguments in \"index\" directive");
-	index = value;
+	index = args;
 }
 
-void ParseConfig::parseLocationAutoindex(std::string value, std::string &autoindex) {
-	if (countArgs(value) != 1)
+void ParseConfig::parseLocationAutoindex(std::string args, std::string &autoindex) {
+	if (countArgs(args) != 1)
 		error("invalid number of arguments in \"autoindex\" directive");
-	autoindex = value;
+	autoindex = args;
 }
 
-void ParseConfig::parseLocationAllowedMethods(std::string value, std::string &allowedMethods) {
-	if (countArgs(value) < 1)
+void ParseConfig::parseLocationAllowedMethods(std::string args, std::string &allowedMethods) {
+	if (countArgs(args) < 1)
 		error("invalid number of arguments in \"allowed_methods\" directive");
-	std::istringstream iss(value);
+	std::istringstream iss(args);
 	std::string method;
 	while (iss >> method)
 		if (method != "GET" && method != "POST" && method != "DELETE")
 			error("invalid method \"" + method + "\"");
-	allowedMethods = value;
+	allowedMethods = args;
 }
 
-void ParseConfig::parseLocationCgiExtension(std::string value, std::string &cgiExtension) {
-	if (countArgs(value) != 1)
+void ParseConfig::parseLocationCgiExtension(std::string args, std::string &cgiExtension) {
+	if (countArgs(args) != 1)
 		error("invalid number of arguments in \"cgi_extension\" directive");
-	if (value != ".php" && value != ".py")
-		error("invalid extension \"" + value + "\"");
-	cgiExtension = value;
+	if (args != ".php" && args != ".py")
+		error("invalid extension \"" + args + "\"");
+	cgiExtension = args;
 }
 
-void ParseConfig::parseLocationUploadSave(std::string value, std::string &uploadSave) {
-	if (countArgs(value) != 1)
+void ParseConfig::parseLocationUploadSave(std::string args, std::string &uploadSave) {
+	if (countArgs(args) != 1)
 		error("invalid number of arguments in \"upload_save\" directive");
-	uploadSave = value;
+	uploadSave = args;
 }
 
-void ParseConfig::parseLocationRedirection(std::string value, std::string &redirPath, int &redirCode) {
-	if (countArgs(value) != 2)
+void ParseConfig::parseLocationRedirection(std::string args, std::string &redirPath, int &redirCode) {
+	if (countArgs(args) != 2)
 		error("invalid number of arguments in \"return\" directive");
-	std::istringstream iss(value);
+	std::istringstream iss(args);
 	std::string codeStr, rest;
 	// Extract redirection code and path
 	iss >> codeStr, iss >> redirPath;
@@ -286,8 +279,23 @@ void ParseConfig::trim(std::string &str) {
 	str.assign(begin, end);
 }
 
-int ParseConfig::countArgs(std::string value) {
-	std::istringstream iss(value);
+void ParseConfig::checkEndCharacter(std::string line) {
+	// Extract directive
+	std::istringstream iss(line);
+	std::string directive;
+	iss >> directive;
+	// Check end character
+	if (directive == "server" || directive == "location") {
+		if (line[line.size() - 1] != '{')
+			error("directive \"" + directive + "\" is not terminated by opening \"{\"");
+	} else if (directive != "}") {
+		if (line[line.size() - 1] != ';')
+			error("line is not terminated by \";\"");
+	}
+}
+
+int ParseConfig::countArgs(std::string args) {
+	std::istringstream iss(args);
 	std::string arg;
 	int count = 0;
 	while (iss >> arg)
