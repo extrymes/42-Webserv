@@ -126,7 +126,7 @@ bool ParseConfig::parseLine(std::string line, std::string &directive, std::strin
 }
 
 void ParseConfig::parseListen(std::string value, std::string &host, int &port) {
-	if (value.empty())
+	if (countArgs(value) != 1)
 		error("invalid number of arguments in \"listen\" directive");
 	std::istringstream issValue(value);
 	std::string portStr;
@@ -160,8 +160,8 @@ void ParseConfig::parseListen(std::string value, std::string &host, int &port) {
 }
 
 void ParseConfig::parseServerName(std::string value, std::string &serverName) {
-	if (value.empty())
-		error("invalid number of arguments in \"listen\" directive");
+	if (countArgs(value) != 1)
+		error("invalid number of arguments in \"server_name\" directive");
 	// Check if server name is valid
 	std::string::iterator it;
 	for (it = value.begin(); it != value.end(); it++)
@@ -171,12 +171,12 @@ void ParseConfig::parseServerName(std::string value, std::string &serverName) {
 }
 
 void ParseConfig::parseErrorPage(std::string value, std::map<int, std::string> &errorPages) {
-	std::istringstream iss(value);
-	std::string codeStr, path, rest;
-	// Extract error code and path
-	iss >> codeStr, iss >> path, iss >> rest;
-	if (codeStr.empty() || path.empty() || !rest.empty())
+	if (countArgs(value) != 2)
 		error("invalid number of arguments in \"error_page\" directive");
+	std::istringstream iss(value);
+	std::string codeStr, path;
+	// Extract error code and path
+	iss >> codeStr, iss >> path;
 	// Convert error code to number
 	char *end;
 	int code = std::strtol(codeStr.c_str(), &end, 10);
@@ -193,7 +193,7 @@ void ParseConfig::parseErrorPage(std::string value, std::map<int, std::string> &
 }
 
 void ParseConfig::parseClientMaxBodySize(std::string value, long &clientMaxBodySize) {
-	if (value.empty())
+	if (countArgs(value) != 1)
 		error("invalid number of arguments in \"client_max_body_size\" directive");
 	// Convert value to number
 	char *end;
@@ -204,34 +204,31 @@ void ParseConfig::parseClientMaxBodySize(std::string value, long &clientMaxBodyS
 }
 
 void ParseConfig::parseLocationPath(std::string value, std::string &path) {
-	std::istringstream iss(value);
-	std::string rest;
-	// Extract path
-	iss >> path, iss >> rest;
-	if (path.empty() || !rest.empty())
+	if (countArgs(value) != 1)
 		error("invalid number of arguments in \"location\" directive");
+	path = value;
 }
 
 void ParseConfig::parseLocationRoot(std::string value, std::string &root) {
-	if (value.empty())
+	if (countArgs(value) != 1)
 		error("invalid number of arguments in \"root\" directive");
 	root = value;
 }
 
 void ParseConfig::parseLocationIndex(std::string value, std::string &index) {
-	if (value.empty())
+	if (countArgs(value) < 1)
 		error("invalid number of arguments in \"index\" directive");
 	index = value;
 }
 
 void ParseConfig::parseLocationAutoindex(std::string value, std::string &autoindex) {
-	if (value.empty())
+	if (countArgs(value) != 1)
 		error("invalid number of arguments in \"autoindex\" directive");
 	autoindex = value;
 }
 
 void ParseConfig::parseLocationAllowedMethods(std::string value, std::string &allowedMethods) {
-	if (value.empty())
+	if (countArgs(value) < 1)
 		error("invalid number of arguments in \"allowed_methods\" directive");
 	std::istringstream iss(value);
 	std::string method;
@@ -242,7 +239,7 @@ void ParseConfig::parseLocationAllowedMethods(std::string value, std::string &al
 }
 
 void ParseConfig::parseLocationCgiExtension(std::string value, std::string &cgiExtension) {
-	if (value.empty())
+	if (countArgs(value) != 1)
 		error("invalid number of arguments in \"cgi_extension\" directive");
 	if (value != ".php" && value != ".py")
 		error("invalid extension \"" + value + "\"");
@@ -250,17 +247,18 @@ void ParseConfig::parseLocationCgiExtension(std::string value, std::string &cgiE
 }
 
 void ParseConfig::parseLocationUploadSave(std::string value, std::string &uploadSave) {
-	if (value.empty())
+	if (countArgs(value) != 1)
 		error("invalid number of arguments in \"upload_save\" directive");
 	uploadSave = value;
 }
 
 void ParseConfig::parseLocationRedirection(std::string value, std::string &redirPath, int &redirCode) {
+	if (countArgs(value) != 2)
+		error("invalid number of arguments in \"return\" directive");
 	std::istringstream iss(value);
 	std::string codeStr, rest;
-	iss >> codeStr, iss >> redirPath, iss >> rest;
-	if (codeStr.empty() || redirPath.empty() || !rest.empty())
-		error("invalid number of arguments in \"return\" directive");
+	// Extract redirection code and path
+	iss >> codeStr, iss >> redirPath;
 	// Convert redirection code to number
 	char *end;
 	redirCode = std::strtol(codeStr.c_str(), &end, 10);
@@ -286,10 +284,20 @@ void ParseConfig::trim(std::string &str) {
 	str.assign(begin, end);
 }
 
+int ParseConfig::countArgs(std::string value) {
+	std::istringstream iss(value);
+	std::string arg;
+	int count = 0;
+	while (iss >> arg)
+		++count;
+	return count;
+}
+
 void ParseConfig::error(std::string message) {
 	std::stringstream ss;
 	ss << _lineId;
 	throw std::runtime_error(message + " in " + _filename + ":" + ss.str());
 }
+
 
 ParseConfig::~ParseConfig() {}

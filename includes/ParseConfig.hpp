@@ -51,6 +51,7 @@ class ParseConfig {
 		void parseLocationUploadSave(std::string value, std::string &uploadSave);
 		void parseLocationRedirection(std::string value, std::string &redirPath, int &redirCode);
 		void trim(std::string &str);
+		int countArgs(std::string value);
 		void error(std::string message);
 		std::string _filename;
 		std::ifstream _file;
