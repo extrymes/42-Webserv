@@ -13,15 +13,9 @@ int main(int ac, char **av) {
 	t_socket socketConfig;
 	try {
 		ParseConfig(av[1], servers);
-		for (std::vector<t_server>::iterator it = servers.begin(); it != servers.end(); ++it)
-			std::cout << GREEN << "Server name: " << it->name << std::endl;
-	} catch (const std::exception& e) {
-		std::cerr << "webserv: [config] " << e.what() << std::endl;
-	}
-	try {
 		handleSocket(servers, socketConfig);
 	} catch (const std::exception& e) {
-		std::cerr << RED "Error: " << e.what() << RESET << std::endl;
+		std::cerr << "webserv: error: " << e.what() << std::endl;
 	}
 	return 0;
 }
