@@ -1,7 +1,34 @@
 #include "socket.hpp"
 #include "webserv.hpp"
 
-int	handlePollin(t_socket &socketConfig, struct pollfd *clients, int i, int &client_count) {
+std::string checkExt(std::string file) {
+	const char *ext = strrchr(file.c_str(), '.');
+	if (!ext)
+		return "text/html";
+	std::string str = ext;
+	if (str == ".js")
+		return "application/javascript";
+	else if (str == ".css")
+		return "text/css";
+	else if (str == ".html")
+		return "text/html";
+	else
+		return "text/plain";
+}
+
+int handlePollout(t_socket &socketConfig, struct pollfd *clients, int i, std::vector<t_server> servers) {
+	(void)servers;
+
+	if (send(clients[i].fd, socketConfig.buffClient.responseServer.c_str(), socketConfig.buffClient.responseServer.size(), 0) < 0) {
+		handleDeconnexionClient(i, clients);
+		return -1;
+	}
+	clients[i].events = POLLIN;
+	return 0;
+}
+
+int	handlePollin(t_socket &socketConfig, struct pollfd *clients, int i, int &client_count, std::vector<t_server> servers) {
+
 	if (clients[i].fd == socketConfig.server_fd) {
 		socketConfig.client_len = sizeof(socketConfig.client_addr);
 		checkEmptyPlace(socketConfig, clients);
@@ -9,27 +36,26 @@ int	handlePollin(t_socket &socketConfig, struct pollfd *clients, int i, int &cli
 			client_count++;
 	}
 	else {
-		char buffer[1024];
+		char buffer[4096];
 		if (recv(clients[i].fd, buffer, sizeof(buffer), 0) < 0) {
 			handleDeconnexionClient(i, clients);
 			return -1;
 		}
-		// std::cout << "buff = " << buffer << std::endl;
-		t_info_client buffClient;
-		parseBuffer(buffer, buffClient);
+		parseBuffer(buffer, socketConfig.buffClient);
+		std::string root = "./web";
+		std::string index = "/test.html"; // tmp
+		std::string	file;
+		if (socketConfig.buffClient.url == "/")
+			file = root + index;
+		else
+			file = root + socketConfig.buffClient.url;
+		socketConfig.buffClient.responseServer = readHtml(file, servers, checkExt(file));
+		clients[i].events = POLLIN | POLLOUT;
 	}
 	return 0;
 }
 
-// void	initSocket() {
-
-// }
-
-void handleSocket(std::vector<t_server> servers, t_socket &socketConfig) {
-	std::string	index = "./web/test.html";
-	int	client_count = 1;
-	struct pollfd	clients[MAX_CLIENTS]; //Create struct
-
+void	initSocket(t_socket &socketConfig, std::vector<t_server> servers, struct pollfd *clients) {
 	socketConfig.server_fd = socket(AF_INET, SOCK_STREAM, 0);
 	if (socketConfig.server_fd < 0)
 		throw std::runtime_error("socket fail");
@@ -38,27 +64,28 @@ void handleSocket(std::vector<t_server> servers, t_socket &socketConfig) {
 		throw std::runtime_error("bind fail");
 	if (listen(socketConfig.server_fd, 5) < 0)
 		throw std::runtime_error("listen fail");
-	memset(clients, 0, sizeof(clients));
 	clients[0].fd = socketConfig.server_fd;
 	clients[0].events = POLLIN | POLLOUT;
-	while(1) {
+}
+
+void handleSocket(std::vector<t_server> servers, t_socket &socketConfig) {
+	int	client_count = 1;
+	struct pollfd	clients[MAX_CLIENTS]; //Create struct
+	memset(clients, 0, sizeof(clients));
+	initSocket(socketConfig, servers, clients);
+	while (1) {
 		if (poll(clients, client_count, -1) < 0)
 			throw std::runtime_error("poll failed");
 		for (int i = 0; i < client_count; i++) {
 			if (clients[i].revents & POLLIN) {
-				if (handlePollin(socketConfig, clients, i, client_count) == -1)
+				if (handlePollin(socketConfig, clients, i, client_count, servers) == -1)
 					continue ;
 			}
 			if (clients[i].revents & POLLOUT) {
-				std::string finalFile = readHtml(index);
-				if (send(clients[i].fd, finalFile.c_str(), finalFile.size(), 0) < 0) {
-					handleDeconnexionClient(i, clients);
+				if (handlePollout(socketConfig, clients, i, servers) == -1)
 					continue ;
-				}
 			}
 		}
 	}
-	std::cout << "test8" << std::endl;
 	// close(socketConfig.server_fd);
 }
-
