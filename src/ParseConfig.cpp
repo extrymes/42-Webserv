@@ -207,6 +207,9 @@ void ParseConfig::parseLocationPath(std::string args, std::string &path) {
 void ParseConfig::parseLocationRoot(std::string args, std::string &root) {
 	if (countArgs(args) != 1)
 		error("invalid number of arguments in \"root\" directive");
+	// Remove slash at begin
+	if (args[0] == '/')
+		args = args.substr(1);
 	root = args;
 }
 
