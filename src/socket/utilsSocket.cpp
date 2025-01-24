@@ -16,7 +16,6 @@ std::string readHtml(std::string &index, t_config &serverConfig, std::string ext
 	std::string	finalFile;
 	std::ostringstream	oss;
 
-	std::cout << "ext = " << ext << std::endl;
 	if (!infile) {
 		std::string str = "./web/404.html";
 		return readHtml(str, serverConfig, ".html"); //To modify
@@ -36,7 +35,6 @@ std::string readHtml(std::string &index, t_config &serverConfig, std::string ext
 }
 
 void	handleDeconnexionClient(int i, struct pollfd *clients) {
-	std::cout << "-----------------------------------peut etre c'est sa--------------------------------------" << std::endl;
 	close(clients[i].fd);
 	clients[i].fd = 0;
 }
@@ -69,8 +67,4 @@ void	parseBuffer(char *buffer, t_info_client &buffClient) {
 	std::string tmp;
 	std::getline(second, tmp, ' ');
 	std::getline(second, buffClient.host);
-	// std::cout << "buff = " << buffer << std::endl;
-	// std::cout << "buffClient.method = " << buffClient.method << std::endl;
-	// std::cout << "buffClient.url = " << buffClient.url << std::endl;
-	// std::cout << "buffClient.host = " << buffClient.host << std::endl;
 }

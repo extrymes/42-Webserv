@@ -19,9 +19,7 @@ std::string checkExt(std::string file) {
 int handlePollout(t_socket &socketConfig, struct pollfd *clients, int i, t_config serverConfig) {
 	(void)serverConfig;
 
-	// std::cout << finalFile.c_str() << std::endl;
 	if (send(clients[i].fd, socketConfig.buffClient.responseServer.c_str(), socketConfig.buffClient.responseServer.size(), 0) < 0) {
-		perror(NULL);
 		handleDeconnexionClient(i, clients);
 		return -1;
 	}
@@ -44,13 +42,12 @@ int	handlePollin(t_socket &socketConfig, struct pollfd *clients, int i, int &cli
 		}
 		parseBuffer(buffer, socketConfig.buffClient);
 		std::string root = "./web";
-		std::string index = "/test.html";
+		std::string index = "/test.html"; // tmp
 		std::string	file;
 		if (socketConfig.buffClient.url == "/")
 			file = root + index;
 		else
 			file = root + socketConfig.buffClient.url;
-		std::cout << "socketConfig.buffClient.url = " << socketConfig.buffClient.url << std::endl;
 		socketConfig.buffClient.responseServer = readHtml(file, serverConfig, checkExt(file));
 		clients[i].events = POLLIN | POLLOUT;
 	}
@@ -89,6 +86,5 @@ void handleSocket(t_config serverConfig, t_socket &socketConfig) {
 			}
 		}
 	}
-	std::cout << "test8" << std::endl;
 	// close(socketConfig.server_fd);
 }

@@ -14,8 +14,6 @@ int main(int ac, char **av) {
 	try {
 		Config::parseConfigFile(av[1], config);
 		handleSocket(config, socketConfig);
-		// for (std::vector<t_server>::iterator it = config.servers.begin(); it != config.servers.end(); ++it)
-		// 	std::cout << GREEN << "Server name: " << it->name << std::endl;
 	}
 	catch (const std::exception& e) {
 		std::cerr << RED "Error: " << e.what() << RESET << std::endl;
