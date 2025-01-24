@@ -9,16 +9,18 @@ int main(int ac, char **av) {
 		return 1;
 	}
 	std::signal(SIGPIPE, SIG_IGN);
-	t_config config;
+	std::vector<t_server> servers;
 	t_socket socketConfig;
 	try {
-		Config::parseConfigFile(av[1], config);
+		ParseConfig(av[1], servers);
+		for (std::vector<t_server>::iterator it = servers.begin(); it != servers.end(); ++it)
+			std::cout << GREEN << "Server name: " << it->name << std::endl;
+	} catch (const std::exception& e) {
+		std::cerr << "webserv: [config] " << e.what() << std::endl;
+	}
+	try {
 		handleSocket(config, socketConfig);
-		// for (std::vector<t_server>::iterator it = config.servers.begin(); it != config.servers.end(); ++it)
-		// 	std::cout << GREEN << "Server name: " << it->name << std::endl;
-	}
-	catch (const std::exception& e) {
+	} catch (const std::exception& e) {
 		std::cerr << RED "Error: " << e.what() << RESET << std::endl;
-	}
 	return 0;
 }
