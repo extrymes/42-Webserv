@@ -1,10 +1,10 @@
 #include "webserv.hpp"
 
-sockaddr_in init_sockaddr_in(std::vector<t_server> servers) {
+sockaddr_in init_sockaddr_in(std::vector<t_server> servers, int i) {
 	sockaddr_in server_addr;
 	server_addr.sin_family = AF_INET;
 	server_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-	server_addr.sin_port = htons(servers[0].port); // tmp
+	server_addr.sin_port = htons(servers[i].port); // tmp
 	return (server_addr);
 }
 
@@ -39,10 +39,11 @@ void	handleDeconnexionClient(int i, struct pollfd *clients) {
 	clients[i].fd = 0;
 }
 
-void	checkEmptyPlace(t_socket &socketConfig, struct pollfd *clients) {
+void	checkEmptyPlace(t_socket &socketConfig, struct pollfd *clients, int server_fd) {
 	for (int i = 0; i < MAX_CLIENTS; ++i) {
 		if (clients[i].fd == 0) {
-			clients[i].fd = accept(socketConfig.server_fd, (struct sockaddr *)&socketConfig.client_addr, &socketConfig.client_len);
+			socklen_t len = sizeof(socketConfig.client_addr);
+			clients[i].fd = accept(server_fd, (struct sockaddr *)&socketConfig.client_addr, &len);
 			clients[i].events = POLLIN;
 			break ;
 		}

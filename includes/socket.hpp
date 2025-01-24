@@ -16,8 +16,8 @@ typedef struct s_config t_config;
 typedef struct s_info_client t_info_client;
 
 struct s_socket {
-	int server_fd;
-	struct sockaddr_in server_addr;
+	std::vector<int> server_fd;
+	std::vector<struct sockaddr_in> server_addr;
 	int client_fd;
 	struct sockaddr_in client_addr;
 	socklen_t client_len;
@@ -26,10 +26,10 @@ struct s_socket {
 
 
 /* utilsSocket.hpp */
-sockaddr_in init_sockaddr_in(std::vector<t_server> servers);
+sockaddr_in init_sockaddr_in(std::vector<t_server> servers, int i);
 std::string readHtml(std::string &index, std::vector<t_server> servers, std::string ext);
 void		handleDeconnexionClient(int i, struct pollfd *clients);
-void		checkEmptyPlace(t_socket &socketConfig, struct pollfd *clients);
+void		checkEmptyPlace(t_socket &socketConfig, struct pollfd *clients, int server_fd);
 void		parseBuffer(char *buffer, t_info_client &buffClient);
 
 /* srvSocket.cpp */
