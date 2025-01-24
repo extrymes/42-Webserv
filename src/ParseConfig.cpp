@@ -15,17 +15,29 @@ ParseConfig::ParseConfig(std::string filename, std::vector<t_server> &servers) :
 				error("syntax error \"" + line + "\"");
 			t_server server;
 			fillServer(server);
+			if (server.host.empty())
+				error("missing directive \"listen\"");
 			servers.push_back(server);
 		} else if (directive == "}")
-			continue;
+			error("syntax error \"" + line + "\"");
 		else
 			error("unknown directive \"" + directive + "\"");
 	}
 	_file.close();
+	if (servers.size() == 0)
+		error("missing block \"server\"");
+	size_t i, j;
+	for (i = 0; i < servers.size(); ++i) {
+		for (j = i + 1; j < servers.size(); ++j) {
+			if (servers[i].host == servers[j].host && servers[i].port == servers[j].port)
+				throw std::runtime_error("at least two servers have the same host");
+		}
+	}
 }
 
 void ParseConfig::fillServer(t_server &server) {
 	std::string line;
+	bool closed = false;
 	while (std::getline(_file, line)) {
 		++_lineId;
 		std::string directive, args;
@@ -44,15 +56,19 @@ void ParseConfig::fillServer(t_server &server) {
 			parseLocationPath(args, location.path);
 			fillLocation(location);
 			server.locations.push_back(location);
-		} else if (directive == "}")
+		} else if (directive == "}") {
+			closed = true;
 			break;
-		else
+		} else
 			error("unknown directive \"" + directive + "\"");
 	}
+	if (!closed)
+		error("block \"server\" is not closed by \"}\"");
 }
 
 void ParseConfig::fillLocation(t_location &location) {
 	std::string line;
+	bool closed = false;
 	while (std::getline(_file, line)) {
 		++_lineId;
 		std::string directive, args;
@@ -72,11 +88,15 @@ void ParseConfig::fillLocation(t_location &location) {
 			parseLocationCgiExtension(args, location.cgiExtension);
 		else if (directive == "upload_save")
 			parseLocationUploadSave(args, location.uploadSave);
-		else if (directive == "}")
+		else if (directive == "}") {
+			closed = true;
 			break;
+		}
 		else
 			error("unknown directive \"" + directive + "\"");
 	}
+	if (!closed)
+		error("block \"location\" is not closed by \"}\"");
 }
 
 bool ParseConfig::parseLine(std::string line, std::string &directive, std::string &args) {
@@ -110,7 +130,7 @@ bool ParseConfig::parseLine(std::string line, std::string &directive, std::strin
 	// Check directive syntax
 	for (it = directive.begin(); it != directive.end(); it++)
 		if (!std::isalpha(*it) && *it != '_')
-			error("syntaxe error \"" + line + "\"");
+			error("syntax error \"" + line + "\"");
 	return true;
 }
 
@@ -121,10 +141,7 @@ void ParseConfig::parseListen(std::string args, std::string &host, int &port) {
 	std::string portStr;
 	// Extract host
 	std::getline(iss, host, ':');
-	std::getline(iss, portStr);
 	// Check if host is valid
-	if (host.empty())
-		error("invalid host \"" + args + "\"");
 	char *end;
 	if (host != "localhost") {
 		std::vector<std::string> splitedHost;
@@ -139,10 +156,11 @@ void ParseConfig::parseListen(std::string args, std::string &host, int &port) {
 			if (it->empty())
 				error("invalid host \"" + args + "\"");
 			int byte = std::strtol(it->c_str(), &end, 10);
-			if (end != it->c_str() + it->length() || byte < 0 || byte > 255)
+			if (end != it->c_str() + it->size() || byte < 0 || byte > 255)
 				error("invalid host \"" + args + "\"");
 		}
-	}
+	} else
+		host = "127.0.0.1";
 	// Extract port
 	std::getline(iss, portStr);
 	if (portStr.empty())
@@ -150,7 +168,7 @@ void ParseConfig::parseListen(std::string args, std::string &host, int &port) {
 	// Convert port to number
 	port = std::strtol(portStr.c_str(), &end, 10);
 	// Check if port is valid
-	if (end != portStr.c_str() + portStr.length() || port < 1 || port > 65535)
+	if (end != portStr.c_str() + portStr.size() || port < 1 || port > 65535)
 		error("invalid port in \"" + args + "\"");
 }
 
@@ -176,7 +194,7 @@ void ParseConfig::parseErrorPage(std::string args, std::map<int, std::string> &e
 	char *end;
 	int code = std::strtol(codeStr.c_str(), &end, 10);
 	// Check if error code is valid
-	if (end != codeStr.c_str() + codeStr.length())
+	if (end != codeStr.c_str() + codeStr.size())
 		error("invalid error code \"" + codeStr + "\"");
 	if (code < 300 || code > 599)
 		error("error code must be between 300 and 599");
@@ -225,6 +243,8 @@ void ParseConfig::parseLocationIndexes(std::string args, std::vector<std::string
 void ParseConfig::parseLocationAutoindex(std::string args, std::string &autoindex) {
 	if (countArgs(args) != 1)
 		error("invalid number of arguments in \"autoindex\" directive");
+	if (args != "on" && args != "off")
+		error("invalid value \"" + args + "\"");
 	autoindex = args;
 }
 
@@ -290,10 +310,13 @@ void ParseConfig::checkEndCharacter(std::string line) {
 	std::istringstream iss(line);
 	std::string directive;
 	iss >> directive;
+	// Remove semicolon at end
+	if (directive[directive.size() - 1] == ';')
+		directive = directive.substr(0, directive.size() - 1);
 	// Check end character
 	if (directive == "server" || directive == "location") {
 		if (line[line.size() - 1] != '{')
-			error("directive \"" + directive + "\" is not terminated by opening \"{\"");
+			error("block \"" + directive + "\" is not opened by \"{\"");
 	} else if (directive != "}") {
 		if (line[line.size() - 1] != ';')
 			error("line is not terminated by \";\"");
