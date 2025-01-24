@@ -1,10 +1,10 @@
 #include "webserv.hpp"
 
-sockaddr_in init_sockaddr_in(t_config serverConfig) {
+sockaddr_in init_sockaddr_in(std::vector<t_server> servers) {
 	sockaddr_in server_addr;
 	server_addr.sin_family = AF_INET;
 	server_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-	(void)serverConfig;
+	(void)servers;
 	server_addr.sin_port = htons(8080); // tmp
 	return (server_addr);
 }

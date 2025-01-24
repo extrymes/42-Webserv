@@ -25,7 +25,7 @@ int	handlePollin(t_socket &socketConfig, struct pollfd *clients, int i, int &cli
 
 // }
 
-void handleSocket(t_config serverConfig, t_socket &socketConfig) {
+void handleSocket(std::vector<t_server> servers, t_socket &socketConfig) {
 	std::string	index = "./web/test.html";
 	int	client_count = 1;
 	struct pollfd	clients[MAX_CLIENTS]; //Create struct
@@ -33,7 +33,7 @@ void handleSocket(t_config serverConfig, t_socket &socketConfig) {
 	socketConfig.server_fd = socket(AF_INET, SOCK_STREAM, 0);
 	if (socketConfig.server_fd < 0)
 		throw std::runtime_error("socket fail");
-	socketConfig.server_addr = init_sockaddr_in(serverConfig);
+	socketConfig.server_addr = init_sockaddr_in(servers);
 	if (bind(socketConfig.server_fd, (const struct sockaddr *)&socketConfig.server_addr, sizeof(socketConfig.server_addr)) < 0)
 		throw std::runtime_error("bind fail");
 	if (listen(socketConfig.server_fd, 5) < 0)

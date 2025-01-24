@@ -19,8 +19,9 @@ int main(int ac, char **av) {
 		std::cerr << "webserv: [config] " << e.what() << std::endl;
 	}
 	try {
-		handleSocket(config, socketConfig);
+		handleSocket(servers, socketConfig);
 	} catch (const std::exception& e) {
 		std::cerr << RED "Error: " << e.what() << RESET << std::endl;
+	}
 	return 0;
 }
