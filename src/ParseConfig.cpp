@@ -47,6 +47,8 @@ void ParseConfig::fillServer(t_server &server) {
 			parseListen(args, server.host, server.port);
 		else if (directive == "server_name")
 			parseServerName(args, server.name);
+		else if (directive == "root")
+			parseRoot(args, server.root);
 		else if (directive == "error_page")
 			parseErrorPage(args, server.errorPages);
 		else if (directive == "client_max_body_size")
@@ -75,7 +77,7 @@ void ParseConfig::fillLocation(t_location &location) {
 		if (!parseLine(line, directive, args))
 			continue;
 		if (directive == "root")
-			parseLocationRoot(args, location.root);
+			parseRoot(args, location.root);
 		else if (directive == "index")
 			parseLocationIndexes(args, location.indexes);
 		else if (directive == "autoindex")
@@ -183,6 +185,15 @@ void ParseConfig::parseServerName(std::string args, std::string &serverName) {
 	serverName = args;
 }
 
+void ParseConfig::parseRoot(std::string args, std::string &root) {
+	if (countArgs(args) != 1)
+		error("invalid number of arguments in \"root\" directive");
+	// Remove slash at begin
+	if (args[0] == '/')
+		args = args.substr(1);
+	root = args;
+}
+
 void ParseConfig::parseErrorPage(std::string args, std::map<int, std::string> &errorPages) {
 	if (countArgs(args) != 2)
 		error("invalid number of arguments in \"error_page\" directive");
@@ -220,15 +231,6 @@ void ParseConfig::parseLocationPath(std::string args, std::string &path) {
 	if (countArgs(args) != 1)
 		error("invalid number of arguments in \"location\" directive");
 	path = args;
-}
-
-void ParseConfig::parseLocationRoot(std::string args, std::string &root) {
-	if (countArgs(args) != 1)
-		error("invalid number of arguments in \"root\" directive");
-	// Remove slash at begin
-	if (args[0] == '/')
-		args = args.substr(1);
-	root = args;
 }
 
 void ParseConfig::parseLocationIndexes(std::string args, std::vector<std::string> &indexes) {
