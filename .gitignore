@@ -1,4 +1,4 @@
-secret/*
 bin/*
+.vscode/*
 webserv
-.vscode
+.DS_Store
