@@ -29,11 +29,30 @@ int handlePollout(t_socket &socketConfig, struct pollfd *clients, int i, std::ve
 	return 0;
 }
 
-int	handlePollin(t_socket &socketConfig, struct pollfd *clients, int i, int &client_count, std::vector<t_server> servers, RequestClient &requestClient) {
+std::vector<t_server>::iterator findIf(std::string port, std::vector<t_server> &servers)
+{
+	std::vector<t_server>::iterator it = servers.begin();
+	for (; it != servers.end(); ++it) {
+		if (it->port == atoi(port.c_str()))
+			return it;
+	}
+	return it;
+}
 
-	if (clients[i].fd == socketConfig.server_fd) {
+std::vector<t_location>::iterator	whichLocation(std::vector<t_server>::iterator it, RequestClient &requestClient) {
+	std::vector<t_location>::iterator location = it->locations.begin();
+	for (; location != it->locations.end(); ++it) {
+		if (location->path == requestClient.getUrl())
+			return location;
+	}
+	return location;
+}
+
+int	handlePollin(t_socket &socketConfig, struct pollfd *clients, int i, int &client_count, std::vector<t_server> servers, RequestClient &requestClient) {
+	std::vector<int>::iterator it = std::find(socketConfig.server_fd.begin(), socketConfig.server_fd.end(), clients[i].fd);
+	if (it != socketConfig.server_fd.end()) {
 		socketConfig.client_len = sizeof(socketConfig.client_addr);
-		checkEmptyPlace(socketConfig, clients);
+		checkEmptyPlace(socketConfig, clients, *it);
 		if (client_count <= MAX_CLIENTS)
 			client_count++;
 	}
@@ -44,8 +63,11 @@ int	handlePollin(t_socket &socketConfig, struct pollfd *clients, int i, int &cli
 			return -1;
 		}
 		requestClient.parseBuffer(buffer);
-		std::string root = servers[0].locations[0].root.empty() ? servers[0].locations[0].path : servers[0].locations[0].root;
-		std::string index = servers[0].locations[0].indexes.size() == 0 ? "/index.html" : servers[0].locations[0].indexes[0];
+		std::vector<t_server>::iterator it = findIf(requestClient.getPort(), servers);
+		std::cerr << "port " << it->port << std::endl;
+		std::vector<t_location>::iterator location = whichLocation(it, requestClient);
+		std::string root = location->root.empty() ? location->path : location->root;
+		std::string index = location->indexes.size() == 0 ? "/index.html" : location->indexes[0];
 		std::string	file;
 		if (requestClient.getUrl() == "/")
 			file = root + index;
@@ -58,24 +80,29 @@ int	handlePollin(t_socket &socketConfig, struct pollfd *clients, int i, int &cli
 }
 
 void	initSocket(t_socket &socketConfig, std::vector<t_server> servers, struct pollfd *clients) {
-	socketConfig.server_fd = socket(AF_INET, SOCK_STREAM, 0);
-	if (socketConfig.server_fd < 0)
-		throw std::runtime_error("socket fail");
-	int opt = 1;
-	if (setsockopt(socketConfig.server_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0)
-		throw std::runtime_error("setsockopt fail");
-	socketConfig.server_addr = init_sockaddr_in(servers);
-	if (bind(socketConfig.server_fd, (const struct sockaddr *)&socketConfig.server_addr, sizeof(socketConfig.server_addr)) < 0)
-		throw std::runtime_error("bind fail");
-	if (listen(socketConfig.server_fd, 5) < 0)
-		throw std::runtime_error("listen fail");
-	clients[0].fd = socketConfig.server_fd;
-	clients[0].events = POLLIN | POLLOUT;
+	int	i = 0;
+	for (std::vector<t_server>::iterator it = servers.begin(); it != servers.end(); ++it)
+	{
+		socketConfig.server_fd.push_back(socket(AF_INET, SOCK_STREAM, 0));
+		if (socketConfig.server_fd[i] < 0)
+			throw std::runtime_error("socket fail");
+		int opt = 1;
+		if (setsockopt(socketConfig.server_fd[i], SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0)
+			throw std::runtime_error("setsockopt fail");
+		socketConfig.server_addr.push_back(init_sockaddr_in(servers, i));
+		if (bind(socketConfig.server_fd[i], (const struct sockaddr *)&socketConfig.server_addr[i], sizeof(socketConfig.server_addr[i])) < 0)
+			throw std::runtime_error("bind fail");
+		if (listen(socketConfig.server_fd[i], 5) < 0)
+			throw std::runtime_error("listen fail");
+		clients[i].fd = socketConfig.server_fd[i];
+		clients[i].events = POLLIN | POLLOUT;
+		++i;
+	}
 }
 
 void handleSocket(std::vector<t_server> servers, t_socket &socketConfig) {
 	RequestClient requestClient;
-	int	client_count = 1;
+	int	client_count = servers.size();
 	struct pollfd	clients[MAX_CLIENTS]; //Create struct
 	memset(clients, 0, sizeof(clients));
 	initSocket(socketConfig, servers, clients);
