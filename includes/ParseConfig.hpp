@@ -10,7 +10,7 @@ typedef struct s_location t_location;
 
 struct s_server {
 	std::string host; // Server host
-	int port; // Server post
+	int port; // Server port
 	std::string name; // Server name
 	std::map<int, std::string> errorPages; // Error pages
 	long clientMaxBodySize; // Client max body size
