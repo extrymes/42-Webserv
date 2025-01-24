@@ -41,7 +41,7 @@ std::vector<t_server>::iterator findIf(std::string port, std::vector<t_server> &
 
 std::vector<t_location>::iterator	whichLocation(std::vector<t_server>::iterator it, RequestClient &requestClient) {
 	std::vector<t_location>::iterator location = it->locations.begin();
-	for (; location != it->locations.end(); ++it) {
+	for (; location != it->locations.end(); ++location) {
 		if (location->path == requestClient.getUrl())
 			return location;
 	}
@@ -64,15 +64,28 @@ int	handlePollin(t_socket &socketConfig, struct pollfd *clients, int i, int &cli
 		}
 		requestClient.parseBuffer(buffer);
 		std::vector<t_server>::iterator it = findIf(requestClient.getPort(), servers);
-		std::cerr << "port " << it->port << std::endl;
+		if (it == servers.end())
+			return -1;
 		std::vector<t_location>::iterator location = whichLocation(it, requestClient);
-		std::string root = location->root.empty() ? location->path : location->root;
-		std::string index = location->indexes.size() == 0 ? "/index.html" : location->indexes[0];
 		std::string	file;
-		if (requestClient.getUrl() == "/")
-			file = root + index;
-		else
-			file = root + requestClient.getUrl();
+		std::string root = "web/etch-a-sketch";
+		if (location == it->locations.end()) {
+			if (requestClient.getUrl().size() > 1) {
+				file = root + requestClient.getUrl(); // serveur.root
+			}
+			else
+				file = "./web/index.html";
+		}
+		else {
+			std::cerr << "path " << location->path << std::endl;
+			root = location->root.empty() ? location->path : location->root;
+			std::string index = location->indexes.size() == 0 ? "/index.html" : location->indexes[0];
+			if (requestClient.getUrl() == "/" || location->path == requestClient.getUrl())
+				file = root + index;
+			else
+				file = root + requestClient.getUrl();
+		}
+		std::cout << file << std::endl;
 		requestClient.setResponseServer(readHtml(file, servers, checkExt(file)));
 		clients[i].events = POLLIN | POLLOUT;
 	}
