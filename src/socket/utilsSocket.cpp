@@ -5,7 +5,7 @@ sockaddr_in init_sockaddr_in(std::vector<t_server> servers, int i) {
 	server_addr.sin_family = AF_INET;
 	server_addr.sin_addr.s_addr = htonl(INADDR_ANY);
 	server_addr.sin_port = htons(servers[i].port); // tmp
-	return (server_addr);
+	return server_addr;
 }
 
 std::string readHtml(std::string &index, std::vector<t_server> servers, std::string ext) {
@@ -34,18 +34,18 @@ std::string readHtml(std::string &index, std::vector<t_server> servers, std::str
 	return httpResponse;
 }
 
-void	handleDeconnexionClient(int i, struct pollfd *clients) {
+void handleDeconnexionClient(int i, struct pollfd *clients) {
 	close(clients[i].fd);
 	clients[i].fd = 0;
 }
 
-void	checkEmptyPlace(t_socket &socketConfig, struct pollfd *clients, int server_fd) {
+void checkEmptyPlace(t_socket &socketConfig, struct pollfd *clients, int server_fd) {
 	for (int i = 0; i < MAX_CLIENTS; ++i) {
 		if (clients[i].fd == 0) {
 			socklen_t len = sizeof(socketConfig.client_addr);
 			clients[i].fd = accept(server_fd, (struct sockaddr *)&socketConfig.client_addr, &len);
 			clients[i].events = POLLIN;
-			break ;
+			break;
 		}
 	}
 }

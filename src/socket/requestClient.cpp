@@ -5,15 +5,15 @@ RequestClient::RequestClient() {}
 RequestClient::~RequestClient () {}
 
 void RequestClient::parseBuffer(char *buffer) {
-    std::string line;
+	std::string line;
 	std::stringstream infileBuff(buffer);
-    parseFirstLines(infileBuff);
-    while(std::getline(infileBuff, line))
-        parseHeader(line);
+	parseFirstLines(infileBuff);
+	while(std::getline(infileBuff, line))
+		parseHeader(line);
 }
 
-void    RequestClient::parseFirstLines(std::stringstream &infileBuff) {
-    std::string	firstLine, secondLine;
+void RequestClient::parseFirstLines(std::stringstream &infileBuff) {
+	std::string	firstLine, secondLine;
 	if (!infileBuff)
 		throw std::runtime_error("opening buffer failed");
 	std::getline(infileBuff, firstLine);
@@ -29,66 +29,65 @@ void    RequestClient::parseFirstLines(std::stringstream &infileBuff) {
 	std::string tmp;
 	std::getline(second, tmp, ' ');
 	std::getline(second, _host, ':');
-    std::getline(second, _port);
-    if (_method != "GET" && _method != "POST" && _method != "DELETE")
-        throw std::runtime_error("wrong method");
+	std::getline(second, _port);
+	if (_method != "GET" && _method != "POST" && _method != "DELETE")
+		throw std::runtime_error("wrong method");
 }
 
-void    RequestClient::parseHeader(std::string line) {
-    std::stringstream   whichLine(line);
-    std::string         firstPartLine;
-    std::string         lastPartLine; 
-    std::getline(whichLine, firstPartLine, ':');
-    std::getline(whichLine, lastPartLine);
-    if (firstPartLine == "User-Agent")
-        _userAgent = lastPartLine;
-    else if (firstPartLine == "Accept")
-     _accept = lastPartLine;
-    else if (firstPartLine == "Accept-Language")
-     _acceptLanguage = lastPartLine;
-    else if (firstPartLine == "Accept-Encoding")
-     _acceptEncoding = lastPartLine;
-    else if (firstPartLine == "Connection")
-     _connection = lastPartLine;
-    else if (firstPartLine == "Upgrade-Insecure-Requests")
-     _upgradeInsecureRequests = lastPartLine;
-    else if (firstPartLine == "Sec-Fetch-Dest")
-     _secFetchDest = lastPartLine;
-    else if (firstPartLine == "Sec-Fetch-Mode")
-     _secFetchMode = lastPartLine;
-    else if (firstPartLine == "Sec-Fetch-Site")
-     _secFetchSite = lastPartLine;
-    else if (firstPartLine == "Sec-Fetch-User")
-     _secFetchUser = lastPartLine;
-    else if (firstPartLine == "Priority")
-     _priority = lastPartLine;
-    else if (firstPartLine == "ty")
-     _ty = lastPartLine;
-
+void RequestClient::parseHeader(std::string line) {
+	std::stringstream whichLine(line);
+	std::string firstPartLine;
+	std::string lastPartLine;
+	std::getline(whichLine, firstPartLine, ':');
+	std::getline(whichLine, lastPartLine);
+	if (firstPartLine == "User-Agent")
+		_userAgent = lastPartLine;
+	else if (firstPartLine == "Accept")
+		_accept = lastPartLine;
+	else if (firstPartLine == "Accept-Language")
+		_acceptLanguage = lastPartLine;
+	else if (firstPartLine == "Accept-Encoding")
+		_acceptEncoding = lastPartLine;
+	else if (firstPartLine == "Connection")
+		_connection = lastPartLine;
+	else if (firstPartLine == "Upgrade-Insecure-Requests")
+		_upgradeInsecureRequests = lastPartLine;
+	else if (firstPartLine == "Sec-Fetch-Dest")
+		_secFetchDest = lastPartLine;
+	else if (firstPartLine == "Sec-Fetch-Mode")
+		_secFetchMode = lastPartLine;
+	else if (firstPartLine == "Sec-Fetch-Site")
+		_secFetchSite = lastPartLine;
+	else if (firstPartLine == "Sec-Fetch-User")
+		_secFetchUser = lastPartLine;
+	else if (firstPartLine == "Priority")
+		_priority = lastPartLine;
+	else if (firstPartLine == "ty")
+		_ty = lastPartLine;
 }
 
-std::string	RequestClient::getMethod() const {
-    return _method;
+std::string RequestClient::getMethod() const {
+	return _method;
 }
 
-std::string	RequestClient::getUrl() const {
-    return _url;
+std::string RequestClient::getUrl() const {
+	return _url;
 }
 
-std::string	RequestClient::getPort() const {
-    return _port;
+std::string RequestClient::getPort() const {
+	return _port;
 }
 
-std::string	RequestClient::getHost() const {
-    return _host;
+std::string RequestClient::getHost() const {
+	return _host;
 }
 
-std::string	RequestClient::getResponseServer() const {
-    return _responseServer;
+std::string RequestClient::getResponseServer() const {
+	return _responseServer;
 }
 
-void	RequestClient::setResponseServer(std::string const &response) {
-    _responseServer = response;
+void RequestClient::setResponseServer(std::string const &response) {
+	_responseServer = response;
 }
 
 

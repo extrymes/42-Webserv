@@ -39,7 +39,7 @@ std::vector<t_server>::iterator findIf(std::string port, std::vector<t_server> &
 	return it;
 }
 
-std::vector<t_location>::iterator	whichLocation(std::vector<t_server>::iterator it, RequestClient &requestClient) {
+std::vector<t_location>::iterator whichLocation(std::vector<t_server>::iterator it, RequestClient &requestClient) {
 	std::vector<t_location>::iterator location = it->locations.begin();
 	for (; location != it->locations.end(); ++location) {
 		if (location->path == requestClient.getUrl())
@@ -48,7 +48,7 @@ std::vector<t_location>::iterator	whichLocation(std::vector<t_server>::iterator 
 	return location;
 }
 
-int	handlePollin(t_socket &socketConfig, struct pollfd *clients, int i, int &client_count, std::vector<t_server> servers, RequestClient &requestClient) {
+int handlePollin(t_socket &socketConfig, struct pollfd *clients, int i, int &client_count, std::vector<t_server> servers, RequestClient &requestClient) {
 	std::vector<int>::iterator it = std::find(socketConfig.server_fd.begin(), socketConfig.server_fd.end(), clients[i].fd);
 	if (it != socketConfig.server_fd.end()) {
 		socketConfig.client_len = sizeof(socketConfig.client_addr);
@@ -92,7 +92,7 @@ int	handlePollin(t_socket &socketConfig, struct pollfd *clients, int i, int &cli
 	return 0;
 }
 
-void	initSocket(t_socket &socketConfig, std::vector<t_server> servers, struct pollfd *clients) {
+void initSocket(t_socket &socketConfig, std::vector<t_server> servers, struct pollfd *clients) {
 	int	i = 0;
 	for (std::vector<t_server>::iterator it = servers.begin(); it != servers.end(); ++it)
 	{
@@ -125,11 +125,11 @@ void handleSocket(std::vector<t_server> servers, t_socket &socketConfig) {
 		for (int i = 0; i < client_count; i++) {
 			if (clients[i].revents & POLLIN) {
 				if (handlePollin(socketConfig, clients, i, client_count, servers, requestClient) == -1)
-					continue ;
+					continue;
 			}
 			if (clients[i].revents & POLLOUT) {
 				if (handlePollout(socketConfig, clients, i, servers, requestClient) == -1)
-					continue ;
+					continue;
 			}
 		}
 	}
