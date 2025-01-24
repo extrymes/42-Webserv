@@ -39,6 +39,10 @@ $(NAME): $(OBJS)
 	@$(CC) -o $(NAME) $^
 	@echo "$(BLUE)Progress: 100%$(RESET)"
 	@echo "$(GREEN)Compilation complete!$(RESET)"
+	@echo "$(BLUE)\n\
+	█───█ █▀▀ █▀▀▄$(MAGENTA) █▀▀ █▀▀ █▀▀█ ▀█─█▀$(BLUE)\n\
+	█▄█▄█ █▀▀ █▀▀▄$(MAGENTA) ▀▀█ █▀▀ █▄▄▀ ─█▄█─$(BLUE)\n\
+	─▀─▀─ ▀▀▀ ▀▀▀─$(MAGENTA) ▀▀▀ ▀▀▀ ▀─▀▀ ──▀──$(RESET)\n"
 
 clean:
 	@echo "$(BLUE)Cleaning objects...$(RESET)"
