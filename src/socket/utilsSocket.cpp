@@ -4,21 +4,21 @@ sockaddr_in init_sockaddr_in(std::vector<t_server> servers) {
 	sockaddr_in server_addr;
 	server_addr.sin_family = AF_INET;
 	server_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-	(void)servers;
-	server_addr.sin_port = htons(8080); // tmp
+	server_addr.sin_port = htons(servers[0].port); // tmp
 	return (server_addr);
 }
 
 std::string readHtml(std::string &index, std::vector<t_server> servers, std::string ext) {
-	(void)servers;
 	std::string	line;
 	std::ifstream	infile(index.c_str());
 	std::string	finalFile;
 	std::ostringstream	oss;
 
+	// std::cerr << "index = " << index << std::endl;
 	if (!infile) {
-		std::string str = "./web/404.html";
-		return readHtml(str, servers, ".html"); //To modify
+		std::map<int, std::string>::iterator it = servers[0].errorPages.find(404);
+		std::string str = it->second;
+		return readHtml(str, servers, checkExt(str));
 	}
 	while (std::getline(infile, line))
 		finalFile += line + "\n";

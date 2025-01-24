@@ -18,7 +18,6 @@ std::string checkExt(std::string file) {
 
 int handlePollout(t_socket &socketConfig, struct pollfd *clients, int i, std::vector<t_server> servers) {
 	(void)servers;
-
 	if (send(clients[i].fd, socketConfig.buffClient.responseServer.c_str(), socketConfig.buffClient.responseServer.size(), 0) < 0) {
 		handleDeconnexionClient(i, clients);
 		return -1;
@@ -42,8 +41,8 @@ int	handlePollin(t_socket &socketConfig, struct pollfd *clients, int i, int &cli
 			return -1;
 		}
 		parseBuffer(buffer, socketConfig.buffClient);
-		std::string root = "./web";
-		std::string index = "/test.html"; // tmp
+		std::string root = servers[0].locations[0].root.empty() ? servers[0].locations[0].path : servers[0].locations[0].root;
+		std::string index = servers[0].locations[0].indexes.size() == 0 ? "/index.html" : servers[0].locations[0].indexes[0];
 		std::string	file;
 		if (socketConfig.buffClient.url == "/")
 			file = root + index;
@@ -59,6 +58,9 @@ void	initSocket(t_socket &socketConfig, std::vector<t_server> servers, struct po
 	socketConfig.server_fd = socket(AF_INET, SOCK_STREAM, 0);
 	if (socketConfig.server_fd < 0)
 		throw std::runtime_error("socket fail");
+	int opt = 1;
+	if (setsockopt(socketConfig.server_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0)
+		throw std::runtime_error("setsockopt fail");
 	socketConfig.server_addr = init_sockaddr_in(servers);
 	if (bind(socketConfig.server_fd, (const struct sockaddr *)&socketConfig.server_addr, sizeof(socketConfig.server_addr)) < 0)
 		throw std::runtime_error("bind fail");
