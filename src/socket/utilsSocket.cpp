@@ -48,23 +48,3 @@ void	checkEmptyPlace(t_socket &socketConfig, struct pollfd *clients) {
 		}
 	}
 }
-
-void	parseBuffer(char *buffer, t_info_client &buffClient) {
-	std::string	firstLine, secondLine;
-	std::stringstream infileBuff(buffer);
-	if (!infileBuff)
-		throw std::runtime_error("opening buffer failed");
-	std::getline(infileBuff, firstLine);
-	std::getline(infileBuff, secondLine);
-	std::stringstream first(firstLine);
-	if (!first)
-		throw std::runtime_error("opening buffer failed");
-	std::getline(first, buffClient.method, ' ');
-	std::getline(first, buffClient.url, ' ');
-	std::stringstream second(secondLine);
-	if (!second)
-		throw std::runtime_error("opening buffer failed");
-	std::string tmp;
-	std::getline(second, tmp, ' ');
-	std::getline(second, buffClient.host);
-}

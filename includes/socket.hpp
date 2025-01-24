@@ -15,20 +15,12 @@ typedef struct s_socket t_socket;
 typedef struct s_config t_config;
 typedef struct s_info_client t_info_client;
 
-struct s_info_client {
-	std::string method;
-	std::string	url;
-	std::string host;
-	std::string responseServer;
-};
-
 struct s_socket {
 	int server_fd;
 	struct sockaddr_in server_addr;
 	int client_fd;
 	struct sockaddr_in client_addr;
 	socklen_t client_len;
-	s_info_client buffClient;
 };
 
 

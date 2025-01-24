@@ -1,5 +1,6 @@
 #include "socket.hpp"
 #include "webserv.hpp"
+#include "requestClient.hpp"
 
 std::string checkExt(std::string file) {
 	const char *ext = strrchr(file.c_str(), '.');
@@ -16,9 +17,11 @@ std::string checkExt(std::string file) {
 		return "text/plain";
 }
 
-int handlePollout(t_socket &socketConfig, struct pollfd *clients, int i, std::vector<t_server> servers) {
+int handlePollout(t_socket &socketConfig, struct pollfd *clients, int i, std::vector<t_server> servers, RequestClient &requestClient) {
 	(void)servers;
-	if (send(clients[i].fd, socketConfig.buffClient.responseServer.c_str(), socketConfig.buffClient.responseServer.size(), 0) < 0) {
+	(void)socketConfig;
+	std::cout << "port = " << requestClient.getPort() << std::endl;
+	if (send(clients[i].fd, requestClient.getResponseServer().c_str(), requestClient.getResponseServer().size(), 0) < 0) {
 		handleDeconnexionClient(i, clients);
 		return -1;
 	}
@@ -26,7 +29,7 @@ int handlePollout(t_socket &socketConfig, struct pollfd *clients, int i, std::ve
 	return 0;
 }
 
-int	handlePollin(t_socket &socketConfig, struct pollfd *clients, int i, int &client_count, std::vector<t_server> servers) {
+int	handlePollin(t_socket &socketConfig, struct pollfd *clients, int i, int &client_count, std::vector<t_server> servers, RequestClient &requestClient) {
 
 	if (clients[i].fd == socketConfig.server_fd) {
 		socketConfig.client_len = sizeof(socketConfig.client_addr);
@@ -40,15 +43,15 @@ int	handlePollin(t_socket &socketConfig, struct pollfd *clients, int i, int &cli
 			handleDeconnexionClient(i, clients);
 			return -1;
 		}
-		parseBuffer(buffer, socketConfig.buffClient);
+		requestClient.parseBuffer(buffer);
 		std::string root = servers[0].locations[0].root.empty() ? servers[0].locations[0].path : servers[0].locations[0].root;
 		std::string index = servers[0].locations[0].indexes.size() == 0 ? "/index.html" : servers[0].locations[0].indexes[0];
 		std::string	file;
-		if (socketConfig.buffClient.url == "/")
+		if (requestClient.getUrl() == "/")
 			file = root + index;
 		else
-			file = root + socketConfig.buffClient.url;
-		socketConfig.buffClient.responseServer = readHtml(file, servers, checkExt(file));
+			file = root + requestClient.getUrl();
+		requestClient.setResponseServer(readHtml(file, servers, checkExt(file)));
 		clients[i].events = POLLIN | POLLOUT;
 	}
 	return 0;
@@ -71,6 +74,7 @@ void	initSocket(t_socket &socketConfig, std::vector<t_server> servers, struct po
 }
 
 void handleSocket(std::vector<t_server> servers, t_socket &socketConfig) {
+	RequestClient requestClient;
 	int	client_count = 1;
 	struct pollfd	clients[MAX_CLIENTS]; //Create struct
 	memset(clients, 0, sizeof(clients));
@@ -80,11 +84,11 @@ void handleSocket(std::vector<t_server> servers, t_socket &socketConfig) {
 			throw std::runtime_error("poll failed");
 		for (int i = 0; i < client_count; i++) {
 			if (clients[i].revents & POLLIN) {
-				if (handlePollin(socketConfig, clients, i, client_count, servers) == -1)
+				if (handlePollin(socketConfig, clients, i, client_count, servers, requestClient) == -1)
 					continue ;
 			}
 			if (clients[i].revents & POLLOUT) {
-				if (handlePollout(socketConfig, clients, i, servers) == -1)
+				if (handlePollout(socketConfig, clients, i, servers, requestClient) == -1)
 					continue ;
 			}
 		}
