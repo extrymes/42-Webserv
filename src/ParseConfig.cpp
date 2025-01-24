@@ -61,7 +61,7 @@ void ParseConfig::fillLocation(t_location &location) {
 		if (directive == "root")
 			parseLocationRoot(args, location.root);
 		else if (directive == "index")
-			parseLocationIndex(args, location.index);
+			parseLocationIndexes(args, location.indexes);
 		else if (directive == "autoindex")
 			parseLocationAutoindex(args, location.autoindex);
 		else if (directive == "allowed_methods")
@@ -207,13 +207,19 @@ void ParseConfig::parseLocationPath(std::string args, std::string &path) {
 void ParseConfig::parseLocationRoot(std::string args, std::string &root) {
 	if (countArgs(args) != 1)
 		error("invalid number of arguments in \"root\" directive");
+	// Remove slash at begin
+	if (args[0] == '/')
+		args = args.substr(1);
 	root = args;
 }
 
-void ParseConfig::parseLocationIndex(std::string args, std::string &index) {
+void ParseConfig::parseLocationIndexes(std::string args, std::vector<std::string> &indexes) {
 	if (countArgs(args) < 1)
 		error("invalid number of arguments in \"index\" directive");
-	index = args;
+	std::istringstream iss(args);
+	std::string index;
+	while (iss >> index)
+		indexes.push_back(index);
 }
 
 void ParseConfig::parseLocationAutoindex(std::string args, std::string &autoindex) {

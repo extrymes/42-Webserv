@@ -20,7 +20,7 @@ struct s_server {
 struct s_location {
 	std::string path; // Location path
 	std::string root; // Default root
-	std::string index; // Index files
+	std::vector<std::string> indexes; // Index files
 	std::string autoindex; // Directory listing
 	std::string allowedMethods; // Allowed HTTP methods
 	std::string cgiExtension; // CGI extension
@@ -44,7 +44,7 @@ class ParseConfig {
 		void parseClientMaxBodySize(std::string args, long &clientMaxBodySize);
 		void parseLocationPath(std::string args, std::string &path);
 		void parseLocationRoot(std::string args, std::string &root);
-		void parseLocationIndex(std::string args, std::string &index);
+		void parseLocationIndexes(std::string args, std::vector<std::string> &indexes);
 		void parseLocationAutoindex(std::string args, std::string &autoindex);
 		void parseLocationAllowedMethods(std::string args, std::string &allowedMethods);
 		void parseLocationCgiExtension(std::string args, std::string &cgiExtension);
