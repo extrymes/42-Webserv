@@ -1,8 +1,10 @@
 #pragma once
+# include <sstream>
+# include <fstream>
+# include <cstdlib>
 # include <string>
 # include <vector>
 # include <map>
-# include <fstream>
 
 // --- Structures ---
 typedef struct s_server t_server;
