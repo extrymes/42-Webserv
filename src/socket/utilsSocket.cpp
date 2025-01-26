@@ -1,4 +1,4 @@
-#include "webserv.hpp"
+#include "socket.hpp"
 
 sockaddr_in init_sockaddr_in(std::vector<t_server> servers, int i) {
 	sockaddr_in server_addr;
@@ -42,8 +42,8 @@ void handleDeconnexionClient(int i, struct pollfd *clients) {
 void checkEmptyPlace(t_socket &socketConfig, struct pollfd *clients, int server_fd) {
 	for (int i = 0; i < MAX_CLIENTS; ++i) {
 		if (clients[i].fd == 0) {
-			socklen_t len = sizeof(socketConfig.client_addr);
-			clients[i].fd = accept(server_fd, (struct sockaddr *)&socketConfig.client_addr, &len);
+			socklen_t len = sizeof(socketConfig.clientAddr);
+			clients[i].fd = accept(server_fd, (struct sockaddr *)&socketConfig.clientAddr, &len);
 			clients[i].events = POLLIN;
 			break;
 		}

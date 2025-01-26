@@ -1,4 +1,4 @@
-#include "webserv.hpp"
+#include "ParseConfig.hpp"
 
 ParseConfig::ParseConfig(std::string filename, std::vector<t_server> &servers) : _filename(filename), _lineId(0) {
 	_file.open(filename.c_str());

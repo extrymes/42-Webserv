@@ -1,5 +1,4 @@
 #include <iostream>
-#include "webserv.hpp"
 #include "socket.hpp"
 
 int main(int ac, char **av) {
