@@ -71,13 +71,13 @@ int handlePollin(t_socket &socketConfig, std::vector<t_server> servers, RequestC
 		std::vector<t_location>::iterator location = whichLocation(server, requestClient);
 		std::string	file;
 		if (location == server->locations.end()) {
-			file = server->root.empty() ? server->errorPages.find(404)->second : server->root;
+			file = server->root.empty() ? server->errorPages.find(404)->second : server->root; //err second seg fault
 			addIndexOrUrl(server, server->indexes, requestClient, file, 0);
 		} else {
 			file = location->root.empty() ? location->path : location->root;
 			addIndexOrUrl(server, location->indexes, requestClient, file, 1);
 		}
-		requestClient.setResponseServer(readHtml(file, servers, checkExt(file)));
+		requestClient.setResponseServer(readHtml(file, server));
 		socketConfig.clients[i].events = POLLIN | POLLOUT;
 	}
 	return 0;
