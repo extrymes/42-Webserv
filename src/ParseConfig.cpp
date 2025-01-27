@@ -95,8 +95,7 @@ void ParseConfig::fillLocation(t_location &location) {
 		else if (directive == "}") {
 			closed = true;
 			break;
-		}
-		else
+		} else
 			error("unknown directive \"" + directive + "\"");
 	}
 	if (!closed)
@@ -341,6 +340,5 @@ void ParseConfig::error(std::string message) {
 	ss << _lineId;
 	throw std::runtime_error(message + " in " + _filename + ":" + ss.str());
 }
-
 
 ParseConfig::~ParseConfig() {}
