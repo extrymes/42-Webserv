@@ -223,7 +223,7 @@ void ParseConfig::parseErrorPage(std::string args, std::map<int, std::string> &e
 	std::ifstream file(path.c_str());
 	if (!file.good())
 		error("invalid path \"" + path + "\"");
-	errorPages.insert(std::pair<int, std::string>(code, path));
+	errorPages[code] = path;
 }
 
 void ParseConfig::parseClientMaxBodySize(std::string args, long &clientMaxBodySize) {
