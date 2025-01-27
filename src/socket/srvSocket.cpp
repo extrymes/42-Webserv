@@ -19,7 +19,8 @@ std::string checkExt(std::string file) {
 int handlePollout(t_socket &socketConfig, std::vector<t_server> servers, RequestClient &requestClient, int i) {
 	(void)servers;
 	// std::cout << "port = " << requestClient.getPort() << std::endl;
-	if (send(socketConfig.clients[i].fd, requestClient.getResponseServer().c_str(), requestClient.getResponseServer().size(), 0) < 0) {
+	std::string responseServer = requestClient.getValue("responseServer");
+	if (send(socketConfig.clients[i].fd, responseServer.c_str(), responseServer.size(), 0) < 0) {
 		handleClientDisconnection(i, socketConfig.clients);
 		return -1;
 	}
@@ -39,10 +40,10 @@ std::vector<t_location>::iterator whichLocation(std::vector<t_server>::iterator 
 	std::vector<t_location>::iterator location = it->locations.begin();
 	for (; location != it->locations.end(); ++location) {
 		int len = location->path.size();
-		std::string urlClient = requestClient.getUrl();
+		std::string urlClient = requestClient.getValue("url");
 		if (strncmp(location->path.c_str(), urlClient.c_str(), len) == 0 && (urlClient[len - 1] == '/' || urlClient[len - 1] == '\0')) {
 			// std::cout << "requestClient.getUrl = " << requestClient.getUrl() << std::endl;
-			requestClient.setUrl(urlClient.substr(len - 1));
+			requestClient.setValue("url", urlClient.substr(len - 1));
 			// std::cout << "new requestClient = " << requestClient.getUrl() << std::endl;
 			return location;
 		}
@@ -65,7 +66,7 @@ int handlePollin(t_socket &socketConfig, std::vector<t_server> servers, RequestC
 			return -1;
 		}
 		requestClient.parseBuffer(buffer);
-		std::vector<t_server>::iterator server = findIf(requestClient.getPort(), servers);
+		std::vector<t_server>::iterator server = findIf(requestClient.getValue("port"), servers);
 		if (server == servers.end())
 			return -1;
 		std::vector<t_location>::iterator location = whichLocation(server, requestClient);
@@ -77,7 +78,7 @@ int handlePollin(t_socket &socketConfig, std::vector<t_server> servers, RequestC
 			file = location->root.empty() ? location->path : location->root;
 			addIndexOrUrl(server, location->indexes, requestClient, file, 1);
 		}
-		requestClient.setResponseServer(readHtml(file, servers, checkExt(file)));
+		requestClient.setValue("responseServer", readHtml(file, servers, checkExt(file)));
 		socketConfig.clients[i].events = POLLIN | POLLOUT;
 	}
 	return 0;

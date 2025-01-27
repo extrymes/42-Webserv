@@ -21,79 +21,43 @@ void RequestClient::parseFirstLines(std::stringstream &infileBuff) {
 	std::stringstream first(firstLine);
 	if (!first)
 		throw std::runtime_error("opening buffer failed");
-	std::getline(first, _method, ' ');
-	std::getline(first, _url, ' ');
+	std::string method, url, host, port, tmp;
+	std::getline(first, method, ' ');
+	if (method != "GET" && method != "POST" && method != "DELETE") {
+		std::cout << "method: " << method << std::endl;
+		throw std::runtime_error("wrong method");
+	}
+	_data["method"] = method;
+	std::getline(first, url, ' ');
+	_data["url"] = url;
 	std::stringstream second(secondLine);
 	if (!second)
 		throw std::runtime_error("opening buffer failed");
-	std::string tmp;
 	std::getline(second, tmp, ' ');
-	std::getline(second, _host, ':');
-	std::getline(second, _port);
-	if (_method != "GET" && _method != "POST" && _method != "DELETE") {
-		std::cout << "method: " << _method << std::endl;
-		throw std::runtime_error("wrong method");
-	}
+	std::getline(second, host, ':');
+	_data["host"] = host;
+	std::getline(second, port);
+	_data["port"] = port;
 }
 
 void RequestClient::parseHeader(std::string line) {
 	std::stringstream whichLine(line);
-	std::string firstPartLine;
-	std::string lastPartLine;
-	std::getline(whichLine, firstPartLine, ':');
-	std::getline(whichLine, lastPartLine);
-	if (firstPartLine == "User-Agent")
-		_userAgent = lastPartLine;
-	else if (firstPartLine == "Accept")
-		_accept = lastPartLine;
-	else if (firstPartLine == "Accept-Language")
-		_acceptLanguage = lastPartLine;
-	else if (firstPartLine == "Accept-Encoding")
-		_acceptEncoding = lastPartLine;
-	else if (firstPartLine == "Connection")
-		_connection = lastPartLine;
-	else if (firstPartLine == "Upgrade-Insecure-Requests")
-		_upgradeInsecureRequests = lastPartLine;
-	else if (firstPartLine == "Sec-Fetch-Dest")
-		_secFetchDest = lastPartLine;
-	else if (firstPartLine == "Sec-Fetch-Mode")
-		_secFetchMode = lastPartLine;
-	else if (firstPartLine == "Sec-Fetch-Site")
-		_secFetchSite = lastPartLine;
-	else if (firstPartLine == "Sec-Fetch-User")
-		_secFetchUser = lastPartLine;
-	else if (firstPartLine == "Priority")
-		_priority = lastPartLine;
-	else if (firstPartLine == "ty")
-		_ty = lastPartLine;
+	std::string key;
+	std::string value;
+	std::getline(whichLine, key, ':');
+	std::getline(whichLine, value);
+	_data[key] = value;
 }
 
-std::string RequestClient::getMethod() const {
-	return _method;
+std::string RequestClient::getValue(std::string key) {
+	std::map<std::string, std::string>::iterator it = _data.find(key);
+	if (it == _data.end())
+		return "";
+	return it->second;
 }
 
-std::string RequestClient::getUrl() const {
-	return _url;
-}
-
-std::string RequestClient::getPort() const {
-	return _port;
-}
-
-std::string RequestClient::getHost() const {
-	return _host;
-}
-
-std::string RequestClient::getResponseServer() const {
-	return _responseServer;
-}
-
-void RequestClient::setResponseServer(std::string const &response) {
-	_responseServer = response;
-}
-
-void RequestClient::setUrl(std::string const &url) {
-	_url = url;
+void RequestClient::setValue(std::string key, std::string value) {
+	_data[key] = value;
 }
 
 
