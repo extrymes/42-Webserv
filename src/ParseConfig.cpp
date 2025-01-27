@@ -49,6 +49,8 @@ void ParseConfig::fillServer(t_server &server) {
 			parseServerName(args, server.name);
 		else if (directive == "root")
 			parseRoot(args, server.root);
+		else if (directive == "index")
+			parseIndexes(args, server.indexes);
 		else if (directive == "error_page")
 			parseErrorPage(args, server.errorPages);
 		else if (directive == "client_max_body_size")
@@ -79,7 +81,7 @@ void ParseConfig::fillLocation(t_location &location) {
 		if (directive == "root")
 			parseRoot(args, location.root);
 		else if (directive == "index")
-			parseLocationIndexes(args, location.indexes);
+			parseIndexes(args, location.indexes);
 		else if (directive == "autoindex")
 			parseLocationAutoindex(args, location.autoindex);
 		else if (directive == "allowed_methods")
@@ -93,8 +95,7 @@ void ParseConfig::fillLocation(t_location &location) {
 		else if (directive == "}") {
 			closed = true;
 			break;
-		}
-		else
+		} else
 			error("unknown directive \"" + directive + "\"");
 	}
 	if (!closed)
@@ -194,6 +195,15 @@ void ParseConfig::parseRoot(std::string args, std::string &root) {
 	root = args;
 }
 
+void ParseConfig::parseIndexes(std::string args, std::vector<std::string> &indexes) {
+	if (countArgs(args) < 1)
+		error("invalid number of arguments in \"index\" directive");
+	std::istringstream iss(args);
+	std::string index;
+	while (iss >> index)
+		indexes.push_back(index);
+}
+
 void ParseConfig::parseErrorPage(std::string args, std::map<int, std::string> &errorPages) {
 	if (countArgs(args) != 2)
 		error("invalid number of arguments in \"error_page\" directive");
@@ -231,15 +241,6 @@ void ParseConfig::parseLocationPath(std::string args, std::string &path) {
 	if (countArgs(args) != 1)
 		error("invalid number of arguments in \"location\" directive");
 	path = args;
-}
-
-void ParseConfig::parseLocationIndexes(std::string args, std::vector<std::string> &indexes) {
-	if (countArgs(args) < 1)
-		error("invalid number of arguments in \"index\" directive");
-	std::istringstream iss(args);
-	std::string index;
-	while (iss >> index)
-		indexes.push_back(index);
 }
 
 void ParseConfig::parseLocationAutoindex(std::string args, std::string &autoindex) {
@@ -339,6 +340,5 @@ void ParseConfig::error(std::string message) {
 	ss << _lineId;
 	throw std::runtime_error(message + " in " + _filename + ":" + ss.str());
 }
-
 
 ParseConfig::~ParseConfig() {}
