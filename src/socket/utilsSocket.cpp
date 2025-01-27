@@ -68,7 +68,7 @@ void addIndexOrUrl(std::vector<t_server>::iterator server, std::vector<std::stri
 			}
 		}
 		std::map<int, std::string>::iterator errNum = server->errorPages.find(err);
-		path = errNum == server->errorPages.end() ? "./web/" + toString(err) + ".html" : errNum->second;
+		path = errNum == server->errorPages.end() ? "www/" + toString(err) + ".html" : errNum->second;
 	}
 	else
 		path += requestClient.getUrl();
