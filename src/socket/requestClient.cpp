@@ -30,8 +30,10 @@ void RequestClient::parseFirstLines(std::stringstream &infileBuff) {
 	std::getline(second, tmp, ' ');
 	std::getline(second, _host, ':');
 	std::getline(second, _port);
-	if (_method != "GET" && _method != "POST" && _method != "DELETE")
+	if (_method != "GET" && _method != "POST" && _method != "DELETE") {
+		std::cout << "method: " << _method << std::endl;
 		throw std::runtime_error("wrong method");
+	}
 }
 
 void RequestClient::parseHeader(std::string line) {
@@ -88,6 +90,10 @@ std::string RequestClient::getResponseServer() const {
 
 void RequestClient::setResponseServer(std::string const &response) {
 	_responseServer = response;
+}
+
+void RequestClient::setUrl(std::string const &url) {
+	_url = url;
 }
 
 

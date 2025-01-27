@@ -38,9 +38,10 @@ struct s_socket {
 /* utilsSocket.hpp */
 sockaddr_in init_sockaddr_in(std::vector<t_server> servers, int i);
 std::string readHtml(std::string &index, std::vector<t_server> servers, std::string ext);
-void handleDeconnexionClient(int i, struct pollfd *clients);
+void handleClientDisconnection(int i, struct pollfd *clients);
 void checkEmptyPlace(t_socket &socketConfig, struct pollfd *clients, int server_fd);
-
+void addIndexOrUrl(std::vector<t_server>::iterator server, std::vector<std::string> indexes, RequestClient &requestClient, std::string &path, int flag);
+std::string toString(int nbr);
 
 /* srvSocket.cpp */
 std::string checkExt(std::string file);

@@ -18,12 +18,11 @@ std::string checkExt(std::string file) {
 
 int handlePollout(t_socket &socketConfig, std::vector<t_server> servers, RequestClient &requestClient, int i) {
 	(void)servers;
-	std::cout << "port = " << requestClient.getPort() << std::endl;
+	// std::cout << "port = " << requestClient.getPort() << std::endl;
 	if (send(socketConfig.clients[i].fd, requestClient.getResponseServer().c_str(), requestClient.getResponseServer().size(), 0) < 0) {
-		handleDeconnexionClient(i, socketConfig.clients);
+		handleClientDisconnection(i, socketConfig.clients);
 		return -1;
 	}
-	socketConfig.clients[i].events = POLLIN;
 	return 0;
 }
 
@@ -39,8 +38,14 @@ std::vector<t_server>::iterator findIf(std::string port, std::vector<t_server> &
 std::vector<t_location>::iterator whichLocation(std::vector<t_server>::iterator it, RequestClient &requestClient) {
 	std::vector<t_location>::iterator location = it->locations.begin();
 	for (; location != it->locations.end(); ++location) {
-		if (location->path == requestClient.getUrl())
+		int len = location->path.size();
+		std::string urlClient = requestClient.getUrl();
+		if (strncmp(location->path.c_str(), urlClient.c_str(), len) == 0 && (urlClient[len - 1] == '/' || urlClient[len - 1] == '\0')) {
+			// std::cout << "requestClient.getUrl = " << requestClient.getUrl() << std::endl;
+			requestClient.setUrl(urlClient.substr(len - 1));
+			// std::cout << "new requestClient = " << requestClient.getUrl() << std::endl;
 			return location;
+		}
 	}
 	return location;
 }
@@ -56,25 +61,22 @@ int handlePollin(t_socket &socketConfig, std::vector<t_server> servers, RequestC
 	else {
 		char buffer[4096];
 		if (recv(socketConfig.clients[i].fd, buffer, sizeof(buffer), 0) < 0) {
-			handleDeconnexionClient(i, socketConfig.clients);
+			handleClientDisconnection(i, socketConfig.clients);
 			return -1;
 		}
 		requestClient.parseBuffer(buffer);
-		std::vector<t_server>::iterator it = findIf(requestClient.getPort(), servers);
-		if (it == servers.end())
+		std::vector<t_server>::iterator server = findIf(requestClient.getPort(), servers);
+		if (server == servers.end())
 			return -1;
-		std::vector<t_location>::iterator location = whichLocation(it, requestClient);
+		std::vector<t_location>::iterator location = whichLocation(server, requestClient);
 		std::string	file;
-		std::string root = "web/etch-a-sketch";
-		if (location == it->locations.end())
-			file = requestClient.getUrl().size() > 1 ? root + requestClient.getUrl() : "./web/index.html";
-		else {
-			std::cerr << "path " << location->path << std::endl;
-			root = location->root.empty() ? location->path : location->root;
-			std::string index = location->indexes.size() == 0 ? "/index.html" : location->indexes[0];
-			location->path == requestClient.getUrl() ? file = root + index : file = root + requestClient.getUrl();
+		if (location == server->locations.end()) {
+			file = server->root.empty() ? server->errorPages.find(404)->second : server->root;
+			addIndexOrUrl(server, server->indexes, requestClient, file, 0);
+		} else {
+			file = location->root.empty() ? location->path : location->root;
+			addIndexOrUrl(server, location->indexes, requestClient, file, 1);
 		}
-		std::cout << file << std::endl;
 		requestClient.setResponseServer(readHtml(file, servers, checkExt(file)));
 		socketConfig.clients[i].events = POLLIN | POLLOUT;
 	}
@@ -110,7 +112,7 @@ void handleSocket(std::vector<t_server> servers, t_socket &socketConfig) {
 	while (1) {
 		if (poll(socketConfig.clients, socketConfig.clientCount, -1) < 0)
 			throw std::runtime_error("poll failed");
-		for (int i = 0; i < socketConfig.clientCount; i++) {
+		for (int i = 0; i < socketConfig.clientCount; ++i) {
 			if (socketConfig.clients[i].revents & POLLIN) {
 				if (handlePollin(socketConfig, servers, requestClient, i) == -1)
 					continue;

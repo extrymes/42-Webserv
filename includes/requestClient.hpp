@@ -8,18 +8,23 @@
 
 class RequestClient {
 	public:
+
 		RequestClient();
 		~RequestClient();
 		void parseBuffer(char *buffer);
 		void parseFirstLines(std::stringstream &infileBuff);
 		void parseHeader(std::string line);
 		void setResponseServer(std::string const &response);
+		void setUrl(std::string const &url);
+
 		std::string getMethod() const;
 		std::string getUrl() const;
 		std::string getPort() const;
 		std::string getHost() const;
 		std::string getResponseServer() const;
+
 	private:
+
 		std::string _method;
 		std::string _url;
 		std::string _host;
