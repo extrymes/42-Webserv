@@ -50,7 +50,7 @@ void ParseConfig::fillServer(t_server &server) {
 		else if (directive == "root")
 			parseRoot(args, server.root);
 		else if (directive == "index")
-			parseIndexes(args, server.indexes);
+			parseIndex(args, server.indexes);
 		else if (directive == "error_page")
 			parseErrorPage(args, server.errorPages);
 		else if (directive == "client_max_body_size")
@@ -81,7 +81,7 @@ void ParseConfig::fillLocation(t_location &location) {
 		if (directive == "root")
 			parseRoot(args, location.root);
 		else if (directive == "index")
-			parseIndexes(args, location.indexes);
+			parseIndex(args, location.indexes);
 		else if (directive == "autoindex")
 			parseLocationAutoindex(args, location.autoindex);
 		else if (directive == "allowed_methods")
@@ -195,7 +195,7 @@ void ParseConfig::parseRoot(std::string args, std::string &root) {
 	root = args;
 }
 
-void ParseConfig::parseIndexes(std::string args, std::vector<std::string> &indexes) {
+void ParseConfig::parseIndex(std::string args, std::vector<std::string> &indexes) {
 	if (countArgs(args) < 1)
 		error("invalid number of arguments in \"index\" directive");
 	std::istringstream iss(args);

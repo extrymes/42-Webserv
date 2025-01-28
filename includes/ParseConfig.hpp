@@ -45,7 +45,7 @@ class ParseConfig {
 		void parseListen(std::string args, std::string &host, int &port);
 		void parseServerName(std::string args, std::string &serverName);
 		void parseRoot(std::string args, std::string &root);
-		void parseIndexes(std::string args, std::vector<std::string> &indexes);
+		void parseIndex(std::string args, std::vector<std::string> &indexes);
 		void parseErrorPage(std::string args, std::map<int, std::string> &errorPages);
 		void parseClientMaxBodySize(std::string args, long &clientMaxBodySize);
 		void parseLocationPath(std::string args, std::string &path);
