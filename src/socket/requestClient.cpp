@@ -5,6 +5,7 @@ RequestClient::RequestClient() {}
 RequestClient::~RequestClient () {}
 
 void RequestClient::parseBuffer(char *buffer) {
+	// std::cout << "buffer = " << buffer << std::endl;
 	std::string line;
 	std::stringstream infileBuff(buffer);
 	parseFirstLines(infileBuff);
@@ -58,4 +59,13 @@ std::string RequestClient::getValue(std::string key) {
 
 void RequestClient::setValue(std::string key, std::string value) {
 	_data[key] = value;
+}
+
+void RequestClient::setResponseServer(std::string responseServer, int i) {
+	_responseServer[i] = responseServer;
+}
+
+std::string RequestClient::getResponseServer(int i) {
+	std::map<int, std::string>::iterator it = _responseServer.find(i);
+	return it->second;
 }

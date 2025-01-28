@@ -17,7 +17,10 @@ class RequestClient {
 		void parseHeader(std::string line);
 		std::string getValue(std::string key);
 		void setValue(std::string key, std::string value);
+		void setResponseServer(std::string responseServer, int i);
+		std::string getResponseServer(int i);
 
 	private:
 		std::map<std::string, std::string> _data;
+		std::map<int, std::string> _responseServer;
 };

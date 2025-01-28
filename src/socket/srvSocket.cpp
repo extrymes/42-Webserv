@@ -17,13 +17,13 @@ std::string checkExt(std::string file) {
 }
 
 int handlePollout(t_socket &socketConfig, std::vector<t_server> servers, RequestClient &requestClient, int i) {
-	(void)servers;
-	// std::cout << "port = " << requestClient.getPort() << std::endl;
-	std::string responseServer = requestClient.getValue("responseServer");
+	std::cout << "i Pollout = " << i << std::endl;
+	std::string responseServer = requestClient.getResponseServer(i - servers.size());
 	if (send(socketConfig.clients[i].fd, responseServer.c_str(), responseServer.size(), 0) < 0) {
 		handleClientDisconnection(i, socketConfig.clients);
 		return -1;
 	}
+	socketConfig.clients[i].events = POLLIN;
 	return 0;
 }
 
@@ -42,9 +42,7 @@ std::vector<t_location>::iterator whichLocation(std::vector<t_server>::iterator 
 		int len = location->path.size();
 		std::string urlClient = requestClient.getValue("url");
 		if (strncmp(location->path.c_str(), urlClient.c_str(), len) == 0 && (urlClient[len - 1] == '/' || urlClient[len - 1] == '\0')) {
-			// std::cout << "requestClient.getUrl = " << requestClient.getUrl() << std::endl;
 			requestClient.setValue("url", urlClient.substr(len - 1));
-			// std::cout << "new requestClient = " << requestClient.getUrl() << std::endl;
 			return location;
 		}
 	}
@@ -60,6 +58,7 @@ int handlePollin(t_socket &socketConfig, std::vector<t_server> servers, RequestC
 			socketConfig.clientCount++;
 	}
 	else {
+		std::cout << "i Pollin = " << i << std::endl;
 		char buffer[4096];
 		if (recv(socketConfig.clients[i].fd, buffer, sizeof(buffer), 0) < 0) {
 			handleClientDisconnection(i, socketConfig.clients);
@@ -72,14 +71,14 @@ int handlePollin(t_socket &socketConfig, std::vector<t_server> servers, RequestC
 		std::vector<t_location>::iterator location = whichLocation(server, requestClient);
 		std::string	file;
 		if (location == server->locations.end()) {
-			file = server->root.empty() ? server->errorPages.find(404)->second : server->root; //err second seg fault
+			file = server->root.empty() ? "" : server->root;
 			addIndexOrUrl(server, server->indexes, requestClient, file, 0);
 		} else {
 			file = location->root.empty() ? location->path : location->root;
 			addIndexOrUrl(server, location->indexes, requestClient, file, 1);
 		}
-		requestClient.setValue("responseServer", readHtml(file, server));
-		socketConfig.clients[i].events = POLLIN | POLLOUT;
+		requestClient.setResponseServer(readHtml(file, server), i -servers.size());
+		socketConfig.clients[i].events = POLLOUT;
 	}
 	return 0;
 }
@@ -114,12 +113,16 @@ void handleSocket(std::vector<t_server> servers, t_socket &socketConfig) {
 			throw std::runtime_error("poll failed");
 		for (int i = 0; i < socketConfig.clientCount; ++i) {
 			if (socketConfig.clients[i].revents & POLLIN) {
-				if (handlePollin(socketConfig, servers, requestClient, i) == -1)
-					continue;
+				if (handlePollin(socketConfig, servers, requestClient, i) == -1) {
+					std::cout << "ici1" << std::endl;
+ 					continue;
+				}
 			}
 			if (socketConfig.clients[i].revents & POLLOUT) {
-				if (handlePollout(socketConfig, servers, requestClient, i) == -1)
+				if (handlePollout(socketConfig, servers, requestClient, i) == -1) {
+					std::cout << "ici2" << std::endl;
 					continue;
+				}
 			}
 		}
 	}
