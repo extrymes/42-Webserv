@@ -7,17 +7,18 @@
 # include <poll.h>
 # include <map>
 
-class RequestClient {
+// --- Classes ---
+class ClientRequest {
 	public:
 
-		RequestClient();
-		~RequestClient();
+		ClientRequest();
+		~ClientRequest();
 		void parseBuffer(char *buffer);
 		void parseFirstLines(std::stringstream &infileBuff);
 		void parseHeader(std::string line);
-		std::string getValue(std::string key);
+		const std::string getValue(std::string key);
 		void setValue(std::string key, std::string value);
-
+		std::map<std::string, std::string> getHeaders() const;
 	private:
-		std::map<std::string, std::string> _data;
+		std::map<std::string, std::string> _headers;
 };

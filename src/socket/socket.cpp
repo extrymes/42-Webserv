@@ -1,5 +1,6 @@
+#include "ClientRequest.hpp"
 #include "socket.hpp"
-#include "requestClient.hpp"
+#include "cgiHandler.hpp"
 
 std::string checkExt(std::string file) {
 	const char *ext = strrchr(file.c_str(), '.');
@@ -16,10 +17,10 @@ std::string checkExt(std::string file) {
 		return "text/plain";
 }
 
-int handlePollout(t_socket &socketConfig, std::vector<t_server> servers, RequestClient &requestClient, int i) {
+int handlePollout(t_socket &socketConfig, std::vector<t_server> servers, ClientRequest &clientRequest, int i) {
 	(void)servers;
-	// std::cout << "port = " << requestClient.getPort() << std::endl;
-	std::string responseServer = requestClient.getValue("responseServer");
+	// std::cout << "port = " << clientRequest.getPort() << std::endl;
+	std::string responseServer = clientRequest.getValue("responseServer");
 	if (send(socketConfig.clients[i].fd, responseServer.c_str(), responseServer.size(), 0) < 0) {
 		handleClientDisconnection(i, socketConfig.clients);
 		return -1;
@@ -36,49 +37,48 @@ std::vector<t_server>::iterator findIf(std::string port, std::vector<t_server> &
 	return it;
 }
 
-std::vector<t_location>::iterator whichLocation(std::vector<t_server>::iterator it, RequestClient &requestClient) {
+std::vector<t_location>::iterator whichLocation(std::vector<t_server>::iterator it, ClientRequest &clientRequest, std::string clientUrl) {
 	std::vector<t_location>::iterator location = it->locations.begin();
 	for (; location != it->locations.end(); ++location) {
-		int len = location->path.size();
-		std::string urlClient = requestClient.getValue("url");
-		if (strncmp(location->path.c_str(), urlClient.c_str(), len) == 0 && (urlClient[len - 1] == '/' || urlClient[len - 1] == '\0')) {
-			// std::cout << "requestClient.getUrl = " << requestClient.getUrl() << std::endl;
-			requestClient.setValue("url", urlClient.substr(len - 1));
-			// std::cout << "new requestClient = " << requestClient.getUrl() << std::endl;
+		const int pathSize = location->path.size();
+		if (strncmp(location->path.c_str(), clientUrl.c_str(), pathSize) == 0 && (clientUrl[pathSize - 1] == '/' || clientUrl[pathSize - 1] == '\0')) {
+			clientRequest.setValue("url", clientUrl.substr(pathSize - 1));
 			return location;
 		}
 	}
 	return location;
 }
 
-int handlePollin(t_socket &socketConfig, std::vector<t_server> servers, RequestClient &requestClient, int i) {
+int handlePollin(t_socket &socketConfig, std::vector<t_server> servers, ClientRequest &clientRequest, int i) {
 	std::vector<int>::iterator it = std::find(socketConfig.serverFd.begin(), socketConfig.serverFd.end(), socketConfig.clients[i].fd);
 	if (it != socketConfig.serverFd.end()) {
 		socketConfig.clientLen = sizeof(socketConfig.clientAddr);
 		checkEmptyPlace(socketConfig, socketConfig.clients, *it);
 		if (socketConfig.clientCount <= MAX_CLIENTS)
 			socketConfig.clientCount++;
-	}
-	else {
+	} else {
 		char buffer[4096];
 		if (recv(socketConfig.clients[i].fd, buffer, sizeof(buffer), 0) < 0) {
 			handleClientDisconnection(i, socketConfig.clients);
 			return -1;
 		}
-		requestClient.parseBuffer(buffer);
-		std::vector<t_server>::iterator server = findIf(requestClient.getValue("port"), servers);
+		clientRequest.parseBuffer(buffer);
+		std::vector<t_server>::iterator server = findIf(clientRequest.getValue("port"), servers);
 		if (server == servers.end())
 			return -1;
-		std::vector<t_location>::iterator location = whichLocation(server, requestClient);
+		const std::string clientUrl = clientRequest.getValue("url");
+		std::vector<t_location>::iterator location = whichLocation(server, clientRequest, clientUrl);
+		if (isCGIFile(clientUrl))
+			executeCGI(clientUrl, clientRequest.getHeaders());
 		std::string	file;
 		if (location == server->locations.end()) {
 			file = server->root.empty() ? server->errorPages.find(404)->second : server->root; //err second seg fault
-			addIndexOrUrl(server, server->indexes, requestClient, file, 0);
+			addIndexOrUrl(server, server->indexes, clientRequest, file, 0);
 		} else {
 			file = location->root.empty() ? location->path : location->root;
-			addIndexOrUrl(server, location->indexes, requestClient, file, 1);
+			addIndexOrUrl(server, location->indexes, clientRequest, file, 1);
 		}
-		requestClient.setValue("responseServer", readHtml(file, server));
+		clientRequest.setValue("responseServer", readHtml(file, server));
 		socketConfig.clients[i].events = POLLIN | POLLOUT;
 	}
 	return 0;
@@ -105,7 +105,7 @@ void initSocket(t_socket &socketConfig, std::vector<t_server> servers) {
 }
 
 void handleSocket(std::vector<t_server> servers, t_socket &socketConfig) {
-	RequestClient requestClient;
+	ClientRequest clientRequest;
 	socketConfig.clientCount = servers.size();
 	memset(socketConfig.clients, 0, sizeof(socketConfig.clients));
 	initSocket(socketConfig, servers);
@@ -114,11 +114,11 @@ void handleSocket(std::vector<t_server> servers, t_socket &socketConfig) {
 			throw std::runtime_error("poll failed");
 		for (int i = 0; i < socketConfig.clientCount; ++i) {
 			if (socketConfig.clients[i].revents & POLLIN) {
-				if (handlePollin(socketConfig, servers, requestClient, i) == -1)
+				if (handlePollin(socketConfig, servers, clientRequest, i) == -1)
 					continue;
 			}
 			if (socketConfig.clients[i].revents & POLLOUT) {
-				if (handlePollout(socketConfig, servers, requestClient, i) == -1)
+				if (handlePollout(socketConfig, servers, clientRequest, i) == -1)
 					continue;
 			}
 		}
