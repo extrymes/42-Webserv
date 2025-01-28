@@ -10,7 +10,7 @@
 # include <iostream>
 # include <csignal>
 # include "ParseConfig.hpp"
-# include "requestClient.hpp"
+# include "ClientRequest.hpp"
 # include <fstream>
 # include <sstream>
 # include <exception>
@@ -22,6 +22,7 @@
 
 # define MAX_CLIENTS 100
 
+// --- Structures ---
 typedef struct s_socket t_socket;
 typedef struct s_config t_config;
 typedef struct s_info_client t_info_client;
@@ -35,19 +36,21 @@ struct s_socket {
 	struct pollfd	clients[MAX_CLIENTS];
 };
 
-/* utilsSocket.hpp */
+// --- Functions ---
+// socketUtils.hpp
 sockaddr_in init_sockaddr_in(std::vector<t_server> servers, int i);
 std::string readHtml(std::string &index, std::vector<t_server>::iterator server);
 void handleClientDisconnection(int i, struct pollfd *clients);
 void checkEmptyPlace(t_socket &socketConfig, struct pollfd *clients, int server_fd);
-void addIndexOrUrl(std::vector<t_server>::iterator server, std::vector<std::string> indexes, RequestClient &requestClient, std::string &path, int flag);
+void addIndexOrUrl(std::vector<t_server>::iterator server, std::vector<std::string> indexes, ClientRequest &clientRequest, std::string &path, int flag);
 std::string toString(int nbr);
 
-/* srvSocket.cpp */
+// socket.cpp
 std::string checkExt(std::string file);
-int handlePollout(t_socket &socketConfig, std::vector<t_server> servers, RequestClient &requestClient, int i);
+int handlePollout(t_socket &socketConfig, std::vector<t_server> servers, ClientRequest &clientRequest, int i);
 std::vector<t_server>::iterator findIf(std::string port, std::vector<t_server> &servers);
-std::vector<t_location>::iterator whichLocation(std::vector<t_server>::iterator it, RequestClient &requestClient);
-int handlePollin(t_socket &socketConfig, std::vector<t_server> servers, RequestClient &requestClient, int i);
+std::vector<t_location>::iterator whichLocation(std::vector<t_server>::iterator it, ClientRequest &clientRequest, std::string clientUrl);
+int handlePollin(t_socket &socketConfig, std::vector<t_server> servers, ClientRequest &clientRequest, int i);
 void initSocket(t_socket &socketConfig, std::vector<t_server> servers);
 void handleSocket(std::vector<t_server> servers, t_socket &socketConfig);
+bool isCGIFile(std::string url);

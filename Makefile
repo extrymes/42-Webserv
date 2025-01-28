@@ -1,13 +1,19 @@
 NAME = webserv
 
 SRC_DIR = src
+SRC_CONF_DIR = src/config
+SRC_REQ_DIR = src/request
 SRC_SOCK_DIR = src/socket
 BIN_DIR = bin
 
-SRC_FILES = main.cpp ParseConfig.cpp
-SRC_SOCK_FILES = utilsSocket.cpp  srvSocket.cpp requestClient.cpp
+SRC_FILES = main.cpp
+SRC_CONF_FILES = ParseConfig.cpp
+SRC_REQ_FILES = ClientRequest.cpp cgiHandler.cpp
+SRC_SOCK_FILES = socket.cpp socketUtils.cpp
 
 SRCS = $(addprefix $(SRC_DIR)/,$(SRC_FILES)) \
+		$(addprefix $(SRC_CONF_DIR)/,$(SRC_CONF_FILES)) \
+		$(addprefix $(SRC_REQ_DIR)/,$(SRC_REQ_FILES)) \
 		$(addprefix $(SRC_SOCK_DIR)/,$(SRC_SOCK_FILES))
 
 OBJS = $(SRCS:%.cpp=$(BIN_DIR)/%.o)

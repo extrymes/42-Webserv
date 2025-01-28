@@ -1,19 +1,20 @@
+#include "ClientRequest.hpp"
 #include "socket.hpp"
+#include "cgiHandler.hpp"
 
-RequestClient::RequestClient() {}
+ClientRequest::ClientRequest() {}
 
-RequestClient::~RequestClient () {}
+ClientRequest::~ClientRequest () {}
 
-void RequestClient::parseBuffer(char *buffer) {
-	// std::cout << "buffer = " << buffer << std::endl;
+void ClientRequest::parseBuffer(char *buffer) {
 	std::string line;
 	std::stringstream infileBuff(buffer);
 	parseFirstLines(infileBuff);
-	while(std::getline(infileBuff, line))
+	while (std::getline(infileBuff, line))
 		parseHeader(line);
 }
 
-void RequestClient::parseFirstLines(std::stringstream &infileBuff) {
+void ClientRequest::parseFirstLines(std::stringstream &infileBuff) {
 	std::string	firstLine, secondLine;
 	if (!infileBuff)
 		throw std::runtime_error("opening buffer failed");
@@ -28,44 +29,47 @@ void RequestClient::parseFirstLines(std::stringstream &infileBuff) {
 		std::cout << "method: " << method << std::endl;
 		throw std::runtime_error("wrong method");
 	}
-	_data["method"] = method;
+	_headers["method"] = method;
 	std::getline(first, url, ' ');
-	_data["url"] = url;
+	_headers["url"] = url;
 	std::stringstream second(secondLine);
 	if (!second)
 		throw std::runtime_error("opening buffer failed");
 	std::getline(second, tmp, ' ');
 	std::getline(second, host, ':');
-	_data["host"] = host;
+	_headers["host"] = host;
 	std::getline(second, port);
-	_data["port"] = port;
+	_headers["port"] = port;
 }
 
-void RequestClient::parseHeader(std::string line) {
+void ClientRequest::parseHeader(std::string line) {
 	std::stringstream whichLine(line);
-	std::string key;
-	std::string value;
+	std::string key, value;
 	std::getline(whichLine, key, ':');
 	std::getline(whichLine, value);
-	_data[key] = value;
+	_headers[key] = value;
 }
 
-std::string RequestClient::getValue(std::string key) {
-	std::map<std::string, std::string>::iterator it = _data.find(key);
-	if (it == _data.end())
+const std::string ClientRequest::getValue(std::string key) {
+	std::map<std::string, std::string>::iterator it = _headers.find(key);
+	if (it == _headers.end())
 		return "";
 	return it->second;
 }
 
-void RequestClient::setValue(std::string key, std::string value) {
-	_data[key] = value;
+void ClientRequest::setValue(std::string key, std::string value) {
+	_headers[key] = value;
 }
 
-void RequestClient::setResponseServer(std::string responseServer, int i) {
+std::map<std::string, std::string> ClientRequest::getHeaders() const {
+	return _headers;
+}
+
+void ClientRequest::setServerResponse(std::string responseServer, int i) {
 	_responseServer[i] = responseServer;
 }
 
-std::string RequestClient::getResponseServer(int i) {
+const std::string ClientRequest::getServerResponse(int i) {
 	std::map<int, std::string>::iterator it = _responseServer.find(i);
 	return it->second;
 }
