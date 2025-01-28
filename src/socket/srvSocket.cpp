@@ -86,8 +86,7 @@ int handlePollin(t_socket &socketConfig, std::vector<t_server> servers, RequestC
 
 void initSocket(t_socket &socketConfig, std::vector<t_server> servers) {
 	int	i = 0;
-	for (std::vector<t_server>::iterator it = servers.begin(); it != servers.end(); ++it)
-	{
+	for (std::vector<t_server>::iterator it = servers.begin(); it != servers.end(); ++it) {
 		socketConfig.serverFd.push_back(socket(AF_INET, SOCK_STREAM, 0));
 		if (socketConfig.serverFd[i] < 0)
 			throw std::runtime_error("socket fail");

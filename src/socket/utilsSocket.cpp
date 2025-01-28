@@ -95,7 +95,7 @@ void checkEmptyPlace(t_socket &socketConfig, struct pollfd *clients, int server_
 
 void addIndexOrUrl(std::vector<t_server>::iterator server, std::vector<std::string> indexes, RequestClient &requestClient, std::string &path, int flag) {
 	int err = flag == 0 ? 403 : 404;
-	if (requestClient.getUrl().size() <= 1) {
+	if (requestClient.getValue("url").size() <= 1) {
 		std::vector<std::string>::iterator it = indexes.begin();
 		if (path[path.size() - 1] != '/')
 			path += '/';
@@ -112,7 +112,7 @@ void addIndexOrUrl(std::vector<t_server>::iterator server, std::vector<std::stri
 		path = errNum == server->errorPages.end() ? toString(err) : errNum->second;
 	}
 	else
-		path += requestClient.getUrl();
+		path += requestClient.getValue("url");
 }
 
 std::string toString(int nbr) {
