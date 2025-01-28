@@ -31,8 +31,8 @@ struct s_socket {
 	std::vector<struct sockaddr_in> serverAddr;
 	struct sockaddr_in clientAddr;
 	socklen_t clientLen;
-	int	clientCount;
-	struct pollfd	clients[MAX_CLIENTS];
+	int clientCount;
+	struct pollfd clients[MAX_CLIENTS];
 };
 
 /* utilsSocket.hpp */

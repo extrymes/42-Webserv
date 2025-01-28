@@ -22,7 +22,7 @@ void RequestClient::parseFirstLines(std::stringstream &infileBuff) {
 	std::stringstream first(firstLine);
 	if (!first)
 		throw std::runtime_error("opening buffer failed");
-	std::string method, url, host, port, tmp;
+	std::string method, url, host, port, tmp, protocol;
 	std::getline(first, method, ' ');
 	if (method != "GET" && method != "POST" && method != "DELETE") {
 		std::cout << "method: " << method << std::endl;
@@ -31,6 +31,8 @@ void RequestClient::parseFirstLines(std::stringstream &infileBuff) {
 	_data["method"] = method;
 	std::getline(first, url, ' ');
 	_data["url"] = url;
+	std::getline(first, protocol);
+	_data["protocol"] = protocol;
 	std::stringstream second(secondLine);
 	if (!second)
 		throw std::runtime_error("opening buffer failed");

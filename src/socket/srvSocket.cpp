@@ -17,8 +17,9 @@ std::string checkExt(std::string file) {
 }
 
 int handlePollout(t_socket &socketConfig, std::vector<t_server> servers, RequestClient &requestClient, int i) {
-	std::cout << "i Pollout = " << i << std::endl;
-	std::string responseServer = requestClient.getResponseServer(i - servers.size());
+	(void) servers;
+	// std::cout << "i Pollout = " << i << std::endl;
+	std::string responseServer = requestClient.getResponseServer(i);
 	if (send(socketConfig.clients[i].fd, responseServer.c_str(), responseServer.size(), 0) < 0) {
 		handleClientDisconnection(i, socketConfig.clients);
 		return -1;
@@ -58,13 +59,15 @@ int handlePollin(t_socket &socketConfig, std::vector<t_server> servers, RequestC
 			socketConfig.clientCount++;
 	}
 	else {
-		std::cout << "i Pollin = " << i << std::endl;
+		// std::cout << "i Pollin = " << i << std::endl;
 		char buffer[4096];
 		if (recv(socketConfig.clients[i].fd, buffer, sizeof(buffer), 0) < 0) {
 			handleClientDisconnection(i, socketConfig.clients);
 			return -1;
 		}
 		requestClient.parseBuffer(buffer);
+		// std::cout << "buffer = " << buffer << std::endl;
+		std::cout << requestClient.getValue("method") << " " << requestClient.getValue("url") << " " << requestClient.getValue("protocol") << std::endl;
 		std::vector<t_server>::iterator server = findIf(requestClient.getValue("port"), servers);
 		if (server == servers.end())
 			return -1;
@@ -77,7 +80,7 @@ int handlePollin(t_socket &socketConfig, std::vector<t_server> servers, RequestC
 			file = location->root.empty() ? location->path : location->root;
 			addIndexOrUrl(server, location->indexes, requestClient, file, 1);
 		}
-		requestClient.setResponseServer(readHtml(file, server), i -servers.size());
+		requestClient.setResponseServer(readHtml(file, server), i);
 		socketConfig.clients[i].events = POLLOUT;
 	}
 	return 0;
@@ -113,16 +116,12 @@ void handleSocket(std::vector<t_server> servers, t_socket &socketConfig) {
 			throw std::runtime_error("poll failed");
 		for (int i = 0; i < socketConfig.clientCount; ++i) {
 			if (socketConfig.clients[i].revents & POLLIN) {
-				if (handlePollin(socketConfig, servers, requestClient, i) == -1) {
-					std::cout << "ici1" << std::endl;
+				if (handlePollin(socketConfig, servers, requestClient, i) == -1)
  					continue;
-				}
 			}
 			if (socketConfig.clients[i].revents & POLLOUT) {
-				if (handlePollout(socketConfig, servers, requestClient, i) == -1) {
-					std::cout << "ici2" << std::endl;
+				if (handlePollout(socketConfig, servers, requestClient, i) == -1)
 					continue;
-				}
 			}
 		}
 	}
