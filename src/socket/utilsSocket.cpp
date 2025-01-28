@@ -8,30 +8,71 @@ sockaddr_in init_sockaddr_in(std::vector<t_server> servers, int i) {
 	return server_addr;
 }
 
-std::string readHtml(std::string &index, std::vector<t_server> servers, std::string ext) {
+bool isError(std::string &index) {
+	int nb = atoi(index.c_str());
+	if (index.size() == 3 && (nb >= 300 && nb <= 527))
+		return true;
+	return false;
+}
+
+std::string httpResponse(std::string file, std::string ext) {
+	std::string httpResponse = "HTTP/1.1 200 OK\r\n";
+	httpResponse += "Content-Type: " + ext + "\r\n";
+	httpResponse += "Content-Length: " + toString(file.length()) + "\r\n";
+	httpResponse += "\r\n";
+	httpResponse += file;
+	return httpResponse;
+}
+
+std::string errorPage(std::string &err) {
+	std::string file =
+	"<!DOCTYPE html>\n"
+		"<html lang=\"en\">\n"
+		"<head>\n"
+		"	<meta charset=\"UTF-8\">\n"
+		"	<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n"
+		"	<title>Error " + err + "</title>\n"
+		"	<style>\n"
+		"		body {\n"
+		"			font-family: Arial, sans-serif;\n"
+		"			text-align: center;\n"
+		"			padding: 50px;\n"
+		"			background-color: #f8f9fa;\n"
+		"		}\n"
+		"		h1 {\n"
+		"			font-size: 3em;\n"
+		"			color: #e74c3c;\n"
+		"		}\n"
+		"		p {\n"
+		"			font-size: 1.5em;\n"
+		"			color: #333;\n"
+		"		}\n"
+		"	</style>\n"
+		"</head>\n"
+		"<body>\n"
+		"	<h1>Error " + err + "</h1>\n"
+		"	<p>Oops! Something went wrong (HTTP Error " + err + ").</p>\n"
+		"</body>\n"
+		"</html>";
+	return httpResponse(file, "text/html");
+}
+
+std::string readHtml(std::string &index, std::vector<t_server>::iterator server) {
 	std::string	line;
-	(void) ext;
 	std::ifstream	infile(index.c_str());
 	std::string	finalFile;
 	std::ostringstream	oss;
 
+	if (isError(index))
+		return errorPage(index);
 	if (!infile) {
-		std::map<int, std::string>::iterator it = servers[0].errorPages.find(404); //To Change
-		std::string str = it->second;
-		return readHtml(str, servers, checkExt(str));
+		std::map<int, std::string>::iterator errNum = server->errorPages.find(404);
+		std::string path = errNum == server->errorPages.end() ? toString(404) : errNum->second;
+		return readHtml(path, server);
 	}
 	while (std::getline(infile, line))
 		finalFile += line + "\n";
-	oss << finalFile.size();
-	std::string contentLength = oss.str();
-	std::string httpResponse =
-	"HTTP/1.1 200 OK\r\n"
-	// "Content-Type: " + ext + "\r\n"
-	"Content-Length: " + contentLength + "\r\n"
-	// "Connection: close\r\n"
-	"\r\n" +
-	finalFile;
-	return httpResponse;
+	return httpResponse(finalFile, checkExt(index));
 }
 
 void handleClientDisconnection(int i, struct pollfd *clients) {
@@ -68,7 +109,7 @@ void addIndexOrUrl(std::vector<t_server>::iterator server, std::vector<std::stri
 			}
 		}
 		std::map<int, std::string>::iterator errNum = server->errorPages.find(err);
-		path = errNum == server->errorPages.end() ? "www/" + toString(err) + ".html" : errNum->second;
+		path = errNum == server->errorPages.end() ? toString(err) : errNum->second;
 	}
 	else
 		path += requestClient.getUrl();
