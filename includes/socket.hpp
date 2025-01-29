@@ -19,6 +19,8 @@
 # include <sstream>
 # include <csignal>
 # include <map>
+# include <arpa/inet.h>
+# include <netdb.h>
 
 # define MAX_CLIENTS 100
 
@@ -29,7 +31,6 @@ typedef struct s_info_client t_info_client;
 
 struct s_socket {
 	std::vector<int> serverFd;
-	std::vector<struct sockaddr_in> serverAddr;
 	struct sockaddr_in clientAddr;
 	socklen_t clientLen;
 	int clientCount;
@@ -38,7 +39,7 @@ struct s_socket {
 
 // --- Functions ---
 // socketUtils.hpp
-sockaddr_in init_sockaddr_in(std::vector<t_server> servers, int i);
+void init_addrinfo(std::vector<t_server> servers, int i, struct addrinfo *hints, struct addrinfo **res);
 std::string readHtml(std::string &index, std::vector<t_server>::iterator server);
 void handleClientDisconnection(int i, struct pollfd *clients);
 void checkEmptyPlace(t_socket &socketConfig, struct pollfd *clients, int server_fd);

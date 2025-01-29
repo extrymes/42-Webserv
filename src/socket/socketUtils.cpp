@@ -1,11 +1,10 @@
 #include "socket.hpp"
 
-sockaddr_in init_sockaddr_in(std::vector<t_server> servers, int i) {
-	sockaddr_in server_addr;
-	server_addr.sin_family = AF_INET;
-	server_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-	server_addr.sin_port = htons(servers[i].port); // tmp
-	return server_addr;
+void init_addrinfo(std::vector<t_server> servers, int i, struct addrinfo *hints, struct addrinfo **res) {
+	hints->ai_family = AF_INET;
+	hints->ai_socktype = SOCK_STREAM;
+	if (int result = getaddrinfo(servers[i].host.c_str(), toString(servers[i].port).c_str(), hints, res) < 0)
+			throw std::runtime_error("getaddrinfo fail" + (std::string)gai_strerror(result));
 }
 
 bool isError(std::string &index) {

@@ -92,6 +92,7 @@ int handlePollin(t_socket &socketConfig, std::vector<t_server> servers, ClientRe
 			file = location->root.empty() ? removeFirstSlash(server->root) + location->path : removeFirstSlash(location->root);
 			addIndexOrUrl(server, location->indexes, clientRequest, file);
 		}
+		// std::cout << "file = " << file << std::endl;
 		clientRequest.setServerResponse(readHtml(file, server), i);
 		socketConfig.clients[i].events = POLLOUT;
 	}
@@ -100,18 +101,22 @@ int handlePollin(t_socket &socketConfig, std::vector<t_server> servers, ClientRe
 
 void initSocket(t_socket &socketConfig, std::vector<t_server> servers) {
 	int	i = 0;
+	struct addrinfo hints, *res;
 	for (std::vector<t_server>::iterator it = servers.begin(); it != servers.end(); ++it) {
-		socketConfig.serverFd.push_back(socket(AF_INET, SOCK_STREAM, 0));
+		init_addrinfo(servers, i, &hints, &res);
+
+		socketConfig.serverFd.push_back(socket(res->ai_family, res->ai_socktype, 0));
+
 		if (socketConfig.serverFd[i] < 0)
 			throw std::runtime_error("socket fail");
 		int opt = 1;
 		if (setsockopt(socketConfig.serverFd[i], SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0)
 			throw std::runtime_error("setsockopt fail");
-		socketConfig.serverAddr.push_back(init_sockaddr_in(servers, i));
-		if (bind(socketConfig.serverFd[i], (const struct sockaddr *)&socketConfig.serverAddr[i], sizeof(socketConfig.serverAddr[i])) < 0)
+		if (bind(socketConfig.serverFd[i], res->ai_addr, res->ai_addrlen) < 0)
 			throw std::runtime_error("bind fail");
 		if (listen(socketConfig.serverFd[i], 5) < 0)
 			throw std::runtime_error("listen fail");
+
 		socketConfig.clients[i].fd = socketConfig.serverFd[i];
 		socketConfig.clients[i].events = POLLIN | POLLOUT;
 		++i;

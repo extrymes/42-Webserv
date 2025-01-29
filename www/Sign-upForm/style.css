@@ -1,0 +1,130 @@
+@font-face {
+    font-family: 'norsebold';
+    src: url('fonts/norsebold/norse-bold-webfont.woff2') format('woff2'),
+         url('fonts/norsebold/norse-bold-webfont.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+
+}
+
+body {
+    display: flex;
+    height: 100vh;
+}
+
+/* Image */
+
+.plantImage {
+    width: 40%;
+    background: no-repeat url("images/plant.jpg");
+    background-size: cover;
+}
+
+.div_odin_logo {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 200px;
+    background-color: black;
+    opacity: 0.5;
+    width: 100%;
+    height: 20%;
+}
+
+.odin_logo {
+    height: 90%;
+}
+
+.odin_text {
+    font-size: 100px;
+    font-family: 'norsebold', serif;
+    color: white;
+}
+
+/* ----------------------------- Right Part  ------------------------------ */
+
+.rightPart {
+    display: flex;
+    flex-direction: column;
+    width: 60%;
+}
+
+/* First Div */
+
+.tagline {
+    height: 40%;
+    background-color: #f9fafb;
+    font-size: 1.5em;
+    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+}
+
+div.tagline p:first-of-type {
+    margin-top: 10%;
+}
+
+div.tagline p {
+    margin-left: 50px;
+}
+
+/* Second Div */
+
+.signForm {
+    height: 30%;
+}
+
+.textTopForm {
+    font-size: 1.5em;
+    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+    margin: 2% 5%;
+}
+
+.form {
+    display: flex;
+}
+
+.formLeft {
+    margin-left: 5%;
+}
+
+.formRight {
+    margin-left: 7%;
+}
+
+input {
+    margin-bottom: 3%;
+    border: 1px solid #E5E7EB;
+}
+
+.password:invalid {
+    outline: 3px solid red;
+}
+
+.last_name:focus {
+    outline: 3px solid blue;
+    box-shadow: 2px 2px 2px black;
+}
+
+/* Third Div */
+
+.create_part {
+    height: 30%;
+    background-color: #f9fafb;
+}
+
+.create_part * {
+    margin-left: 30px;
+}
+
+.create_btn {
+    color: white;
+    background-color: #596D48;
+    border-radius: 10px;
+    padding: 15px 50px;
+    border: #596D48;
+    box-shadow: 2px 2px 2px gray;
+    margin-top: 3%;
+}
+
+.log_in {
+    color: #596D48;
+}

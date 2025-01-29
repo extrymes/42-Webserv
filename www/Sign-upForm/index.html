@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="normalize.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>Sign-up Form</title>
+</head>
+<body>
+    <div class="plantImage">
+        <div class="div_odin_logo">
+            <img src="images/odin-logo.png" class="odin_logo">
+            <p class="odin_text">ODIN</p>
+        </div>
+    </div>
+    <div class="rightPart">
+        <div class="tagline">
+            <p>This is not a real online service! You know you need something<br>
+            like this in your life to help you realise your deepest dreams.<br>
+            Sign up <i>now</i> to get started.</p>
+            <p>You <i>know</i> you want to.</p>
+        </div>
+        <div class="signForm">
+            <p class="textTopForm">Let's do this!</p>
+            <form action="test" method="post" class="form">
+                <div class="formLeft">
+                        <label for="first_name">FIRST NAME</label><br>
+                        <input type="text" id="first_name" name="first_name"><br>
+                        <label for="user_email">EMAIL</label><br>
+                        <input type="email" id="user_email" name="email" placeholder="you@exemple.com"><br>
+                        <label for="user_password">PASSWORD</label><br>
+                        <input type="password" id="user_password" name="password" class="password"><br>
+                </div>
+                <div class="formRight">
+                    <label for="last_name">LAST NAME</label><br>
+                    <input type="text" id="last_name" name="last_name" class="last_name"><br>
+                    <label for="user_number">PHONE NUMBER</label><br>
+                    <input type="number" id="user_number" name="number"><br>
+                    <label for="confirm_user_password">CONFIRM PASSWORD</label><br>
+                    <input type="password" id="confirm_user_password" name="password" class="password"><br>
+                </div>
+            </form>
+            <div class="create_part">
+                <button type="submit" class="create_btn">Create Account</button>
+                <p>Already have an account?<span class="log_in"> Log in</span></p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
