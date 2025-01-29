@@ -23,15 +23,15 @@ void ClientRequest::parseFirstLines(std::stringstream &infileBuff) {
 	std::stringstream first(firstLine);
 	if (!first)
 		throw std::runtime_error("opening buffer failed");
-	std::string method, url, host, port, tmp;
+	std::string method, url, host, port, tmp, protocol;
 	std::getline(first, method, ' ');
-	if (method != "GET" && method != "POST" && method != "DELETE") {
-		std::cout << "method: " << method << std::endl;
+	if (method != "GET" && method != "POST" && method != "DELETE")
 		throw std::runtime_error("wrong method");
-	}
 	_headers["method"] = method;
 	std::getline(first, url, ' ');
 	_headers["url"] = url;
+	std::getline(first, protocol);
+	_headers["protocol"] = protocol;
 	std::stringstream second(secondLine);
 	if (!second)
 		throw std::runtime_error("opening buffer failed");

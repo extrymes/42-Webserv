@@ -18,9 +18,10 @@ std::string checkExt(std::string file) {
 }
 
 int handlePollout(t_socket &socketConfig, std::vector<t_server> servers, ClientRequest &clientRequest, int i) {
-	std::cout << "i Pollout = " << i << std::endl;
-	std::string responseServer = clientRequest.getServerResponse(i - servers.size());
-	if (send(socketConfig.clients[i].fd, responseServer.c_str(), responseServer.size(), 0) < 0) {
+	// std::cout << "i Pollout = " << i << std::endl;
+	(void)servers;
+	std::string serverResponse = clientRequest.getServerResponse(i);
+	if (send(socketConfig.clients[i].fd, serverResponse.c_str(), serverResponse.size(), 0) < 0) {
 		handleClientDisconnection(i, socketConfig.clients);
 		return -1;
 	}
@@ -63,6 +64,8 @@ int handlePollin(t_socket &socketConfig, std::vector<t_server> servers, ClientRe
 			return -1;
 		}
 		clientRequest.parseBuffer(buffer);
+		// std::cout << "buffer = " << buffer << std::endl;
+		std::cout << clientRequest.getValue("method") << " " << clientRequest.getValue("url") << " " << clientRequest.getValue("protocol") << std::endl;
 		std::vector<t_server>::iterator server = findIf(clientRequest.getValue("port"), servers);
 		if (server == servers.end())
 			return -1;
@@ -78,7 +81,7 @@ int handlePollin(t_socket &socketConfig, std::vector<t_server> servers, ClientRe
 			file = location->root.empty() ? location->path : location->root;
 			addIndexOrUrl(server, location->indexes, clientRequest, file, 1);
 		}
-		clientRequest.setServerResponse(readHtml(file, server), i -servers.size());
+		clientRequest.setServerResponse(readHtml(file, server), i);
 		socketConfig.clients[i].events = POLLOUT;
 	}
 	return 0;
@@ -119,7 +122,7 @@ void handleSocket(std::vector<t_server> servers, t_socket &socketConfig) {
 			}
 			if (socketConfig.clients[i].revents & POLLOUT) {
 				if (handlePollout(socketConfig, servers, clientRequest, i) == -1)
-					continue;
+ 					continue;
 			}
 		}
 	}

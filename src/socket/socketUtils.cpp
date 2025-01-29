@@ -78,13 +78,13 @@ std::string readHtml(std::string &index, std::vector<t_server>::iterator server)
 void handleClientDisconnection(int i, struct pollfd *clients) {
 	close(clients[i].fd);
 	clients[i].fd = 0;
-	std::cout << "Closing a Client" << std::endl;
+	// std::cout << "Closing a Client" << std::endl;
 }
 
 void checkEmptyPlace(t_socket &socketConfig, struct pollfd *clients, int server_fd) {
-	std::cout << "Creating a new Client" << std::endl;
 	for (int i = 0; i < MAX_CLIENTS; ++i) {
 		if (clients[i].fd == 0) {
+			// std::cout << "Creating a new Client" << std::endl;
 			socklen_t len = sizeof(socketConfig.clientAddr);
 			clients[i].fd = accept(server_fd, (struct sockaddr *)&socketConfig.clientAddr, &len);
 			clients[i].events = POLLIN;
