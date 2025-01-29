@@ -71,7 +71,8 @@ int handlePollin(t_socket &socketConfig, std::vector<t_server> servers, ClientRe
 			return -1;
 		}
 		clientRequest.parseBuffer(buffer);
-		std::cout << clientRequest.getValue("method") << " " << clientRequest.getValue("url") << " " << clientRequest.getValue("protocol") << std::endl;
+		std::cout << buffer << std::endl;
+		// std::cout << clientRequest.getValue("method") << " " << clientRequest.getValue("url") << " " << clientRequest.getValue("protocol") << std::endl;
 		std::vector<t_server>::iterator server = findIf(clientRequest.getValue("port"), servers);
 		if (server == servers.end())
 			return -1;
@@ -92,7 +93,6 @@ int handlePollin(t_socket &socketConfig, std::vector<t_server> servers, ClientRe
 			file = location->root.empty() ? removeFirstSlash(server->root) + location->path : removeFirstSlash(location->root);
 			addIndexOrUrl(server, location->indexes, clientRequest, file);
 		}
-		// std::cout << "file = " << file << std::endl;
 		clientRequest.setServerResponse(readHtml(file, server), i);
 		socketConfig.clients[i].events = POLLOUT;
 	}
