@@ -18,15 +18,20 @@ std::string checkExt(std::string file) {
 }
 
 int handlePollout(t_socket &socketConfig, std::vector<t_server> servers, ClientRequest &clientRequest, int i) {
-	// std::cout << "i Pollout = " << i << std::endl;
-	(void)servers;
+	(void) servers;
 	std::string serverResponse = clientRequest.getServerResponse(i);
-	// std::cout << "serverResponse = " << serverResponse << std::endl;
-	if (send(socketConfig.clients[i].fd, serverResponse.c_str(), serverResponse.size(), 0) < 0) {
+	long totalLen = serverResponse.size();
+	long len = send(socketConfig.clients[i].fd, serverResponse.c_str(), totalLen, 0) ;
+	if (len < 0) {
 		handleClientDisconnection(i, socketConfig.clients);
 		return -1;
 	}
-	socketConfig.clients[i].events = POLLIN;
+	clientRequest.clearServerResponse(i);
+	if (len < totalLen) {
+		clientRequest.setServerResponse(serverResponse.substr(len), i);
+		socketConfig.clients[i].events = POLLOUT;
+	} else
+		socketConfig.clients[i].events = POLLIN;
 	return 0;
 }
 
@@ -128,7 +133,7 @@ void handleSocket(std::vector<t_server> servers, t_socket &socketConfig) {
 			}
 			if (socketConfig.clients[i].revents & POLLOUT) {
 				if (handlePollout(socketConfig, servers, clientRequest, i) == -1)
- 					continue;
+					continue;
 			}
 		}
 	}

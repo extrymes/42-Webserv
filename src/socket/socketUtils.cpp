@@ -59,10 +59,12 @@ std::string errorPage(std::string &err) {
 
 std::string readHtml(std::string &index, std::vector<t_server>::iterator server) {
 	std::string	line;
-	std::ifstream	infile(index.c_str());
 	std::string	finalFile;
-	std::ostringstream	oss;
 
+	int isDir = open(index.c_str(), O_DIRECTORY);
+	if (isDir > 0)
+		return (close(isDir), errorPage((line = "404")));
+	std::ifstream	infile(index.c_str());
 	if (isError(index))
 		return errorPage(index);
 	if (!infile) {
@@ -72,6 +74,7 @@ std::string readHtml(std::string &index, std::vector<t_server>::iterator server)
 	}
 	while (std::getline(infile, line))
 		finalFile += line + "\n";
+	infile.close();
 	return httpResponse(finalFile, checkExt(index));
 }
 
@@ -84,7 +87,7 @@ void handleClientDisconnection(int i, struct pollfd *clients) {
 void checkEmptyPlace(t_socket &socketConfig, struct pollfd *clients, int server_fd) {
 	for (int i = 0; i < MAX_CLIENTS; ++i) {
 		if (clients[i].fd == 0) {
-			// std::cout << "Creating a new Client" << std::endl;
+			std::cout << "Creating a new Client" << std::endl;
 			socklen_t len = sizeof(socketConfig.clientAddr);
 			clients[i].fd = accept(server_fd, (struct sockaddr *)&socketConfig.clientAddr, &len);
 			clients[i].events = POLLIN;
