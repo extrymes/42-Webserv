@@ -69,6 +69,10 @@ void ClientRequest::setServerResponse(std::string responseServer, int i) {
 	_responseServer[i] = responseServer;
 }
 
+void ClientRequest::clearServerResponse(int i) {
+    _responseServer.erase(i);
+}
+
 const std::string ClientRequest::getServerResponse(int i) {
 	std::map<int, std::string>::iterator it = _responseServer.find(i);
 	return it->second;

@@ -19,6 +19,7 @@ class ClientRequest {
 		const std::string getValue(std::string key);
 		std::map<std::string, std::string> getHeaders() const;
 		void setServerResponse(std::string responseServer, int i);
+		void clearServerResponse(int i);
 		const std::string getServerResponse(int i);
 	private:
 		std::map<std::string, std::string> _headers;

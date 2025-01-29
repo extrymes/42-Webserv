@@ -18,14 +18,20 @@ std::string checkExt(std::string file) {
 }
 
 int handlePollout(t_socket &socketConfig, std::vector<t_server> servers, ClientRequest &clientRequest, int i) {
-	// std::cout << "i Pollout = " << i << std::endl;
-	(void)servers;
+	(void) servers;
 	std::string serverResponse = clientRequest.getServerResponse(i);
-	if (send(socketConfig.clients[i].fd, serverResponse.c_str(), serverResponse.size(), 0) < 0) {
+	long totalLen = serverResponse.size();
+	long len = send(socketConfig.clients[i].fd, serverResponse.c_str(), totalLen, 0) ;
+	if (len < 0) {
 		handleClientDisconnection(i, socketConfig.clients);
 		return -1;
 	}
-	socketConfig.clients[i].events = POLLIN;
+	clientRequest.clearServerResponse(i);
+	if (len < totalLen) {
+		clientRequest.setServerResponse(serverResponse.substr(len), i);
+		socketConfig.clients[i].events = POLLOUT;
+	} else
+		socketConfig.clients[i].events = POLLIN;
 	return 0;
 }
 
@@ -64,18 +70,17 @@ int handlePollin(t_socket &socketConfig, std::vector<t_server> servers, ClientRe
 			return -1;
 		}
 		clientRequest.parseBuffer(buffer);
-		// std::cout << "buffer = " << buffer << std::endl;
-		std::cout << clientRequest.getValue("method") << " " << clientRequest.getValue("url") << " " << clientRequest.getValue("protocol") << std::endl;
+		std::cerr << clientRequest.getValue("method") << " " << clientRequest.getValue("url") << " " << clientRequest.getValue("protocol") << std::endl;
 		std::vector<t_server>::iterator server = findIf(clientRequest.getValue("port"), servers);
 		if (server == servers.end())
 			return -1;
 		const std::string clientUrl = clientRequest.getValue("url");
 		std::vector<t_location>::iterator location = whichLocation(server, clientRequest, clientUrl);
-		if (isCGIFile(clientUrl))
-			executeCGI(clientUrl, clientRequest.getHeaders());
+		// if (isCGIFile(clientUrl))
+		// 	executeCGI(clientUrl, clientRequest.getHeaders());
 		std::string	file;
 		if (location == server->locations.end()) {
-			file = server->root.empty() ? server->errorPages.find(404)->second : server->root; //err second seg fault
+			file = server->root.empty() ? "" : server->root;
 			addIndexOrUrl(server, server->indexes, clientRequest, file, 0);
 		} else {
 			file = location->root.empty() ? location->path : location->root;
@@ -122,7 +127,7 @@ void handleSocket(std::vector<t_server> servers, t_socket &socketConfig) {
 			}
 			if (socketConfig.clients[i].revents & POLLOUT) {
 				if (handlePollout(socketConfig, servers, clientRequest, i) == -1)
- 					continue;
+					continue;
 			}
 		}
 	}

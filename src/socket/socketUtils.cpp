@@ -84,7 +84,7 @@ void handleClientDisconnection(int i, struct pollfd *clients) {
 void checkEmptyPlace(t_socket &socketConfig, struct pollfd *clients, int server_fd) {
 	for (int i = 0; i < MAX_CLIENTS; ++i) {
 		if (clients[i].fd == 0) {
-			// std::cout << "Creating a new Client" << std::endl;
+			std::cout << "Creating a new Client" << std::endl;
 			socklen_t len = sizeof(socketConfig.clientAddr);
 			clients[i].fd = accept(server_fd, (struct sockaddr *)&socketConfig.clientAddr, &len);
 			clients[i].events = POLLIN;
