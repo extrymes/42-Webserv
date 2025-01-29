@@ -21,6 +21,7 @@ int handlePollout(t_socket &socketConfig, std::vector<t_server> servers, ClientR
 	// std::cout << "i Pollout = " << i << std::endl;
 	(void)servers;
 	std::string serverResponse = clientRequest.getServerResponse(i);
+	// std::cout << "serverResponse = " << serverResponse << std::endl;
 	if (send(socketConfig.clients[i].fd, serverResponse.c_str(), serverResponse.size(), 0) < 0) {
 		handleClientDisconnection(i, socketConfig.clients);
 		return -1;
@@ -40,9 +41,10 @@ std::vector<t_server>::iterator findIf(std::string port, std::vector<t_server> &
 
 std::vector<t_location>::iterator whichLocation(std::vector<t_server>::iterator it, ClientRequest &clientRequest, std::string clientUrl) {
 	std::vector<t_location>::iterator location = it->locations.begin();
+	(void)clientRequest;
 	for (; location != it->locations.end(); ++location) {
 		const int pathSize = location->path.size();
-		if (strncmp(location->path.c_str(), clientUrl.c_str(), pathSize) == 0 && (clientUrl[pathSize - 1] == '/' || clientUrl[pathSize - 1] == '\0')) {
+		if (strncmp(location->path.c_str(), clientUrl.c_str(), pathSize) == 0) {
 			clientRequest.setValue("url", clientUrl.substr(pathSize - 1));
 			return location;
 		}
@@ -64,22 +66,26 @@ int handlePollin(t_socket &socketConfig, std::vector<t_server> servers, ClientRe
 			return -1;
 		}
 		clientRequest.parseBuffer(buffer);
-		// std::cout << "buffer = " << buffer << std::endl;
 		std::cout << clientRequest.getValue("method") << " " << clientRequest.getValue("url") << " " << clientRequest.getValue("protocol") << std::endl;
 		std::vector<t_server>::iterator server = findIf(clientRequest.getValue("port"), servers);
 		if (server == servers.end())
 			return -1;
 		const std::string clientUrl = clientRequest.getValue("url");
-		std::vector<t_location>::iterator location = whichLocation(server, clientRequest, clientUrl);
-		if (isCGIFile(clientUrl))
-			executeCGI(clientUrl, clientRequest.getHeaders());
+		// if (isCGIFile(clientUrl))
+		// 	executeCGI(clientUrl, clientRequest.getHeaders());
 		std::string	file;
-		if (location == server->locations.end()) {
-			file = server->root.empty() ? server->errorPages.find(404)->second : server->root; //err second seg fault
-			addIndexOrUrl(server, server->indexes, clientRequest, file, 0);
-		} else {
-			file = location->root.empty() ? location->path : location->root;
-			addIndexOrUrl(server, location->indexes, clientRequest, file, 1);
+		std::vector<t_location>::iterator location = whichLocation(server, clientRequest, clientUrl);
+		if (location == server->locations.end()) { //Si on ne trouve pas de partie location qui correspond à l'URL
+			if (server->root.empty()) // s'il n'y a pas de root, je ne renvoie rien afin que l'erreur 404 soit affichée
+				file = "";
+			else { //sinon je prends le root et je test d'ajouter la partie index via la fonction addIndexOrUrl
+				file = removeFirstSlash(server->root);
+				addIndexOrUrl(server, server->indexes, clientRequest, file);
+			}
+		}
+		else {
+			file = location->root.empty() ? removeFirstSlash(server->root) + location->path : removeFirstSlash(location->root);
+			addIndexOrUrl(server, location->indexes, clientRequest, file);
 		}
 		clientRequest.setServerResponse(readHtml(file, server), i);
 		socketConfig.clients[i].events = POLLOUT;

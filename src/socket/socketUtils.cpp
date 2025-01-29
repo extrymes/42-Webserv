@@ -93,8 +93,8 @@ void checkEmptyPlace(t_socket &socketConfig, struct pollfd *clients, int server_
 	}
 }
 
-void addIndexOrUrl(std::vector<t_server>::iterator server, std::vector<std::string> indexes, ClientRequest &clientRequest, std::string &path, int flag) {
-	int err = flag == 0 ? 403 : 404;
+void addIndexOrUrl(std::vector<t_server>::iterator server, std::vector<std::string> indexes, ClientRequest &clientRequest, std::string &path) {
+	int err = 403;
 	if (clientRequest.getValue("url").size() <= 1) {
 		std::vector<std::string>::iterator it = indexes.begin();
 		if (path[path.size() - 1] != '/')
@@ -112,11 +112,17 @@ void addIndexOrUrl(std::vector<t_server>::iterator server, std::vector<std::stri
 		path = errNum == server->errorPages.end() ? toString(err) : errNum->second;
 	}
 	else
-		path += clientRequest.getValue("url");
+		path += clientRequest.getValue("url"); // Ex: root=www, url=etch-a-sketch/index.html
 }
 
 std::string toString(int nbr) {
 	std::stringstream ss;
 	ss << nbr;
 	return ss.str();
+}
+
+std::string	removeFirstSlash (std::string str) {
+	if (str[0] == '/')
+		return str.substr(1);
+	return str;
 }
