@@ -37,6 +37,7 @@ std::string executeCGI(std::string url, std::string root, std::map<std::string, 
 		url = root.empty() ? url : root + url;
 		char **argv = { NULL };
 		execve(url.c_str(), argv, envp);
+		freeCGIEnvironment(envp);
 		throw std::runtime_error("error in child process");
 	} else {
 		// Parent process
@@ -51,4 +52,12 @@ std::string executeCGI(std::string url, std::string root, std::map<std::string, 
 		waitpid(pid, NULL, 0);
 		return output;
 	}
+}
+
+void freeCGIEnvironment(char **envp) {
+	if (!envp)
+		return;
+	for (int i = 0; envp[i]; ++i)
+		delete[] envp[i];
+	delete[] envp;
 }
