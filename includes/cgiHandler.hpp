@@ -6,8 +6,11 @@
 # include <map>
 # include <sys/wait.h>
 
+// --- Definitions ---
+typedef std::map<std::string, std::string> ssMap;
+
 // --- Functions ---
 bool isCGIFile(std::string url);
-char **createCGIEnvironment(std::map<std::string, std::string> body);
+char **createCGIEnvironment(ssMap body);
 void freeCGIEnvironment(char **envp);
-std::string executeCGI(std::string url, std::string root, std::map<std::string, std::string> body);
+std::string executeCGI(std::string url, std::string root, ssMap body);

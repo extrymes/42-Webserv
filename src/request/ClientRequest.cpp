@@ -61,27 +61,27 @@ void ClientRequest::parseBody(std::string line) {
 }
 
 const std::string ClientRequest::getValueHeader(std::string key) {
-	std::map<std::string, std::string>::iterator it = _headers.find(key);
+	ssMap::iterator it = _headers.find(key);
 	if (it == _headers.end())
 		return "";
 	return it->second;
 }
 
-std::map<std::string, std::string> ClientRequest::getHeaders() const {
+ssMap ClientRequest::getHeaders() const {
 	return _headers;
 }
 
-std::map<std::string, std::string> ClientRequest::getBody() const {
+ssMap ClientRequest::getBody() const {
 	return _body;
 }
 
 const std::string ClientRequest::getServerResponse(int i) {
-	std::map<int, std::string>::iterator it = _responseServer.find(i);
+	isMap::iterator it = _responseServer.find(i);
 	return it->second;
 }
 
 const std::string ClientRequest::getValueBody(std::string key) {
-	std::map<std::string, std::string>::iterator it = _body.find(key);
+	ssMap::iterator it = _body.find(key);
 	if (it == _body.end())
 		return "";
 	return it->second;
@@ -90,7 +90,6 @@ const std::string ClientRequest::getValueBody(std::string key) {
 void ClientRequest::setValueHeader(std::string key, std::string value) {
 	_headers[key] = value;
 }
-
 
 void ClientRequest::setServerResponse(std::string responseServer, int i) {
 	_responseServer[i] = responseServer;

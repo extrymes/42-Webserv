@@ -6,9 +6,9 @@ bool isCGIFile(std::string url) {
 	return false;
 }
 
-char **createCGIEnvironment(std::map<std::string, std::string> body) {
+char **createCGIEnvironment(ssMap body) {
 	std::vector<std::string> env;
-	for (std::map<std::string, std::string>::iterator it = body.begin(); it != body.end(); ++it)
+	for (ssMap::iterator it = body.begin(); it != body.end(); ++it)
 		env.push_back(it->first + "=" + it->second);
 	// Convert to char array
 	char **envp = new char *[env.size() + 1];
@@ -18,7 +18,7 @@ char **createCGIEnvironment(std::map<std::string, std::string> body) {
 	return envp;
 }
 
-std::string executeCGI(std::string url, std::string root, std::map<std::string, std::string> body) {
+std::string executeCGI(std::string url, std::string root, ssMap body) {
 	int pipefd[2];
 	if (pipe(pipefd) == -1)
 		throw std::runtime_error("pipe error");

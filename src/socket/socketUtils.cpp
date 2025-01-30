@@ -27,7 +27,7 @@ std::string httpResponse(std::string file, std::string ext) {
 
 std::string errorPage(int error, std::vector<t_server>::iterator server) {
 	std::string err;
-	std::map<int, std::string>::iterator errNum = server->errorPages.find(error);
+	isMap::iterator errNum = server->errorPages.find(error);
 	if (errNum == server->errorPages.end())
 		err = toString(error);
 	else
@@ -117,7 +117,7 @@ void addIndexOrUrl(std::vector<t_server>::iterator server, std::vector<std::stri
 				return;
 			}
 		}
-		std::map<int, std::string>::iterator errNum = server->errorPages.find(err);
+		isMap::iterator errNum = server->errorPages.find(err);
 		path = errNum == server->errorPages.end() ? toString(err) : errNum->second;
 	}
 	else

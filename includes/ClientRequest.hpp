@@ -7,6 +7,10 @@
 # include <poll.h>
 # include <map>
 
+// --- Definitions ---
+typedef std::map<std::string, std::string> ssMap;
+typedef std::map<int, std::string> isMap;
+
 // --- Classes ---
 class ClientRequest {
 	public:
@@ -20,11 +24,10 @@ class ClientRequest {
 		void parseBody(std::string line);
 
 		const std::string getValueHeader(std::string key);
-		std::map<std::string, std::string> getHeaders() const;
-		std::map<std::string, std::string> getBody() const;
+		ssMap getHeaders() const;
+		ssMap getBody() const;
 		const std::string getServerResponse(int i);
 		const std::string getValueBody(std::string key);
-
 
 		void setValueHeader(std::string key, std::string value);
 		void setServerResponse(std::string responseServer, int i);
@@ -36,7 +39,7 @@ class ClientRequest {
 
 	private:
 
-		std::map<std::string, std::string> _headers;
-		std::map<int, std::string> _responseServer;
-		std::map<std::string, std::string> _body;
+		ssMap _headers;
+		ssMap _body;
+		isMap _responseServer;
 };
