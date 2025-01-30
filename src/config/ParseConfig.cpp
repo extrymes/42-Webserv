@@ -226,12 +226,18 @@ void ParseConfig::parseErrorPage(std::string args, std::map<int, std::string> &e
 void ParseConfig::parseClientMaxBodySize(std::string args, long &clientMaxBodySize) {
 	if (countArgs(args) != 1)
 		error("invalid number of arguments in \"client_max_body_size\" directive");
+	// Check unit
+	char unit = args[args.size() - 1];
+	if (unit == 'M' || unit == 'K')
+		args = args.substr(0, args.size() - 1);
 	// Convert value to number
 	char *end;
 	clientMaxBodySize = std::strtol(args.c_str(), &end, 10);
 	// Check if value is valid
-	if (end != args.c_str() + args.size())
+	if (end != args.c_str() + args.size() || clientMaxBodySize < 0)
 		error("invalid value \"" + args + "\"");
+	if (unit != 'K')
+		clientMaxBodySize *= 1024;
 }
 
 void ParseConfig::parseLocationPath(std::string args, std::string &path) {
