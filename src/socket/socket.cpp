@@ -82,8 +82,10 @@ int handlePollin(t_socket &socketConfig, std::vector<t_server> servers, ClientRe
 			return 0;
 		}
 		const std::string clientUrl = clientRequest.getValueHeader("url");
-		if (isCGIFile(clientUrl))
+		if (isCGIFile(clientUrl)) {
 			std::string output = executeCGI(clientUrl, server->root, clientRequest.getHeaders(), clientRequest.getBody());
+			std::cout << "output" << output << std::endl;
+		}
 		std::string	file;
 		std::vector<t_location>::iterator location = whichLocation(server, clientRequest, clientUrl);
 		if (location == server->locations.end()) { //Si on ne trouve pas de partie location qui correspond à l'URL
@@ -97,6 +99,14 @@ int handlePollin(t_socket &socketConfig, std::vector<t_server> servers, ClientRe
 		else {
 			file = location->root.empty() ? removeFirstSlash(server->root) + location->path : removeFirstSlash(location->root);
 			addIndexOrUrl(server, location->indexes, clientRequest, file);
+		}
+		std::cout << clientRequest.getValueHeader("method") << " " << file << " " << clientRequest.getValueHeader("protocol") << std::endl;
+		if (clientRequest.getValueHeader("method") == "DELETE") {
+			handleDeleteMethod(file);
+			socketConfig.clients[i].events = POLLOUT;
+			clientRequest.setServerResponse(httpResponse("", ""), i);
+			// handleClientDisconnection(i, socketConfig.clients);
+			return 0;
 		}
 		clientRequest.setServerResponse(readHtml(file, server), i);
 		socketConfig.clients[i].events = POLLOUT;
@@ -135,6 +145,7 @@ void handleSocket(std::vector<t_server> servers, t_socket &socketConfig) {
 	memset(socketConfig.clients, 0, sizeof(socketConfig.clients));
 	initSocket(socketConfig, servers);
 	while (1) {
+		// std::cout << "ici" << std::endl;
 		if (sigintReceived(false)) {
 			std::cout << "🚨 Server shutdown 🚨" << std::endl;
 			return;

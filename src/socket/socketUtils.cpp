@@ -87,13 +87,13 @@ void handleClientDisconnection(int i, struct pollfd *clients) {
 	clients[i].fd = 0;
 	clients[i].events = 0;
 	clients[i].revents = 0;
-	std::cout << "Closing a Client" << std::endl;
+	// std::cout << "Closing a Client" << std::endl;
 }
 
 void checkEmptyPlace(t_socket &socketConfig, struct pollfd *clients, int server_fd) {
 	for (int i = 0; i < MAX_CLIENTS; ++i) {
 		if (clients[i].fd == 0) {
-			std::cout << "Creating a new Client" << std::endl;
+			// std::cout << "Creating a new Client" << std::endl;
 			socklen_t len = sizeof(socketConfig.clientAddr);
 			clients[i].fd = accept(server_fd, (struct sockaddr *)&socketConfig.clientAddr, &len);
 			clients[i].events = POLLIN;
@@ -134,4 +134,12 @@ std::string	removeFirstSlash (std::string str) {
 	if (str[0] == '/')
 		return str.substr(1);
 	return str;
+}
+
+void	handleDeleteMethod(std::string file) {
+	int status = remove(file.c_str());
+	if (status != 0)
+		perror("Error deleting file");
+	else 
+		std::cout << "File successfully deleted" << std::endl;
 }

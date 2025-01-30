@@ -22,6 +22,7 @@ char **createCGIEnvironment(std::map<std::string, std::string> headers) {
 }
 
 std::string executeCGI(std::string url, std::string root, std::map<std::string, std::string> headers, std::map<std::string, std::string> body) {
+	(void)body;
 	char **envp = createCGIEnvironment(headers);
 	int pipefd[2];
 	if (pipe(pipefd) == -1)
@@ -32,24 +33,33 @@ std::string executeCGI(std::string url, std::string root, std::map<std::string, 
 	std::string output = "";
 	if (pid == 0) {
 		// Child process
-		dup2(pipefd[2], STDOUT_FILENO);
+		std::cerr << "child" << std::endl;
+		dup2(pipefd[1], STDOUT_FILENO);
+		std::cerr << "child1" << std::endl;
 		close(pipefd[0]);
+		std::cerr << "child2" << std::endl;
 		url = root.empty() ? url : root + url;
 		char **argv = { NULL };
 		execve(url.c_str(), argv, envp);
+		// std::cerr << "child3" << std::endl;
 		freeCGIEnvironment(envp);
 		throw std::runtime_error("error in child process");
 	} else {
 		// Parent process
+		std::cerr << "parent" << std::endl;
 		close(pipefd[1]);
+		std::cerr << "parent1" << std::endl;
 		char buffer[1024];
 		int bytesRead;
 		while ((bytesRead = read(pipefd[0], buffer, sizeof(buffer)))) {
+			std::cerr << "ici" << std::endl;
 			buffer[bytesRead] = '\0';
 			output += buffer;
 		}
 		close(pipefd[0]);
+		std::cerr << "parent2" << std::endl;
 		waitpid(pid, NULL, 0);
+		std::cerr << "output" << output << std::endl;
 		return output;
 	}
 }

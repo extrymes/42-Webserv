@@ -22,6 +22,7 @@
 # include <map>
 # include <arpa/inet.h>
 # include <netdb.h>
+# include <cstdio>
 
 # define MAX_CLIENTS 100
 
@@ -47,6 +48,7 @@ void checkEmptyPlace(t_socket &socketConfig, struct pollfd *clients, int server_
 void addIndexOrUrl(std::vector<t_server>::iterator server, std::vector<std::string> indexes, ClientRequest &clientRequest, std::string &path);
 std::string toString(int nbr);
 std::string	removeFirstSlash (std::string str);
+void	handleDeleteMethod(std::string file);
 
 // socket.cpp
 std::string checkExt(std::string file);
@@ -57,3 +59,4 @@ int handlePollin(t_socket &socketConfig, std::vector<t_server> servers, ClientRe
 void initSocket(t_socket &socketConfig, std::vector<t_server> servers);
 void handleSocket(std::vector<t_server> servers, t_socket &socketConfig);
 bool isCGIFile(std::string url);
+std::string httpResponse(std::string file, std::string ext);
