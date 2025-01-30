@@ -42,6 +42,7 @@ struct s_socket {
 // socketUtils.hpp
 void init_addrinfo(std::vector<t_server> servers, int i, struct addrinfo *hints, struct addrinfo **res);
 std::string readHtml(std::string index, std::vector<t_server>::iterator server);
+std::string httpResponse(std::string file, std::string ext);
 void handleClientDisconnection(int i, struct pollfd *clients);
 void checkEmptyPlace(t_socket &socketConfig, struct pollfd *clients, int server_fd);
 void addIndexOrUrl(std::vector<t_server>::iterator server, std::vector<std::string> indexes, ClientRequest &clientRequest, std::string &path);

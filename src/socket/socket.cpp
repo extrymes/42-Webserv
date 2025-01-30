@@ -82,9 +82,12 @@ int handlePollin(t_socket &socketConfig, std::vector<t_server> servers, ClientRe
 			return 0;
 		}
 		std::string clientUrl = clientRequest.getValueHeader("url"), output, file;
-		if (isCGIFile(clientUrl))
+		if (isCGIFile(clientUrl) && clientRequest.getValueHeader("method") == "POST") {
 			output = executeCGI(clientUrl, server->root, clientRequest.getBody());
-		std::cout << output << std::endl;
+			clientRequest.setServerResponse(httpResponse(output, "text/html"), i);
+			socketConfig.clients[i].events = POLLOUT;
+			return 0;
+		}
 		std::vector<t_location>::iterator location = whichLocation(server, clientRequest, clientUrl);
 		if (location == server->locations.end()) { //Si on ne trouve pas de partie location qui correspond à l'URL
 			if (server->root.empty()) // s'il n'y a pas de root, je ne renvoie rien afin que l'erreur 404 soit affichée
