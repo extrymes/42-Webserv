@@ -44,19 +44,18 @@ void ClientRequest::parseRequestHost(std::istringstream &infileBuff) {
 }
 
 void ClientRequest::parseHeader(std::string line) {
-	std::stringstream whichLine(line);
+	std::istringstream iss(line);
 	std::string key, value;
-	std::getline(whichLine, key, ':');
-	std::getline(whichLine, value);
+	std::getline(iss, key, ':');
+	std::getline(iss >> std::ws, value);
 	_headers[key] = value;
 }
 
 void ClientRequest::parseBody(std::string line) {
-	std::stringstream body(line);
+	std::istringstream iss(line);
 	std::string key, value;
-	while(getline(body, key, '=')) {
-		getline(body, value, '&');
-		// std::cout << "key = " << key << " and value = " << value << std::endl;
+	while (getline(iss, key, '=')) {
+		getline(iss, value, '&');
 		_body[key] = value;
 	}
 }
