@@ -9,8 +9,8 @@ ClientRequest::~ClientRequest () {}
 void ClientRequest::parseBuffer(char *buffer) {
 	int	flag = 0;
 	std::string line;
-	std::stringstream infileBuff(buffer);
-	parseFirstLines(infileBuff);
+	std::istringstream infileBuff(buffer);
+	parseRequestHost(infileBuff);
 	while (std::getline(infileBuff, line) ) {
 		if (line.size() == 1 && getValue("method") == "POST") {
 			flag = 1;
@@ -20,32 +20,25 @@ void ClientRequest::parseBuffer(char *buffer) {
 	}
 }
 
-void ClientRequest::parseFirstLines(std::stringstream &infileBuff) {
-	std::string	firstLine, secondLine;
+void ClientRequest::parseRequestHost(std::istringstream &infileBuff) {
+	std::string	requestLine, hostLine, method, url, protocol, host, port, tmp;
 	if (!infileBuff)
 		throw std::runtime_error("opening buffer failed");
-	std::getline(infileBuff, firstLine);
-	std::getline(infileBuff, secondLine);
-	std::stringstream first(firstLine);
-	if (!first)
-		throw std::runtime_error("opening buffer failed");
-	std::string method, url, host, port, tmp, protocol;
-	std::getline(first, method, ' ');
-	if (method != "GET" && method != "POST" && method != "DELETE") {
-		std::cout << "method = " << method << std::endl;
-		throw std::runtime_error("wrong method");
-	}
-	std::getline(first, url, ' ');
-	std::getline(first, protocol);
-	std::stringstream second(secondLine);
-	if (!second)
-		throw std::runtime_error("opening buffer failed");
-	std::getline(second, tmp, ' ');
-	std::getline(second, host, ':');
-	std::getline(second, port);
+	std::getline(infileBuff, requestLine);
+	std::istringstream iss(requestLine);
+	iss >> method, iss >> url, iss >> protocol;
+	if (method.empty() || url.empty() || protocol.empty())
+		std::runtime_error("invalid HTTP header");
+	if (method != "GET" && method != "POST" && method != "DELETE")
+		throw std::runtime_error("invalid HTTP method");
 	_headers["method"] = method;
 	_headers["url"] = url;
 	_headers["protocol"] = protocol;
+	std::getline(infileBuff, hostLine);
+	std::istringstream iss2(hostLine);
+	iss2 >> tmp, iss2 >> std::ws;
+	std::getline(iss2, host, ':');
+	std::getline(iss2, port);
 	_headers["host"] = host;
 	_headers["port"] = port;
 }
