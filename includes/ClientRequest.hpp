@@ -29,6 +29,9 @@ class ClientRequest {
 		void	setServerResponse(std::string responseServer, int i);
 
 		void	clearServerResponse(int i);
+		void	clearBody();
+		void	clearHeader();
+		void	clearBuff();
 
 	private:
 

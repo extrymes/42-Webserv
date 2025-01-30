@@ -23,7 +23,13 @@ std::string httpResponse(std::string file, std::string ext) {
 	return httpResponse;
 }
 
-std::string errorPage(std::string &err) {
+std::string errorPage(int error, std::vector<t_server>::iterator server) {
+	std::string err;
+	std::map<int, std::string>::iterator errNum = server->errorPages.find(error);
+	if (errNum == server->errorPages.end())
+		err = toString(error);
+	else
+		return (readHtml(errNum->second, server));
 	std::string file =
 	"<!DOCTYPE html>\n"
 		"<html lang=\"en\">\n"
@@ -56,21 +62,18 @@ std::string errorPage(std::string &err) {
 	return httpResponse(file, "text/html");
 }
 
-std::string readHtml(std::string &index, std::vector<t_server>::iterator server) {
+std::string readHtml(std::string index, std::vector<t_server>::iterator server) {
 	std::string	line;
 	std::string	finalFile;
 
+	if (isError(index))
+		return errorPage(std::atoi(index.c_str()), server);
 	int isDir = open(index.c_str(), O_DIRECTORY);
 	if (isDir > 0)
-		return (close(isDir), errorPage((line = "404")));
+		return (close(isDir), errorPage(404, server));
 	std::ifstream	infile(index.c_str());
-	if (isError(index))
-		return errorPage(index);
-	if (!infile) {
-		std::map<int, std::string>::iterator errNum = server->errorPages.find(404);
-		std::string path = errNum == server->errorPages.end() ? toString(404) : errNum->second;
-		return readHtml(path, server);
-	}
+	if (!infile)
+		return errorPage(404, server);
 	while (std::getline(infile, line))
 		finalFile += line + "\n";
 	infile.close();

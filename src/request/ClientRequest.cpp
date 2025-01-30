@@ -101,5 +101,18 @@ void ClientRequest::setServerResponse(std::string responseServer, int i) {
 }
 
 void ClientRequest::clearServerResponse(int i) {
-    _responseServer.erase(i);
+	_responseServer.erase(i);
+}
+
+void ClientRequest::clearBody() {
+	_body.clear();
+}
+
+void ClientRequest::clearHeader() {
+	_headers.clear();
+}
+
+void ClientRequest::clearBuff() {
+	clearBody();
+	clearHeader();
 }
