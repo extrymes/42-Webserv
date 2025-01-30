@@ -12,7 +12,7 @@ void ClientRequest::parseBuffer(char *buffer) {
 	std::stringstream infileBuff(buffer);
 	parseFirstLines(infileBuff);
 	while (std::getline(infileBuff, line) ) {
-		if (line.size() == 1) {
+		if (line.size() == 1 && getValue("method") == "POST") {
 			flag = 1;
 			continue;
 		}
