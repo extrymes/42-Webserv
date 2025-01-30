@@ -71,11 +71,16 @@ int handlePollin(t_socket &socketConfig, std::vector<t_server> servers, ClientRe
 			return -1;
 		}
 		clientRequest.parseBuffer(buffer);
-		// std::cout << buffer << std::endl;
-		// std::cout << clientRequest.getValue("method") << " " << clientRequest.getValue("url") << " " << clientRequest.getValue("protocol") << std::endl;
+		std::cout << buffer << std::endl;
 		std::vector<t_server>::iterator server = findIf(clientRequest.getValue("port"), servers);
 		if (server == servers.end())
 			return -1;
+		if (std::atol(clientRequest.getValue("Content-Length").c_str()) > server->clientMaxBodySize) {
+			clientRequest.setServerResponse(readHtml("413", server), i);
+			socketConfig.clients[i].events = POLLOUT;
+			clientRequest.clearBuff();
+			return 0;
+		}
 		const std::string clientUrl = clientRequest.getValue("url");
 		if (isCGIFile(clientUrl))
 			executeCGI(clientUrl, server->root, clientRequest.getHeaders());
