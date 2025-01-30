@@ -77,8 +77,8 @@ int handlePollin(t_socket &socketConfig, std::vector<t_server> servers, ClientRe
 		if (server == servers.end())
 			return -1;
 		const std::string clientUrl = clientRequest.getValue("url");
-		// if (isCGIFile(clientUrl))
-		// 	executeCGI(clientUrl, clientRequest.getHeaders());
+		if (isCGIFile(clientUrl))
+			executeCGI(clientUrl, server->root, clientRequest.getHeaders());
 		std::string	file;
 		std::vector<t_location>::iterator location = whichLocation(server, clientRequest, clientUrl);
 		if (location == server->locations.end()) { //Si on ne trouve pas de partie location qui correspond à l'URL
@@ -129,7 +129,11 @@ void handleSocket(std::vector<t_server> servers, t_socket &socketConfig) {
 	memset(socketConfig.clients, 0, sizeof(socketConfig.clients));
 	initSocket(socketConfig, servers);
 	while (1) {
-		if (poll(socketConfig.clients, socketConfig.clientCount, -1) < 0)
+		if (sigintReceived(false)) {
+			std::cout << "🚨 Server shutdown 🚨" << std::endl;
+			return;
+		}
+		if (poll(socketConfig.clients, socketConfig.clientCount, 1) < 0)
 			throw std::runtime_error("poll failed");
 		for (int i = 0; i < socketConfig.clientCount; ++i) {
 			if (socketConfig.clients[i].revents & POLLIN) {

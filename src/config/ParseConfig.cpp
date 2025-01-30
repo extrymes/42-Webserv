@@ -1,6 +1,8 @@
 #include "ParseConfig.hpp"
 
 ParseConfig::ParseConfig(std::string filename, std::vector<t_server> &servers) : _filename(filename), _lineId(0) {
+	if (filename.size() < 5 || filename.substr(filename.size() - 5) != ".conf")
+		throw std::runtime_error("invalid file extension");
 	_file.open(filename.c_str());
 	if (!_file.is_open())
 		throw std::runtime_error("cannot open " + filename);
@@ -105,15 +107,10 @@ void ParseConfig::fillLocation(t_location &location) {
 bool ParseConfig::parseLine(std::string line, std::string &directive, std::string &args) {
 	if (line.empty())
 		return false;
-	std::string::iterator begin = line.begin(), end = line.end(), it;
 	// Remove comment
-	it = begin;
-	while (it != end && *it != '#')
-		++it;
-	end = it;
-	if (begin == end)
-		return false;
-	line.assign(begin, end);
+	size_t end = line.find_first_of('#');
+	if (end != std::string::npos)
+		line = line.substr(0, end);
 	// Trim line
 	trim(line);
 	if (line.empty())
@@ -131,7 +128,7 @@ bool ParseConfig::parseLine(std::string line, std::string &directive, std::strin
 	iss >> directive;
 	std::getline(iss >> std::ws, args);
 	// Check directive syntax
-	for (it = directive.begin(); it != directive.end(); it++)
+	for (std::string::iterator it = directive.begin(); it != directive.end(); it++)
 		if (!std::isalpha(*it) && *it != '_')
 			error("syntax error \"" + line + "\"");
 	return true;
@@ -294,18 +291,13 @@ void ParseConfig::parseLocationRedirection(std::string args, std::string &redirP
 void ParseConfig::trim(std::string &str) {
 	if (str.empty())
 		return;
-	std::string::iterator begin = str.begin(), end = str.end();
-	// Remove leading spaces
-	while (begin != end && std::isspace(*begin))
-		++begin;
-	// Remove trailing spaces
-	if (begin != end) {
-		do {
-			--end;
-		} while (begin != end && std::isspace(*end));
-		++end;
+	// Remove leading and trailing spaces
+	size_t begin = str.find_first_not_of(" \t"), end = str.find_last_not_of(" \t");
+	if (begin == std::string::npos) {
+		str.clear();
+		return;
 	}
-	str.assign(begin, end);
+	str = str.substr(begin, end - begin + 1);
 }
 
 void ParseConfig::checkEndCharacter(std::string line) {

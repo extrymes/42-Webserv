@@ -11,6 +11,7 @@
 # include <csignal>
 # include "ParseConfig.hpp"
 # include "ClientRequest.hpp"
+# include "signals.hpp"
 # include <fstream>
 # include <sstream>
 # include <exception>

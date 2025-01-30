@@ -6,7 +6,7 @@ SRC_REQ_DIR = src/request
 SRC_SOCK_DIR = src/socket
 BIN_DIR = bin
 
-SRC_FILES = main.cpp
+SRC_FILES = main.cpp signals.cpp
 SRC_CONF_FILES = ParseConfig.cpp
 SRC_REQ_FILES = ClientRequest.cpp cgiHandler.cpp
 SRC_SOCK_FILES = socket.cpp socketUtils.cpp

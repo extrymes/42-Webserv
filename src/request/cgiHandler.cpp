@@ -1,7 +1,7 @@
 #include "cgiHandler.hpp"
 
 bool isCGIFile(std::string url) {
-	if (url.find(".py") || url.find(".php"))
+	if (url.find(".py") != std::string::npos || url.find(".php") != std::string::npos)
 		return true;
 	return false;
 }
@@ -21,7 +21,7 @@ char **createCGIEnvironment(std::map<std::string, std::string> headers) {
 	return envp;
 }
 
-std::string executeCGI(std::string url, std::map<std::string, std::string> headers) {
+std::string executeCGI(std::string url, std::string root, std::map<std::string, std::string> headers) {
 	char **envp = createCGIEnvironment(headers);
 	int pipefd[2];
 	if (pipe(pipefd) == -1)
@@ -29,8 +29,26 @@ std::string executeCGI(std::string url, std::map<std::string, std::string> heade
 	pid_t pid = fork();
 	if (pid < 0)
 		throw std::runtime_error("fork error");
-	(void)url;
-	(void)envp;
 	std::string output = "";
-	return output;
+	if (pid == 0) {
+		// Child process
+		dup2(pipefd[2], STDOUT_FILENO);
+		close(pipefd[0]);
+		url = root.empty() ? url : root + url;
+		char **argv = { NULL };
+		execve(url.c_str(), argv, envp);
+		throw std::runtime_error("error in child process");
+	} else {
+		// Parent process
+		close(pipefd[1]);
+		char buffer[1024];
+		int bytesRead;
+		while ((bytesRead = read(pipefd[0], buffer, sizeof(buffer)))) {
+			buffer[bytesRead] = '\0';
+			output += buffer;
+		}
+		close(pipefd[0]);
+		waitpid(pid, NULL, 0);
+		return output;
+	}
 }
