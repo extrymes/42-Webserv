@@ -6,13 +6,10 @@ bool isCGIFile(std::string url) {
 	return false;
 }
 
-char **createCGIEnvironment(std::map<std::string, std::string> headers) {
+char **createCGIEnvironment(std::map<std::string, std::string> body) {
 	std::vector<std::string> env;
-	env.push_back("REQUEST_METHOD=" + headers["method"]);
-	// env.push_back("QUERY_STRING=");
-	env.push_back("SCRIPT_FILENAME=");
-	env.push_back("CONTENT_TYPE=" + headers["Content-Type"]);
-	env.push_back("CONTENT_LENGTH=" + headers["Content-Length"]);
+	for (std::map<std::string, std::string>::iterator it = body.begin(); it != body.end(); ++it)
+		env.push_back(it->first + "=" + it->second);
 	// Convert to char array
 	char **envp = new char *[env.size() + 1];
 	for (size_t i = 0; i < env.size(); ++i)
@@ -21,8 +18,7 @@ char **createCGIEnvironment(std::map<std::string, std::string> headers) {
 	return envp;
 }
 
-std::string executeCGI(std::string url, std::string root, std::map<std::string, std::string> headers, std::map<std::string, std::string> body) {
-	char **envp = createCGIEnvironment(headers);
+std::string executeCGI(std::string url, std::string root, std::map<std::string, std::string> body) {
 	int pipefd[2];
 	if (pipe(pipefd) == -1)
 		throw std::runtime_error("pipe error");
@@ -32,10 +28,12 @@ std::string executeCGI(std::string url, std::string root, std::map<std::string, 
 	std::string output = "";
 	if (pid == 0) {
 		// Child process
-		dup2(pipefd[2], STDOUT_FILENO);
 		close(pipefd[0]);
+		dup2(pipefd[1], STDOUT_FILENO);
+		close(pipefd[1]);
 		url = root.empty() ? url : root + url;
-		char **argv = { NULL };
+		char *argv[] = {const_cast<char*>(url.c_str()), NULL};
+		char **envp = createCGIEnvironment(body);
 		execve(url.c_str(), argv, envp);
 		freeCGIEnvironment(envp);
 		throw std::runtime_error("error in child process");
@@ -44,12 +42,13 @@ std::string executeCGI(std::string url, std::string root, std::map<std::string, 
 		close(pipefd[1]);
 		char buffer[1024];
 		int bytesRead;
-		while ((bytesRead = read(pipefd[0], buffer, sizeof(buffer)))) {
-			buffer[bytesRead] = '\0';
-			output += buffer;
-		}
+		while ((bytesRead = read(pipefd[0], buffer, sizeof(buffer))))
+			output.append(buffer, bytesRead);
 		close(pipefd[0]);
-		waitpid(pid, NULL, 0);
+		int status;
+		waitpid(pid, &status, 0);
+		if (!WIFEXITED(status) || WEXITSTATUS(status) != 0)
+			throw std::runtime_error("CGI script execution failed");
 		return output;
 	}
 }

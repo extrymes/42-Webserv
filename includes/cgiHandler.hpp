@@ -8,6 +8,6 @@
 
 // --- Functions ---
 bool isCGIFile(std::string url);
-char **createCGIEnvironment(std::map<std::string, std::string> headers);
+char **createCGIEnvironment(std::map<std::string, std::string> body);
 void freeCGIEnvironment(char **envp);
-std::string executeCGI(std::string url, std::string root, std::map<std::string, std::string> headers, std::map<std::string, std::string> body);
+std::string executeCGI(std::string url, std::string root, std::map<std::string, std::string> body);
