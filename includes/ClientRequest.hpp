@@ -19,13 +19,14 @@ class ClientRequest {
 		void parseHeader(std::string line);
 		void parseBody(std::string line);
 
-		const std::string getValue(std::string key);
+		const std::string getValueHeader(std::string key);
 		std::map<std::string, std::string> getHeaders() const;
+		std::map<std::string, std::string> getBody() const;
 		const std::string getServerResponse(int i);
-		const std::string getBody(std::string key);
+		const std::string getValueBody(std::string key);
 
 
-		void setValue(std::string key, std::string value);
+		void setValueHeader(std::string key, std::string value);
 		void setServerResponse(std::string responseServer, int i);
 
 		void clearServerResponse(int i);

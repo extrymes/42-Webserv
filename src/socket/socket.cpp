@@ -50,7 +50,7 @@ std::vector<t_location>::iterator whichLocation(std::vector<t_server>::iterator 
 	for (; location != it->locations.end(); ++location) {
 		const int pathSize = location->path.size();
 		if (strncmp(location->path.c_str(), clientUrl.c_str(), pathSize) == 0) {
-			clientRequest.setValue("url", clientUrl.substr(pathSize - 1));
+			clientRequest.setValueHeader("url", clientUrl.substr(pathSize - 1));
 			return location;
 		}
 	}
@@ -70,20 +70,20 @@ int handlePollin(t_socket &socketConfig, std::vector<t_server> servers, ClientRe
 			handleClientDisconnection(i, socketConfig.clients);
 			return -1;
 		}
-		std::cout << buffer << std::endl;
+		// std::cout << buffer << std::endl;
 		clientRequest.parseBuffer(buffer);
-		std::vector<t_server>::iterator server = findIf(clientRequest.getValue("port"), servers);
+		std::vector<t_server>::iterator server = findIf(clientRequest.getValueHeader("port"), servers);
 		if (server == servers.end())
 			return -1;
-		if (std::atol(clientRequest.getValue("Content-Length").c_str()) > server->clientMaxBodySize) {
+		if (std::atol(clientRequest.getValueHeader("Content-Length").c_str()) > server->clientMaxBodySize) {
 			clientRequest.setServerResponse(readHtml("413", server), i);
 			socketConfig.clients[i].events = POLLOUT;
 			clientRequest.clearBuff();
 			return 0;
 		}
-		const std::string clientUrl = clientRequest.getValue("url");
+		const std::string clientUrl = clientRequest.getValueHeader("url");
 		if (isCGIFile(clientUrl))
-			executeCGI(clientUrl, server->root, clientRequest.getHeaders());
+			std::string output = executeCGI(clientUrl, server->root, clientRequest.getHeaders(), clientRequest.getBody());
 		std::string	file;
 		std::vector<t_location>::iterator location = whichLocation(server, clientRequest, clientUrl);
 		if (location == server->locations.end()) { //Si on ne trouve pas de partie location qui correspond à l'URL

@@ -12,7 +12,7 @@ void ClientRequest::parseBuffer(char *buffer) {
 	std::istringstream infileBuff(buffer);
 	parseRequestHost(infileBuff);
 	while (std::getline(infileBuff, line) ) {
-		if (line.size() == 1 && getValue("method") == "POST") {
+		if (line.size() == 1 && getValueHeader("method") == "POST") {
 			flag = 1;
 			continue;
 		}
@@ -56,12 +56,12 @@ void ClientRequest::parseBody(std::string line) {
 	std::string key, value;
 	while(getline(body, key, '=')) {
 		getline(body, value, '&');
-		std::cout << "key = " << key << " and value = " << value << std::endl;
+		// std::cout << "key = " << key << " and value = " << value << std::endl;
 		_body[key] = value;
 	}
 }
 
-const std::string ClientRequest::getValue(std::string key) {
+const std::string ClientRequest::getValueHeader(std::string key) {
 	std::map<std::string, std::string>::iterator it = _headers.find(key);
 	if (it == _headers.end())
 		return "";
@@ -72,19 +72,23 @@ std::map<std::string, std::string> ClientRequest::getHeaders() const {
 	return _headers;
 }
 
+std::map<std::string, std::string> ClientRequest::getBody() const {
+	return _body;
+}
+
 const std::string ClientRequest::getServerResponse(int i) {
 	std::map<int, std::string>::iterator it = _responseServer.find(i);
 	return it->second;
 }
 
-const std::string ClientRequest::getBody(std::string key) {
+const std::string ClientRequest::getValueBody(std::string key) {
 	std::map<std::string, std::string>::iterator it = _body.find(key);
 	if (it == _body.end())
 		return "";
 	return it->second;
 }
 
-void ClientRequest::setValue(std::string key, std::string value) {
+void ClientRequest::setValueHeader(std::string key, std::string value) {
 	_headers[key] = value;
 }
 
