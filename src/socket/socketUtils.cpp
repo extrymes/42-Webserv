@@ -1,6 +1,7 @@
 #include "socket.hpp"
 
 void init_addrinfo(std::vector<t_server> servers, int i, struct addrinfo *hints, struct addrinfo **res) {
+	memset(hints, 0, sizeof(struct addrinfo));
 	hints->ai_family = AF_INET;
 	hints->ai_socktype = SOCK_STREAM;
 	if (int result = getaddrinfo(servers[i].host.c_str(), toString(servers[i].port).c_str(), hints, res) < 0)
@@ -18,6 +19,7 @@ std::string httpResponse(std::string file, std::string ext) {
 	std::string httpResponse = "HTTP/1.1 200 OK\r\n";
 	httpResponse += "Content-Type: " + ext + "\r\n";
 	httpResponse += "Content-Length: " + toString(file.length()) + "\r\n";
+	httpResponse += "Connection: close\r\n";
 	httpResponse += "\r\n";
 	httpResponse += file;
 	return httpResponse;
@@ -83,7 +85,9 @@ std::string readHtml(std::string index, std::vector<t_server>::iterator server) 
 void handleClientDisconnection(int i, struct pollfd *clients) {
 	close(clients[i].fd);
 	clients[i].fd = 0;
-	// std::cout << "Closing a Client" << std::endl;
+	clients[i].events = 0;
+	clients[i].revents = 0;
+	std::cout << "Closing a Client" << std::endl;
 }
 
 void checkEmptyPlace(t_socket &socketConfig, struct pollfd *clients, int server_fd) {

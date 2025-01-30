@@ -31,7 +31,7 @@ int handlePollout(t_socket &socketConfig, std::vector<t_server> servers, ClientR
 		clientRequest.setServerResponse(serverResponse.substr(len), i);
 		socketConfig.clients[i].events = POLLOUT;
 	} else
-		socketConfig.clients[i].events = POLLIN;
+		handleClientDisconnection(i, socketConfig.clients);
 	return 0;
 }
 
@@ -70,8 +70,8 @@ int handlePollin(t_socket &socketConfig, std::vector<t_server> servers, ClientRe
 			handleClientDisconnection(i, socketConfig.clients);
 			return -1;
 		}
-		clientRequest.parseBuffer(buffer);
 		std::cout << buffer << std::endl;
+		clientRequest.parseBuffer(buffer);
 		std::vector<t_server>::iterator server = findIf(clientRequest.getValue("port"), servers);
 		if (server == servers.end())
 			return -1;
@@ -100,6 +100,7 @@ int handlePollin(t_socket &socketConfig, std::vector<t_server> servers, ClientRe
 		}
 		clientRequest.setServerResponse(readHtml(file, server), i);
 		socketConfig.clients[i].events = POLLOUT;
+		clientRequest.clearHeader();
 	}
 	return 0;
 }
