@@ -9,7 +9,7 @@ BIN_DIR = bin
 SRC_FILES = main.cpp signals.cpp
 SRC_CONF_FILES = ParseConfig.cpp
 SRC_REQ_FILES = ClientRequest.cpp cgiHandler.cpp
-SRC_SOCK_FILES = socket.cpp socketUtils.cpp
+SRC_SOCK_FILES = socket.cpp socketUtils.cpp serverResponse.cpp
 
 SRCS = $(addprefix $(SRC_DIR)/,$(SRC_FILES)) \
 		$(addprefix $(SRC_CONF_DIR)/,$(SRC_CONF_FILES)) \

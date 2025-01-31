@@ -53,7 +53,7 @@ void	handleDeleteMethod(std::string file);
 
 // socket.cpp
 std::string checkExt(std::string file);
-int handlePollout(t_socket &socketConfig, std::vector<t_server> servers, ClientRequest &clientRequest, int i);
+int handlePollout(t_socket &socketConfig, ClientRequest &clientRequest, int i);
 std::vector<t_server>::iterator findIf(std::string port, std::vector<t_server> &servers);
 std::vector<t_location>::iterator whichLocation(std::vector<t_server>::iterator it, ClientRequest &clientRequest, std::string clientUrl);
 int handlePollin(t_socket &socketConfig, std::vector<t_server> servers, ClientRequest &clientRequest, int i);
