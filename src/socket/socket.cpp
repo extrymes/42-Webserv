@@ -2,6 +2,8 @@
 #include "socket.hpp"
 #include "cgiHandler.hpp"
 
+extern sig_atomic_t stopRequested;
+
 std::string checkExt(std::string file) {
 	const char *ext = strrchr(file.c_str(), '.');
 	if (!ext)
@@ -136,6 +138,7 @@ void initSocket(t_socket &socketConfig, std::vector<t_server> servers) {
 
 		socketConfig.clients[i].fd = socketConfig.serverFd[i];
 		socketConfig.clients[i].events = POLLIN | POLLOUT;
+		std::cout << "[-] Running server " << CYAN << it->name << RESET << " on port " << CYAN << it->port << RESET << std::endl;
 		++i;
 	}
 }
@@ -145,14 +148,10 @@ void handleSocket(std::vector<t_server> servers, t_socket &socketConfig) {
 	socketConfig.clientCount = servers.size();
 	memset(socketConfig.clients, 0, sizeof(socketConfig.clients));
 	initSocket(socketConfig, servers);
-	while (1) {
-		// std::cout << "ici" << std::endl;
-		if (sigintReceived(false)) {
-			std::cout << "🚨 Server shutdown 🚨" << std::endl;
-			return;
-		}
+	setupSignalHandler();
+	while (!stopRequested) {
 		if (poll(socketConfig.clients, socketConfig.clientCount, 1) < 0)
-			throw std::runtime_error("poll failed");
+			continue;;
 		for (int i = 0; i < socketConfig.clientCount; ++i) {
 			if (socketConfig.clients[i].revents & POLLIN) {
 				if (handlePollin(socketConfig, servers, clientRequest, i) == -1)
@@ -164,5 +163,6 @@ void handleSocket(std::vector<t_server> servers, t_socket &socketConfig) {
 			}
 		}
 	}
+	std::cout << std::endl << RED << "[-] All servers are shut down" << RESET << std::endl;
 	// close(socketConfig.server_fd);
 }

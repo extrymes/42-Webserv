@@ -6,7 +6,6 @@ int main(int ac, char **av) {
 		std::cerr << "Usage:\n\t./webserv <config_file>" << std::endl;
 		return 1;
 	}
-	handleSignals();
 	std::signal(SIGPIPE, SIG_IGN);
 	std::vector<t_server> servers;
 	t_socket socketConfig;
