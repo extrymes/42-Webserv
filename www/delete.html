@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>titre</title>
+</head>
+<body>
+	<label for="fileSelect">Choisir un fichier :</label>
+	<select id="fileSelect">
+		<option value="./test.txt">test.txt</option>
+	</select>
+	<button onclick="deleteFile()">Supprimer</button>
+
+	<script>
+	function deleteFile() {
+		const filePath = document.getElementById('fileSelect').value;
+
+		fetch(filePath, {
+			method: 'DELETE'
+		})
+		.then(response => {
+			if (response.ok) {
+				alert("Fichier supprimé !");
+			} else {
+				alert("Erreur lors de la suppression");
+			}
+		});
+	}
+	</script>
+</body>
+</html>
