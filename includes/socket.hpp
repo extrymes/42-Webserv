@@ -11,14 +11,14 @@
 # include <csignal>
 # include "ParseConfig.hpp"
 # include "ClientRequest.hpp"
-# include "signals.hpp"
+# include "signal.hpp"
+# include "colors.h"
 # include <fstream>
 # include <sstream>
 # include <exception>
 # include <algorithm>
 # include <fcntl.h>
 # include <sstream>
-# include <csignal>
 # include <map>
 # include <arpa/inet.h>
 # include <netdb.h>

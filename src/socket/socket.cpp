@@ -2,6 +2,8 @@
 #include "socket.hpp"
 #include "cgiHandler.hpp"
 
+extern sig_atomic_t stopRequested;
+
 std::string checkExt(std::string file) {
 	const char *ext = strrchr(file.c_str(), '.');
 	if (!ext)
@@ -137,13 +139,10 @@ void handleSocket(std::vector<t_server> servers, t_socket &socketConfig) {
 	socketConfig.clientCount = servers.size();
 	memset(socketConfig.clients, 0, sizeof(socketConfig.clients));
 	initSocket(socketConfig, servers);
-	while (1) {
-		if (sigintReceived(false)) {
-			std::cout << "🚨 Server shutdown 🚨" << std::endl;
-			return;
-		}
+	setupSignalHandler();
+	while (!stopRequested) {
 		if (poll(socketConfig.clients, socketConfig.clientCount, 1) < 0)
-			throw std::runtime_error("poll failed");
+			continue;;
 		for (int i = 0; i < socketConfig.clientCount; ++i) {
 			if (socketConfig.clients[i].revents & POLLIN) {
 				if (handlePollin(socketConfig, servers, clientRequest, i) == -1)
