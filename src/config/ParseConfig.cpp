@@ -90,7 +90,7 @@ void ParseConfig::fillLocation(t_location &location) {
 		else if (directive == "allowed_methods")
 			parseLocationAllowedMethods(args, location.allowedMethods);
 		else if (directive == "return")
-			parseLocationRedirection(args, location.redirPath, location.redirCode);
+			parseLocationRedirection(args, location.redirCode, location.redirPath);
 		else if (directive == "cgi_extension")
 			parseLocationCgiExtension(args, location.cgiExtension);
 		else if (directive == "upload_save")
@@ -277,19 +277,18 @@ void ParseConfig::parseLocationUploadSave(std::string args, std::string &uploadS
 	uploadSave = args;
 }
 
-void ParseConfig::parseLocationRedirection(std::string args, std::string &redirPath, int &redirCode) {
+void ParseConfig::parseLocationRedirection(std::string args, std::string &redirCode, std::string &redirPath) {
 	if (countArgs(args) != 2)
 		error("invalid number of arguments in \"return\" directive");
 	std::istringstream iss(args);
-	std::string codeStr, rest;
 	// Extract redirection code and path
-	iss >> codeStr, iss >> redirPath;
+	iss >> redirCode, iss >> redirPath;
 	// Convert redirection code to number
 	char *end;
-	redirCode = std::strtol(codeStr.c_str(), &end, 10);
+	std::strtol(redirCode.c_str(), &end, 10);
 	// Check if redirection code is valid
-	if (end != codeStr.c_str() + codeStr.size() || codeStr.size() != 3)
-		error("invalid redirection code \"" + codeStr + "\"");
+	if (end != redirCode.c_str() + redirCode.size() || redirCode.size() != 3)
+		error("invalid redirection code \"" + redirCode + "\"");
 }
 
 void ParseConfig::trim(std::string &str) {
