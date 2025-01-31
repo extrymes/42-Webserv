@@ -112,9 +112,9 @@ void initSocket(t_socket &socketConfig, std::vector<t_server> servers) {
 			throw std::runtime_error("bind fail");
 		if (listen(socketConfig.serverFd[i], 5) < 0)
 			throw std::runtime_error("listen fail");
-
 		socketConfig.clients[i].fd = socketConfig.serverFd[i];
 		socketConfig.clients[i].events = POLLIN | POLLOUT;
+		std::cout << "[-] Running server " << CYAN << it->name << RESET << " on port " << CYAN << it->port << RESET << std::endl;
 		++i;
 	}
 }
