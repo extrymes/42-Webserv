@@ -77,7 +77,7 @@ int handlePollin(t_socket &socketConfig, std::vector<t_server> servers, ClientRe
 			return -1;
 		socketConfig.clients[i].events = POLLOUT;
 		if (std::atol(clientRequest.getValueHeader("Content-Length").c_str()) > server->clientMaxBodySize) {
-			clientRequest.setServerResponse(readHtml("413", server), i);
+			clientRequest.setServerResponse(readHtml("413", server, CODE413), i);
 			return (clientRequest.clearBuff(), 0);
 		}
 		std::string clientUrl = clientRequest.getValueHeader("url"), output, file;
@@ -88,14 +88,14 @@ int handlePollin(t_socket &socketConfig, std::vector<t_server> servers, ClientRe
 			// if (!isMethodAllowed("POST", server, clientRequest))
 			// 	return (clientRequest.setServerResponse(readHtml("405", server), i), 0);
 			output = executeCGI(clientUrl, server->root, clientRequest.getBody()); // serveeur root false
-			return (clientRequest.setServerResponse(httpResponse(output, "text/html", "200"), i), 0);
+			return (clientRequest.setServerResponse(httpResponse(output, "text/html", CODE200), i), 0);
 		}
 		if (clientRequest.getValueHeader("method") == "DELETE") {
 			if (!isMethodAllowed("DELETE", server, clientRequest))
-				return (clientRequest.setServerResponse(readHtml("405", server), i), clientRequest.clearHeader(), 0);
+				return (clientRequest.setServerResponse(readHtml("405", server, CODE405), i), clientRequest.clearHeader(), 0);
 			return (clientRequest.setServerResponse(httpResponse("", "", handleDeleteMethod(file)), i), 0);
 		}
-		clientRequest.setServerResponse(readHtml(file, server), i);
+		clientRequest.setServerResponse(readHtml(file, server, CODE200), i);
 		clientRequest.clearHeader();
 	}
 	return 0;

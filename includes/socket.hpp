@@ -23,6 +23,7 @@
 # include <arpa/inet.h>
 # include <netdb.h>
 # include <cstdio>
+# include "code.hpp"
 
 # define MAX_CLIENTS 100
 
@@ -42,7 +43,7 @@ struct s_socket {
 // --- Functions ---
 // socketUtils.hpp
 void init_addrinfo(std::vector<t_server> servers, int i, struct addrinfo *hints, struct addrinfo **res);
-std::string readHtml(std::string index, std::vector<t_server>::iterator server);
+std::string readHtml(std::string index, std::vector<t_server>::iterator server, std::string code);
 std::string httpResponse(std::string file, std::string ext, std::string code);
 void handleClientDisconnection(int i, struct pollfd *clients);
 void checkEmptyPlace(t_socket &socketConfig, struct pollfd *clients, int server_fd);
@@ -54,6 +55,7 @@ bool isMethodAllowed(std::string method, std::vector<t_server>::iterator server,
 
 // socket.cpp
 std::string checkExt(std::string file);
+std::string errorPage(int error, std::vector<t_server>::iterator server, std::string code);
 int handlePollout(t_socket &socketConfig, ClientRequest &clientRequest, int i);
 std::vector<t_server>::iterator findIf(std::string port, std::vector<t_server> &servers);
 std::vector<t_location>::iterator whichLocation(std::vector<t_server>::iterator it, ClientRequest &clientRequest, std::string clientUrl, std::string str);

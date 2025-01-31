@@ -66,11 +66,11 @@ std::string	handleDeleteMethod(std::string file) {
 	int status = remove(file.c_str());
 	if (status != 0) {
 		perror("Error deleting file");
-		return "404";
+		return CODE404;
 	}
 	else {
 		std::cout << GREEN << "File successfully deleted" << RESET << std::endl;
-		return "204";
+		return CODE204;
 	}
 }
 

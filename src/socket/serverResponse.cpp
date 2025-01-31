@@ -23,7 +23,7 @@ bool isError(std::string &index) {
 }
 
 std::string httpResponse(std::string file, std::string ext, std::string code) {
-	std::string httpResponse = "HTTP/1.1 " + code + " OK\r\n";
+	std::string httpResponse = "HTTP/1.1 " + code + "\r\n";
 	httpResponse += "Content-Type: " + ext + "\r\n";
 	httpResponse += "Content-Length: " + toString(file.length()) + "\r\n";
 	httpResponse += "Connection: close\r\n";
@@ -32,13 +32,13 @@ std::string httpResponse(std::string file, std::string ext, std::string code) {
 	return httpResponse;
 }
 
-std::string errorPage(int error, std::vector<t_server>::iterator server) {
+std::string errorPage(int error, std::vector<t_server>::iterator server, std::string code) {
 	std::string err;
 	isMap::iterator errNum = server->errorPages.find(error);
 	if (errNum == server->errorPages.end())
 		err = toString(error);
 	else
-		return (readHtml(errNum->second, server));
+		return (readHtml(errNum->second, server, CODE200));
 	std::string file =
 	"<!DOCTYPE html>\n"
 		"<html lang=\"en\">\n"
@@ -68,23 +68,23 @@ std::string errorPage(int error, std::vector<t_server>::iterator server) {
 		"	<p>Oops! Something went wrong (HTTP Error " + err + ").</p>\n"
 		"</body>\n"
 		"</html>";
-	return httpResponse(file, "text/html", err);
+	return httpResponse(file, "text/html", code);
 }
 
-std::string readHtml(std::string index, std::vector<t_server>::iterator server) {
+std::string readHtml(std::string index, std::vector<t_server>::iterator server, std::string code) {
 	std::string	line;
 	std::string	finalFile;
 
 	if (isError(index))
-		return errorPage(std::atoi(index.c_str()), server);
+		return errorPage(std::atoi(index.c_str()), server, code);
 	int isDir = open(index.c_str(), O_DIRECTORY);
 	if (isDir > 0)
-		return (close(isDir), errorPage(404, server));
+		return (close(isDir), errorPage(404, server, code));
 	std::ifstream	infile(index.c_str());
 	if (!infile)
-		return errorPage(404, server);
+		return errorPage(404, server, code);
 	while (std::getline(infile, line))
 		finalFile += line + "\n";
 	infile.close();
-	return httpResponse(finalFile, checkExt(index), "200");
+	return httpResponse(finalFile, checkExt(index), code);
 }
