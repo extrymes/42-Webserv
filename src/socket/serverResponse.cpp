@@ -22,8 +22,8 @@ bool isError(std::string &index) {
 	return false;
 }
 
-std::string httpResponse(std::string file, std::string ext) {
-	std::string httpResponse = "HTTP/1.1 200 OK\r\n";
+std::string httpResponse(std::string file, std::string ext, std::string code) {
+	std::string httpResponse = "HTTP/1.1 " + code + " OK\r\n";
 	httpResponse += "Content-Type: " + ext + "\r\n";
 	httpResponse += "Content-Length: " + toString(file.length()) + "\r\n";
 	httpResponse += "Connection: close\r\n";
@@ -68,7 +68,7 @@ std::string errorPage(int error, std::vector<t_server>::iterator server) {
 		"	<p>Oops! Something went wrong (HTTP Error " + err + ").</p>\n"
 		"</body>\n"
 		"</html>";
-	return httpResponse(file, "text/html");
+	return httpResponse(file, "text/html", err);
 }
 
 std::string readHtml(std::string index, std::vector<t_server>::iterator server) {
@@ -86,5 +86,5 @@ std::string readHtml(std::string index, std::vector<t_server>::iterator server) 
 	while (std::getline(infile, line))
 		finalFile += line + "\n";
 	infile.close();
-	return httpResponse(finalFile, checkExt(index));
+	return httpResponse(finalFile, checkExt(index), "200");
 }
