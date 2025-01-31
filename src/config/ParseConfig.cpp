@@ -40,6 +40,7 @@ ParseConfig::ParseConfig(std::string filename, std::vector<t_server> &servers) :
 void ParseConfig::fillServer(t_server &server) {
 	std::string line;
 	bool closed = false;
+	server.clientMaxBodySize = 1024;
 	while (std::getline(_file, line)) {
 		++_lineId;
 		std::string directive, args;
