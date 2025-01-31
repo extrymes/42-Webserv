@@ -135,3 +135,11 @@ std::string	removeFirstSlash (std::string str) {
 		return str.substr(1);
 	return str;
 }
+
+void	handleDeleteMethod(std::string file) {
+	int status = remove(file.c_str());
+	if (status != 0)
+		perror("Error deleting file");
+	else 
+		std::cout << "File successfully deleted" << std::endl;
+}
