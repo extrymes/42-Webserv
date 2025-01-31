@@ -84,7 +84,7 @@ int handlePollin(t_socket &socketConfig, std::vector<t_server> servers, ClientRe
 			return (clientRequest.setServerResponse(httpResponse(output, "text/html", "200"), i), 0);
 		}
 		file = createUrl(server, clientRequest, clientUrl);
-		std::cout << clientRequest.getValueHeader("method") << " " << file << " " << clientRequest.getValueHeader("protocol") << std::endl;
+		std::cout << CYAN << clientRequest.getValueHeader("method") << RESET << " " << file << " " << clientRequest.getValueHeader("protocol") << std::endl;
 		if (clientRequest.getValueHeader("method") == "DELETE") {
 			return (clientRequest.setServerResponse(httpResponse("", "", handleDeleteMethod(file)), i), 0);
 		}

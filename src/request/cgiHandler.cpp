@@ -40,9 +40,7 @@ std::string executeCGI(std::string url, std::string root, ssMap body) {
 		throw std::runtime_error("error in child process");
 	} else {
 		// Parent process
-		// std::cerr << "parent" << std::endl;
 		close(pipefd[1]);
-		// std::cerr << "parent1" << std::endl;
 		char buffer[1024];
 		int bytesRead;
 		while ((bytesRead = read(pipefd[0], buffer, sizeof(buffer))))
