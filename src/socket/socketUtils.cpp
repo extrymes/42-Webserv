@@ -62,10 +62,14 @@ std::string	removeFirstSlash (std::string str) {
 	return str;
 }
 
-void	handleDeleteMethod(std::string file) {
+std::string	handleDeleteMethod(std::string file) {
 	int status = remove(file.c_str());
-	if (status != 0)
+	if (status != 0) {
 		perror("Error deleting file");
-	else 
+		return "404";
+	}
+	else {
+		return "204";
 		std::cout << "File successfully deleted" << std::endl;
+	}
 }

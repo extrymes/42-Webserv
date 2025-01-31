@@ -81,13 +81,12 @@ int handlePollin(t_socket &socketConfig, std::vector<t_server> servers, ClientRe
 		std::string clientUrl = clientRequest.getValueHeader("url"), output, file;
 		if (isCGIFile(clientUrl) && clientRequest.getValueHeader("method") == "POST") {
 			output = executeCGI(clientUrl, server->root, clientRequest.getBody());
-			return (clientRequest.setServerResponse(httpResponse(output, "text/html"), i), 0);
+			return (clientRequest.setServerResponse(httpResponse(output, "text/html", "200"), i), 0);
 		}
 		file = createUrl(server, clientRequest, clientUrl);
 		std::cout << clientRequest.getValueHeader("method") << " " << file << " " << clientRequest.getValueHeader("protocol") << std::endl;
 		if (clientRequest.getValueHeader("method") == "DELETE") {
-			handleDeleteMethod(file);
-			return (clientRequest.setServerResponse(httpResponse("", ""), i), 0);
+			return (clientRequest.setServerResponse(httpResponse("", "", handleDeleteMethod(file)), i), 0);
 		}
 		clientRequest.setServerResponse(readHtml(file, server), i);
 		clientRequest.clearHeader();
