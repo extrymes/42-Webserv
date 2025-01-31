@@ -4,7 +4,6 @@ SRC_DIR = src
 SRC_CONF_DIR = src/config
 SRC_REQ_DIR = src/request
 SRC_SOCK_DIR = src/socket
-CGI_BIN = www/cgi-bin
 BIN_DIR = bin
 
 SRC_FILES = main.cpp
@@ -42,9 +41,8 @@ $(BIN_DIR)/%.o: %.cpp
 	@$(CC) $(INCLUDES) -c $< -o $@
 
 $(NAME): $(OBJS)
-	@echo "\n$(YELLOW)Setting permissions...$(RESET)"
-	@chmod -R 755 $(CGI_BIN)
-	@echo "$(YELLOW)Linking objects...$(RESET)"
+	@chmod 777 ./www/cgi-bin/*
+	@echo "\n$(YELLOW)Linking objects...$(RESET)"
 	@$(CC) -o $(NAME) $^
 	@echo "$(BLUE)Progress: 100%$(RESET)"
 	@echo "$(GREEN)Compilation complete!$(RESET)"

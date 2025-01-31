@@ -50,12 +50,13 @@ void addIndexOrUrl(std::vector<t_server>::iterator server, std::vector<std::stri
 std::string toString(int nbr);
 std::string	removeFirstSlash (std::string str);
 std::string	handleDeleteMethod(std::string file);
+bool isMethodAllowed(std::string method, std::vector<t_server>::iterator server, ClientRequest &clientRequest);
 
 // socket.cpp
 std::string checkExt(std::string file);
 int handlePollout(t_socket &socketConfig, ClientRequest &clientRequest, int i);
 std::vector<t_server>::iterator findIf(std::string port, std::vector<t_server> &servers);
-std::vector<t_location>::iterator whichLocation(std::vector<t_server>::iterator it, ClientRequest &clientRequest, std::string clientUrl);
+std::vector<t_location>::iterator whichLocation(std::vector<t_server>::iterator it, ClientRequest &clientRequest, std::string clientUrl, std::string str);
 int handlePollin(t_socket &socketConfig, std::vector<t_server> servers, ClientRequest &clientRequest, int i);
 void initSocket(t_socket &socketConfig, std::vector<t_server> servers);
 void handleSocket(std::vector<t_server> servers, t_socket &socketConfig);

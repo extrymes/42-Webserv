@@ -69,7 +69,18 @@ std::string	handleDeleteMethod(std::string file) {
 		return "404";
 	}
 	else {
+		std::cout << GREEN << "File successfully deleted" << RESET << std::endl;
 		return "204";
-		std::cout << "File successfully deleted" << std::endl;
 	}
+}
+
+bool isMethodAllowed(std::string method, std::vector<t_server>::iterator server, ClientRequest &clientRequest) {
+	std::string referer = clientRequest.getValueHeader("Referer");
+	referer = referer.substr(clientRequest.getValueHeader("Origin").size() - 1);
+	// std::cout << referer << std::endl;
+	std::vector<t_location>::iterator location = whichLocation(server, clientRequest, referer, "Referer");
+	if (location == server->locations.end() || location->allowedMethods.empty() || location->allowedMethods.find(method) != std::string::npos)
+		return true;
+	std::cout << RED <<  "Method " << method << " is not allowed !" << RESET << std::endl;
+	return false;
 }

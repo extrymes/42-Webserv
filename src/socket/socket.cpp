@@ -30,20 +30,22 @@ std::vector<t_server>::iterator findIf(std::string port, std::vector<t_server> &
 	return it;
 }
 
-std::vector<t_location>::iterator whichLocation(std::vector<t_server>::iterator it, ClientRequest &clientRequest, std::string clientUrl) {
+std::vector<t_location>::iterator whichLocation(std::vector<t_server>::iterator it, ClientRequest &clientRequest, std::string clientUrl, std::string str) {
 	std::vector<t_location>::iterator location = it->locations.begin();
 	for (; location != it->locations.end(); ++location) {
 		const int pathSize = location->path.size();
 		if (strncmp(location->path.c_str(), clientUrl.c_str(), pathSize) == 0) {
-			clientRequest.setValueHeader("url", clientUrl.substr(pathSize - 1));
+			clientRequest.setValueHeader(str, clientUrl.substr(pathSize - 1));
+			// std::cout << location->path << std::endl;
 			return location;
 		}
 	}
 	return location;
 }
 
-std::string createUrl(std::vector<t_server>::iterator server, std::vector<t_location>::iterator location, ClientRequest &clientRequest) {
+std::string	createUrl(std::vector<t_server>::iterator server, ClientRequest &clientRequest, std::string &clientUrl, std::vector<t_location>::iterator &location) {
 	std::string file;
+	location = whichLocation(server, clientRequest, clientUrl, "url");
 	if (location == server->locations.end()) { //Si on ne trouve pas de partie location qui correspond à l'URL
 		if (server->root.empty()) file = "";// s'il n'y a pas de root, je ne renvoie rien afin que l'erreur 404 soit affichée
 		else { //sinon je prends le root et je test d'ajouter la partie index via la fonction addIndexOrUrl
@@ -51,10 +53,7 @@ std::string createUrl(std::vector<t_server>::iterator server, std::vector<t_loca
 			addIndexOrUrl(server, server->indexes, clientRequest, file);
 		}
 	} else {
-		if (!location->redirPath.empty())
-			file = location->redirPath;
-		else
-			file = location->root.empty() ? removeFirstSlash(server->root) + location->path : removeFirstSlash(location->root);
+		file = location->root.empty() ? removeFirstSlash(server->root) + location->path : removeFirstSlash(location->root);
 		addIndexOrUrl(server, location->indexes, clientRequest, file);
 	}
 	return file;
@@ -72,6 +71,7 @@ int handlePollin(t_socket &socketConfig, std::vector<t_server> servers, ClientRe
 		if (recv(socketConfig.clients[i].fd, buffer, sizeof(buffer), 0) < 0)
 			return (handleClientDisconnection(i, socketConfig.clients), -1);
 		clientRequest.parseBuffer(buffer);
+		// std::cout << buffer << std::endl;
 		std::vector<t_server>::iterator server = findIf(clientRequest.getValueHeader("port"), servers);
 		if (server == servers.end())
 			return -1;
@@ -81,16 +81,18 @@ int handlePollin(t_socket &socketConfig, std::vector<t_server> servers, ClientRe
 			return (clientRequest.clearBuff(), 0);
 		}
 		std::string clientUrl = clientRequest.getValueHeader("url"), output, file;
+		std::vector<t_location>::iterator location;
+		file = createUrl(server, clientRequest, clientUrl, location);
+		std::cout << clientRequest.getValueHeader("method") << " " << file << " " << clientRequest.getValueHeader("protocol") << std::endl;
 		if (isCGIFile(clientUrl) && clientRequest.getValueHeader("method") == "POST") {
-			output = executeCGI(clientUrl, server->root, clientRequest.getBody());
+			// if (!isMethodAllowed("POST", server, clientRequest))
+			// 	return (clientRequest.setServerResponse(readHtml("405", server), i), 0);
+			output = executeCGI(clientUrl, server->root, clientRequest.getBody()); // serveeur root false
 			return (clientRequest.setServerResponse(httpResponse(output, "text/html", "200"), i), 0);
 		}
-		std::vector<t_location>::iterator location = whichLocation(server, clientRequest, clientUrl);
-		file = createUrl(server, location, clientRequest);
-		std::cout << CYAN << clientRequest.getValueHeader("method") << RESET << " " << file << " " << clientRequest.getValueHeader("protocol") << std::endl;
-		// if (!location->redirPath.empty())
-		// 	return (clientRequest.setServerResponse(readHtml(), 0);
 		if (clientRequest.getValueHeader("method") == "DELETE") {
+			if (!isMethodAllowed("DELETE", server, clientRequest))
+				return (clientRequest.setServerResponse(readHtml("405", server), i), clientRequest.clearHeader(), 0);
 			return (clientRequest.setServerResponse(httpResponse("", "", handleDeleteMethod(file)), i), 0);
 		}
 		clientRequest.setServerResponse(readHtml(file, server), i);
