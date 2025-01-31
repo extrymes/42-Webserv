@@ -30,7 +30,7 @@ class ClientRequest {
 		const std::string getValueBody(std::string key);
 
 		void setValueHeader(std::string key, std::string value);
-		void setServerResponse(std::string responseServer, int i);
+		void setServerResponse(std::string serverResponse, int i);
 
 		void clearServerResponse(int i);
 		void clearBody();
@@ -41,5 +41,5 @@ class ClientRequest {
 
 		ssMap _headers;
 		ssMap _body;
-		isMap _responseServer;
+		isMap _serverResponse;
 };

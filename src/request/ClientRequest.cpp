@@ -78,7 +78,7 @@ ssMap ClientRequest::getBody() const {
 }
 
 const std::string ClientRequest::getServerResponse(int i) {
-	isMap::iterator it = _responseServer.find(i);
+	isMap::iterator it = _serverResponse.find(i);
 	return it->second;
 }
 
@@ -93,12 +93,12 @@ void ClientRequest::setValueHeader(std::string key, std::string value) {
 	_headers[key] = value;
 }
 
-void ClientRequest::setServerResponse(std::string responseServer, int i) {
-	_responseServer[i] = responseServer;
+void ClientRequest::setServerResponse(std::string serverResponse, int i) {
+	_serverResponse[i] = serverResponse;
 }
 
 void ClientRequest::clearServerResponse(int i) {
-	_responseServer.erase(i);
+	_serverResponse.erase(i);
 }
 
 void ClientRequest::clearBody() {
