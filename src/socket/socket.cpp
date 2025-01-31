@@ -103,7 +103,7 @@ int handlePollin(t_socket &socketConfig, std::vector<t_server> servers, ClientRe
 			file = location->root.empty() ? removeFirstSlash(server->root) + location->path : removeFirstSlash(location->root);
 			addIndexOrUrl(server, location->indexes, clientRequest, file);
 		}
-		std::cout << clientRequest.getValueHeader("method") << " " << file << " " << clientRequest.getValueHeader("protocol") << std::endl;
+		std::cout << CYAN << clientRequest.getValueHeader("method") << RESET << " " << file << " " << clientRequest.getValueHeader("protocol") << std::endl;
 		if (clientRequest.getValueHeader("method") == "DELETE") {
 			handleDeleteMethod(file);
 			socketConfig.clients[i].events = POLLOUT;
