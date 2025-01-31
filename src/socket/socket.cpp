@@ -130,6 +130,7 @@ void initSocket(t_socket &socketConfig, std::vector<t_server> servers) {
 
 		socketConfig.clients[i].fd = socketConfig.serverFd[i];
 		socketConfig.clients[i].events = POLLIN | POLLOUT;
+		std::cout << "[-] Running server " << CYAN << it->name << RESET << " on port " << CYAN << it->port << RESET << std::endl;
 		++i;
 	}
 }
@@ -154,5 +155,6 @@ void handleSocket(std::vector<t_server> servers, t_socket &socketConfig) {
 			}
 		}
 	}
+	std::cout << std::endl << RED << "[-] All servers are shut down" << RESET << std::endl;
 	// close(socketConfig.server_fd);
 }
