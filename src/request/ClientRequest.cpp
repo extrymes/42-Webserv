@@ -29,10 +29,10 @@ void ClientRequest::parseRequestHost(std::istringstream &infileBuff) {
 	iss >> method, iss >> url, iss >> protocol;
 	if (method.empty() || url.empty() || protocol.empty())
 		std::runtime_error("invalid HTTP header");
-	if (method != "GET" && method != "POST" && method != "DELETE") {
-		std::cout << "buffer = " << infileBuff.str() << std::endl;
-		throw std::runtime_error("invalid HTTP method");
-	}
+	// if (method != "GET" && method != "POST" && method != "DELETE") {
+	// 	std::cout << "buffer = " << infileBuff.str() << std::endl;
+	// 	throw std::runtime_error("invalid HTTP method");
+	// }
 	_headers["method"] = method;
 	_headers["url"] = url;
 	_headers["protocol"] = protocol;

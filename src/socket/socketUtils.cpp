@@ -77,7 +77,7 @@ std::string	handleDeleteMethod(std::string file) {
 bool isMethodAllowed(std::string method, std::vector<t_server>::iterator server, ClientRequest &clientRequest) {
 	std::string referer = clientRequest.getValueHeader("Referer");
 	referer = referer.substr(clientRequest.getValueHeader("Origin").size() - 1);
-	// std::cout << referer << std::endl;
+	// std::cout << "referer = " << referer << std::endl;
 	std::vector<t_location>::iterator location = whichLocation(server, clientRequest, referer, "Referer");
 	if (location == server->locations.end() || location->allowedMethods.empty() || location->allowedMethods.find(method) != std::string::npos)
 		return true;

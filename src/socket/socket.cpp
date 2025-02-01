@@ -85,8 +85,11 @@ int handlePollin(t_socket &socketConfig, std::vector<t_server> servers, ClientRe
 		file = createUrl(server, clientRequest, clientUrl, location);
 		std::cout << clientRequest.getValueHeader("method") << " " << file << " " << clientRequest.getValueHeader("protocol") << std::endl;
 		if (isCGIFile(clientUrl) && clientRequest.getValueHeader("method") == "POST") {
-			// if (!isMethodAllowed("POST", server, clientRequest))
-			// 	return (clientRequest.setServerResponse(readHtml("405", server), i), 0);
+			// std::cout << "ici" << std::endl;
+			if (!isMethodAllowed("POST", server, clientRequest)) {
+				// std::cout << "ici1" << std::endl;
+				return (clientRequest.setServerResponse(readHtml("405", server, CODE405), i), 0);
+			}
 			output = executeCGI(clientUrl, server->root, clientRequest.getBody()); // serveeur root false
 			return (clientRequest.setServerResponse(httpResponse(output, "text/html", CODE200), i), 0);
 		}
