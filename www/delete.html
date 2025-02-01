@@ -18,6 +18,17 @@
 			method: 'DELETE'
 		})
 		.then(response => {
+			if (response.redirected) {
+				window.location.href = response.url; // Charge la nouvelle page comme une navigation normale
+			} else {
+				return response.text().then(html => {
+					document.open();
+					document.write(html);
+					document.close();
+				});
+			}
+		})
+		.then(response => {
 			if (response.ok) {
 				alert("Fichier supprimé !");
 			} else {

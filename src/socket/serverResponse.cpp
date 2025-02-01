@@ -64,7 +64,7 @@ std::string errorPage(int error, std::vector<t_server>::iterator server, std::st
 		"	</style>\n"
 		"</head>\n"
 		"<body>\n"
-		"	<h1>Error " + err + "</h1>\n"
+		"	<h1>Error " + code + "</h1>\n"
 		"	<p>Oops! Something went wrong (HTTP Error " + err + ").</p>\n"
 		"</body>\n"
 		"</html>";
