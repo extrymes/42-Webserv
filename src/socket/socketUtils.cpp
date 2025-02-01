@@ -47,7 +47,7 @@ void addIndexOrUrl(std::vector<t_server>::iterator server, std::vector<std::stri
 		path = errNum == server->errorPages.end() ? toString(err) : errNum->second;
 	}
 	else
-		path += clientRequest.getValueHeader("url"); // Ex: root=www, url=etch-a-sketch/index.html
+		path += removeFirstSlash(clientRequest.getValueHeader("url")); // Ex: root=www, url=etch-a-sketch/index.html
 }
 
 std::string toString(int nbr) {
@@ -75,10 +75,15 @@ std::string	handleDeleteMethod(std::string file) {
 }
 
 bool isMethodAllowed(std::string method, std::vector<t_server>::iterator server, ClientRequest &clientRequest) {
-	std::string referer = clientRequest.getValueHeader("Referer");
-	referer = referer.substr(clientRequest.getValueHeader("Origin").size() - 1);
-	// std::cout << referer << std::endl;
-	std::vector<t_location>::iterator location = whichLocation(server, clientRequest, referer, "Referer");
+	std::string referer;
+	if (method != "GET") {
+		referer = clientRequest.getValueHeader("Referer");
+		// std::cout << clientRequest.getValueHeader("Origin") << std::endl;
+		referer = referer.substr(clientRequest.getValueHeader("Origin").size() - 1);
+	} else 
+		referer = clientRequest.getValueHeader("url");
+	// std::cout << "referer = " << referer << std::endl;
+	std::vector<t_location>::iterator location = whichLocation(server, clientRequest, referer, "");
 	if (location == server->locations.end() || location->allowedMethods.empty() || location->allowedMethods.find(method) != std::string::npos)
 		return true;
 	std::cout << RED <<  "Method " << method << " is not allowed !" << RESET << std::endl;
