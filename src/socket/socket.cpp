@@ -105,7 +105,7 @@ void initSocket(t_socket &socketConfig, std::vector<t_server> servers) {
 	int	i = 0;
 	struct addrinfo hints, *res;
 	for (std::vector<t_server>::iterator it = servers.begin(); it != servers.end(); ++it) {
-		init_addrinfo(servers, i, &hints, &res);
+		initAddrInfo(servers, i, &hints, &res);
 
 		socketConfig.serverFd.push_back(socket(res->ai_family, res->ai_socktype, 0));
 
@@ -116,6 +116,7 @@ void initSocket(t_socket &socketConfig, std::vector<t_server> servers) {
 			throw std::runtime_error("setsockopt fail");
 		if (bind(socketConfig.serverFd[i], res->ai_addr, res->ai_addrlen) < 0)
 			throw std::runtime_error("bind fail");
+		freeaddrinfo(res);
 		if (listen(socketConfig.serverFd[i], 5) < 0)
 			throw std::runtime_error("listen fail");
 		socketConfig.clients[i].fd = socketConfig.serverFd[i];
@@ -132,8 +133,8 @@ void handleSocket(std::vector<t_server> servers, t_socket &socketConfig) {
 	initSocket(socketConfig, servers);
 	setupSignalHandler();
 	while (!stopRequested) {
-		if (poll(socketConfig.clients, socketConfig.clientCount, 1) < 0)
-			continue;;
+		if (poll(socketConfig.clients, socketConfig.clientCount, 0) < 0)
+			continue;
 		for (int i = 0; i < socketConfig.clientCount; ++i) {
 			if (socketConfig.clients[i].revents & POLLIN) {
 				if (handlePollin(socketConfig, servers, clientRequest, i) == -1)
@@ -146,5 +147,14 @@ void handleSocket(std::vector<t_server> servers, t_socket &socketConfig) {
 		}
 	}
 	std::cout << std::endl << RED << "[-] All servers are shut down" << RESET << std::endl;
+	closeAllFds(socketConfig);
 	// close(socketConfig.server_fd);
+}
+
+void closeAllFds(t_socket &socketConfig) {
+	std::vector<int>::iterator it;
+	for (it = socketConfig.serverFd.begin(); it != socketConfig.serverFd.end(); ++it)
+		close(*it);
+	for (int i = 0; i < MAX_CLIENTS; ++i)
+		close(socketConfig.clients[i].fd);
 }

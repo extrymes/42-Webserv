@@ -42,7 +42,7 @@ struct s_socket {
 
 // --- Functions ---
 // socketUtils.hpp
-void init_addrinfo(std::vector<t_server> servers, int i, struct addrinfo *hints, struct addrinfo **res);
+void initAddrInfo(std::vector<t_server> servers, int i, struct addrinfo *hints, struct addrinfo **res);
 std::string readHtml(std::string index, std::vector<t_server>::iterator server, std::string code);
 std::string httpResponse(std::string file, std::string ext, std::string code);
 void handleClientDisconnection(int i, struct pollfd *clients);
@@ -63,3 +63,4 @@ int handlePollin(t_socket &socketConfig, std::vector<t_server> servers, ClientRe
 void initSocket(t_socket &socketConfig, std::vector<t_server> servers);
 void handleSocket(std::vector<t_server> servers, t_socket &socketConfig);
 bool isCGIFile(std::string url);
+void closeAllFds(t_socket &socketConfig);
