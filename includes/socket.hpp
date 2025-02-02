@@ -49,7 +49,6 @@ void handleClientDisconnection(int i, struct pollfd *clients);
 void checkEmptyPlace(t_socket &socketConfig, struct pollfd *clients, int server_fd);
 void addIndexOrUrl(std::vector<t_server>::iterator server, std::vector<std::string> indexes, ClientRequest &clientRequest, std::string &path);
 std::string toString(int nbr);
-std::string	removeFirstSlash (std::string str);
 std::string	handleDeleteMethod(std::string file);
 bool isMethodAllowed(std::string method, std::vector<t_server>::iterator server, ClientRequest &clientRequest);
 

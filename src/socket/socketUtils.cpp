@@ -47,19 +47,13 @@ void addIndexOrUrl(std::vector<t_server>::iterator server, std::vector<std::stri
 		path = errNum == server->errorPages.end() ? toString(err) : errNum->second;
 	}
 	else
-		path += removeFirstSlash(clientRequest.getValueHeader("url")); // Ex: root=www, url=etch-a-sketch/index.html
+		path += clientRequest.getValueHeader("url"); // Ex: root=www, url=etch-a-sketch/index.html
 }
 
 std::string toString(int nbr) {
 	std::stringstream ss;
 	ss << nbr;
 	return ss.str();
-}
-
-std::string	removeFirstSlash (std::string str) {
-	if (str[0] == '/')
-		return str.substr(1);
-	return str;
 }
 
 std::string	handleDeleteMethod(std::string file) {
@@ -80,7 +74,7 @@ bool isMethodAllowed(std::string method, std::vector<t_server>::iterator server,
 		referer = clientRequest.getValueHeader("Referer");
 		// std::cout << clientRequest.getValueHeader("Origin") << std::endl;
 		referer = referer.substr(clientRequest.getValueHeader("Origin").size() - 1);
-	} else 
+	} else
 		referer = clientRequest.getValueHeader("url");
 	// std::cout << "referer = " << referer << std::endl;
 	std::vector<t_location>::iterator location = whichLocation(server, clientRequest, referer, "");
