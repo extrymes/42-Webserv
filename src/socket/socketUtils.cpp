@@ -83,3 +83,16 @@ bool isMethodAllowed(std::string method, std::vector<t_server>::iterator server,
 	std::cout << RED <<  "Method " << method << " is not allowed !" << RESET << std::endl;
 	return false;
 }
+
+bool isCGIAllowed(std::string url, std::vector<t_server>::iterator server, ClientRequest &clientRequest) {
+	std::string referer, extension;
+	referer = clientRequest.getValueHeader("Referer");
+	referer = referer.substr(clientRequest.getValueHeader("Origin").size() - 1);
+	std::vector<t_location>::iterator location = whichLocation(server, clientRequest, referer, "");
+	size_t idx = url.find_last_of('.');
+	extension = url.substr(idx);
+	if (location == server->locations.end() || location->cgiExtension.empty() || location->cgiExtension == extension)
+		return true;
+	std::cerr << RED << "error: CGI " << extension << " is not allowed!" << RESET << std::endl;
+	return false;
+}

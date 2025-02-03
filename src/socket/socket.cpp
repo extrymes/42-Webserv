@@ -89,6 +89,8 @@ int handlePollin(t_socket &socketConfig, std::vector<t_server> servers, ClientRe
 	if (isCGIFile(clientUrl) && clientRequest.getValueHeader("method") == "POST") {
 		if (!isMethodAllowed("POST", server, clientRequest))
 			return (clientRequest.setServerResponse(readHtml("405", server, CODE405), i), 0);
+		if (!isCGIAllowed(clientUrl, server, clientRequest))
+			return (clientRequest.setServerResponse(readHtml("403", server, CODE403), i), 0);
 		output = executeCGI(clientUrl, server->root, clientRequest.getBody()); // serveeur root false
 		return (clientRequest.setServerResponse(httpResponse(output, "text/html", CODE200), i), 0);
 	}
