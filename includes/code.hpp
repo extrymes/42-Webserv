@@ -1,5 +1,5 @@
 #pragma once
-// Réponses réussies (2xx)
+// Success responses (2xx)
 #define CODE200 "200 OK"
 #define CODE201 "201 Created"
 #define CODE202 "202 Accepted"
@@ -13,7 +13,7 @@
 #define CODE307 "307 Temporary Redirect"
 #define CODE308 "308 Permanent Redirect"
 
-// Erreurs client (4xx)
+// Client errors (4xx)
 #define CODE400 "400 Bad Request"
 #define CODE401 "401 Unauthorized"
 #define CODE403 "403 Forbidden"
@@ -28,7 +28,7 @@
 #define CODE415 "415 Unsupported Media Type"
 #define CODE429 "429 Too Many Requests"
 
-// Erreurs serveur (5xx)
+// Server erros (5xx)
 #define CODE500 "500 Internal Server Error"
 #define CODE501 "501 Not Implemented"
 #define CODE502 "502 Bad Gateway"

@@ -63,7 +63,7 @@ std::string	handleDeleteMethod(std::string file) {
 		return CODE404;
 	}
 	else {
-		std::cout << GREEN << "File successfully deleted" << RESET << std::endl;
+		std::cout << GREEN << "success: the file has been deleted!" << RESET << std::endl;
 		return CODE204;
 	}
 }
@@ -80,7 +80,7 @@ bool isMethodAllowed(std::string method, std::vector<t_server>::iterator server,
 	std::vector<t_location>::iterator location = whichLocation(server, clientRequest, referer, "");
 	if (location == server->locations.end() || location->allowedMethods.empty() || location->allowedMethods.find(method) != std::string::npos)
 		return true;
-	std::cout << RED <<  "Method " << method << " is not allowed !" << RESET << std::endl;
+	std::cout << RED << "error: method " << method << " is not allowed!" << RESET << std::endl;
 	return false;
 }
 
