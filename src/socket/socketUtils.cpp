@@ -1,6 +1,6 @@
 #include "socket.hpp"
 
-void initAddrInfo(std::vector<t_server> servers, int i, struct addrinfo *hints, struct addrinfo **res) {
+void initAddrInfo(std::vector<t_server> &servers, int i, struct addrinfo *hints, struct addrinfo **res) {
 	memset(hints, 0, sizeof(struct addrinfo));
 	hints->ai_family = AF_INET;
 	hints->ai_socktype = SOCK_STREAM;

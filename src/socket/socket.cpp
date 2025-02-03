@@ -58,12 +58,12 @@ std::string	createUrl(std::vector<t_server>::iterator server, ClientRequest &cli
 	return file;
 }
 
-int handlePollin(t_socket &socketConfig, std::vector<t_server> servers, ClientRequest &clientRequest, int i) {
+int handlePollin(t_socket &socketConfig, std::vector<t_server> &servers, ClientRequest &clientRequest, int i) {
 	std::vector<int>::iterator it = std::find(socketConfig.serverFd.begin(), socketConfig.serverFd.end(), socketConfig.clients[i].fd);
 	if (it != socketConfig.serverFd.end()) {
 		socketConfig.clientLen = sizeof(socketConfig.clientAddr);
 		checkEmptyPlace(socketConfig, socketConfig.clients, *it);
-		if (socketConfig.clientCount <= MAX_CLIENTS)
+		if (socketConfig.clientCount < MAX_CLIENTS)
 			socketConfig.clientCount++;
 		return 0;
 	}
@@ -102,7 +102,7 @@ int handlePollin(t_socket &socketConfig, std::vector<t_server> servers, ClientRe
 	return 0;
 }
 
-void initSocket(t_socket &socketConfig, std::vector<t_server> servers) {
+void initSocket(t_socket &socketConfig, std::vector<t_server> &servers) {
 	int	i = 0;
 	struct addrinfo hints, *res;
 	for (std::vector<t_server>::iterator it = servers.begin(); it != servers.end(); ++it) {
@@ -127,7 +127,7 @@ void initSocket(t_socket &socketConfig, std::vector<t_server> servers) {
 	}
 }
 
-void handleSocket(std::vector<t_server> servers, t_socket &socketConfig) {
+void handleSocket(std::vector<t_server> &servers, t_socket &socketConfig) {
 	ClientRequest clientRequest;
 	socketConfig.clientCount = servers.size();
 	memset(socketConfig.clients, 0, sizeof(socketConfig.clients));

@@ -42,7 +42,7 @@ struct s_socket {
 
 // --- Functions ---
 // socketUtils.hpp
-void initAddrInfo(std::vector<t_server> servers, int i, struct addrinfo *hints, struct addrinfo **res);
+void initAddrInfo(std::vector<t_server> &servers, int i, struct addrinfo *hints, struct addrinfo **res);
 std::string readHtml(std::string index, std::vector<t_server>::iterator server, std::string code);
 std::string httpResponse(std::string file, std::string ext, std::string code);
 void handleClientDisconnection(int i, struct pollfd *clients);
@@ -58,8 +58,8 @@ std::string errorPage(int error, std::vector<t_server>::iterator server, std::st
 int handlePollout(t_socket &socketConfig, ClientRequest &clientRequest, int i);
 std::vector<t_server>::iterator findIf(std::string port, std::vector<t_server> &servers);
 std::vector<t_location>::iterator whichLocation(std::vector<t_server>::iterator it, ClientRequest &clientRequest, std::string clientUrl, std::string str);
-int handlePollin(t_socket &socketConfig, std::vector<t_server> servers, ClientRequest &clientRequest, int i);
-void initSocket(t_socket &socketConfig, std::vector<t_server> servers);
-void handleSocket(std::vector<t_server> servers, t_socket &socketConfig);
+int handlePollin(t_socket &socketConfig, std::vector<t_server> &servers, ClientRequest &clientRequest, int i);
+void initSocket(t_socket &socketConfig, std::vector<t_server> &servers);
+void handleSocket(std::vector<t_server> &servers, t_socket &socketConfig);
 bool isCGIFile(std::string url);
 void closeAllFds(t_socket &socketConfig);
