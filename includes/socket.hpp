@@ -51,6 +51,7 @@ void addIndexOrUrl(std::vector<t_server>::iterator server, std::vector<std::stri
 std::string toString(int nbr);
 std::string	handleDeleteMethod(std::string file);
 bool isMethodAllowed(std::string method, std::vector<t_server>::iterator server, ClientRequest &clientRequest);
+bool isCGIAllowed(std::string url, std::vector<t_server>::iterator server, ClientRequest &clientRequest);
 
 // socket.cpp
 std::string checkExt(std::string file);

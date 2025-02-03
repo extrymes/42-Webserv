@@ -85,10 +85,12 @@ int handlePollin(t_socket &socketConfig, std::vector<t_server> &servers, ClientR
 	if (!isMethodAllowed("GET", server, clientRequest))
 		return (clientRequest.setServerResponse(readHtml("405", server, CODE405), i), 0);
 	file = createUrl(server, clientRequest, clientUrl, location);
-	std::cout << clientRequest.getValueHeader("method") << " " << file << " " << clientRequest.getValueHeader("protocol") << std::endl;
+	std::cout << CYAN << clientRequest.getValueHeader("method") << RESET << " " << file << " " << clientRequest.getValueHeader("protocol") << std::endl;
 	if (isCGIFile(clientUrl) && clientRequest.getValueHeader("method") == "POST") {
 		if (!isMethodAllowed("POST", server, clientRequest))
 			return (clientRequest.setServerResponse(readHtml("405", server, CODE405), i), 0);
+		if (!isCGIAllowed(clientUrl, server, clientRequest))
+			return (clientRequest.setServerResponse(readHtml("403", server, CODE403), i), 0);
 		output = executeCGI(clientUrl, server->root, clientRequest.getBody()); // serveeur root false
 		return (clientRequest.setServerResponse(httpResponse(output, "text/html", CODE200), i), 0);
 	}
@@ -130,7 +132,7 @@ void initSocket(t_socket &socketConfig, std::vector<t_server> &servers) {
 void handleSocket(std::vector<t_server> &servers, t_socket &socketConfig) {
 	ClientRequest clientRequest;
 	socketConfig.clientCount = servers.size();
-	memset(socketConfig.clients, 0, sizeof(socketConfig.clients));
+	std::memset(socketConfig.clients, 0, sizeof(socketConfig.clients));
 	initSocket(socketConfig, servers);
 	setupSignalHandler();
 	while (!stopRequested) {

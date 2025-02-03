@@ -1,7 +1,7 @@
 #include "socket.hpp"
 
 void initAddrInfo(std::vector<t_server> &servers, int i, struct addrinfo *hints, struct addrinfo **res) {
-	memset(hints, 0, sizeof(struct addrinfo));
+	std::memset(hints, 0, sizeof(struct addrinfo));
 	hints->ai_family = AF_INET;
 	hints->ai_socktype = SOCK_STREAM;
 	if (int result = getaddrinfo(servers[i].host.c_str(), toString(servers[i].port).c_str(), hints, res) < 0)
@@ -63,7 +63,7 @@ std::string	handleDeleteMethod(std::string file) {
 		return CODE404;
 	}
 	else {
-		std::cout << GREEN << "File successfully deleted" << RESET << std::endl;
+		std::cout << GREEN << "success: the file has been deleted!" << RESET << std::endl;
 		return CODE204;
 	}
 }
@@ -80,6 +80,19 @@ bool isMethodAllowed(std::string method, std::vector<t_server>::iterator server,
 	std::vector<t_location>::iterator location = whichLocation(server, clientRequest, referer, "");
 	if (location == server->locations.end() || location->allowedMethods.empty() || location->allowedMethods.find(method) != std::string::npos)
 		return true;
-	std::cout << RED <<  "Method " << method << " is not allowed !" << RESET << std::endl;
+	std::cout << RED << "error: method " << method << " is not allowed!" << RESET << std::endl;
+	return false;
+}
+
+bool isCGIAllowed(std::string url, std::vector<t_server>::iterator server, ClientRequest &clientRequest) {
+	std::string referer, extension;
+	referer = clientRequest.getValueHeader("Referer");
+	referer = referer.substr(clientRequest.getValueHeader("Origin").size() - 1);
+	std::vector<t_location>::iterator location = whichLocation(server, clientRequest, referer, "");
+	size_t idx = url.find_last_of('.');
+	extension = url.substr(idx);
+	if (location == server->locations.end() || location->cgiExtension.empty() || location->cgiExtension == extension)
+		return true;
+	std::cerr << RED << "error: CGI " << extension << " is not allowed!" << RESET << std::endl;
 	return false;
 }
