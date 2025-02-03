@@ -34,9 +34,10 @@ std::string createGoodUrl(std::string oldUrl) {
 	std::string goodUrl;
 	size_t first = oldUrl.find_first_not_of('/');
 	for (size_t i = first; i < oldUrl.size(); i++) {
-		if (oldUrl[i] != '/' || (oldUrl[i] == '/' && isalnum(oldUrl[i + 1])))
+		if ((oldUrl[i] != '/' && std::isprint(oldUrl[i])) || (oldUrl[i] == '/' && isalnum(oldUrl[i + 1])))
 			goodUrl += oldUrl[i];
 	}
+	// std::cout << "good url = " << goodUrl << std::endl;
 	return goodUrl;
 }
 
@@ -57,8 +58,7 @@ std::vector<t_location>::iterator whichLocation(servIt it, ClientRequest &client
 		std::string newLocation = urlWithoutSlash(location->path);
 		std::string newClientUrl = urlWithoutSlash(goodUrl);
 		const int pathSize = newLocation.size();
-		if (strncmp(newLocation.c_str(), newClientUrl.c_str(), pathSize) == 0
-			&& (!newClientUrl[pathSize] || newClientUrl[pathSize] == '/')) {
+		if (strncmp(newLocation.c_str(), newClientUrl.c_str(), pathSize) == 0 && (newLocation.size() == newClientUrl.size())) {
 			clientRequest.setValueHeader(str, goodUrl.substr(pathSize));
 			return location;
 		}
@@ -94,6 +94,7 @@ int handlePollin(t_socket &socketConfig, std::vector<t_server> &servers, ClientR
 	char buffer[4096];
 	if (recv(socketConfig.clients[i].fd, buffer, sizeof(buffer), 0) < 0)
 		return (handleClientDisconnection(i, socketConfig.clients), -1);
+	std::cout << buffer << std::endl;
 	clientRequest.parseBuffer(buffer);
 	servIt server = findIf(clientRequest.getValueHeader("port"), servers);
 	if (server == servers.end())
