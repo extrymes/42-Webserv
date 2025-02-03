@@ -19,20 +19,19 @@
 		})
 		.then(response => {
 			if (response.redirected) {
-				window.location.href = response.url; // Charge la nouvelle page comme une navigation normale
+				window.location.href = response.url;
 			} else {
-				return response.text().then(html => {
-					document.open();
-					document.write(html);
-					document.close();
-				});
-			}
-		})
-		.then(response => {
-			if (response.ok) {
-				alert("Fichier supprimé !");
-			} else {
-				alert("Erreur lors de la suppression");
+				if (response.status === 204)
+					alert("Fichier supprimé !");
+				else if (response.status === 404)
+					alert("Erreur lors de la suppression");
+				else {
+					return response.text().then(html => {
+						document.open();
+						document.write(html);
+						document.close();
+					});
+				}
 			}
 		});
 	}

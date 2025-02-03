@@ -22,6 +22,13 @@ bool isError(std::string &index) {
 	return false;
 }
 
+std::string redir(std::vector<t_location>::iterator &location) {
+	std::string httpResponse = "HTTP/1.1 " + location->redirCode + "\r\n";
+	httpResponse += "Location: " + location->redirPath + "\r\n";
+	httpResponse += "\r\n";
+	return httpResponse;
+}
+
 std::string httpResponse(std::string file, std::string ext, std::string code) {
 	std::string httpResponse = "HTTP/1.1 " + code + "\r\n";
 	httpResponse += "Content-Type: " + ext + "\r\n";

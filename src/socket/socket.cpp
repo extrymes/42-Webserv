@@ -71,7 +71,6 @@ int handlePollin(t_socket &socketConfig, std::vector<t_server> &servers, ClientR
 	if (recv(socketConfig.clients[i].fd, buffer, sizeof(buffer), 0) < 0)
 		return (handleClientDisconnection(i, socketConfig.clients), -1);
 	clientRequest.parseBuffer(buffer);
-	// std::cout << buffer << std::endl;
 	servIt server = findIf(clientRequest.getValueHeader("port"), servers);
 	if (server == servers.end())
 		return -1;
@@ -83,6 +82,10 @@ int handlePollin(t_socket &socketConfig, std::vector<t_server> &servers, ClientR
 	std::string clientUrl = clientRequest.getValueHeader("url"), file, method;
 	std::vector<t_location>::iterator location;
 	file = createUrl(server, clientRequest, clientUrl, location);
+	if (location != server->locations.end() && !location->redirCode.empty()) {
+		return (clientRequest.setServerResponse(redir(location), i), 0);
+	}
+	std::cout << "test" << std::endl;
 	method = clientRequest.getValueHeader("method");
 	std::cout << CYAN << method << RESET << " " << file << " " << clientRequest.getValueHeader("protocol") << std::endl;
 	if (isCGIFile(clientUrl) && !isCGIAllowed(clientUrl, server, clientRequest))

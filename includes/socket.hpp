@@ -48,6 +48,8 @@ struct s_socket {
 void initAddrInfo(std::vector<t_server> &servers, int i, struct addrinfo *hints, struct addrinfo **res);
 std::string readHtml(std::string index, servIt server, std::string code);
 std::string httpResponse(std::string file, std::string ext, std::string code);
+std::string redir(std::vector<t_location>::iterator &location);
+std::string errorPage(int error, servIt server, std::string code);
 void handleClientDisconnection(int i, struct pollfd *clients);
 void checkEmptyPlace(t_socket &socketConfig, struct pollfd *clients, int server_fd);
 void addIndexOrUrl(servIt server, std::vector<std::string> indexes, ClientRequest &clientRequest, std::string &path);
@@ -58,7 +60,6 @@ bool isCGIAllowed(std::string url, servIt server, ClientRequest &clientRequest);
 
 // socket.cpp
 std::string checkExt(std::string file);
-std::string errorPage(int error, servIt server, std::string code);
 int handlePollout(t_socket &socketConfig, ClientRequest &clientRequest, int i);
 servIt findIf(std::string port, std::vector<t_server> &servers);
 std::vector<t_location>::iterator whichLocation(servIt it, ClientRequest &clientRequest, std::string clientUrl, std::string str);
