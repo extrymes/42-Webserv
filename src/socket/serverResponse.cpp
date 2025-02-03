@@ -28,11 +28,12 @@ std::string httpResponse(std::string file, std::string ext, std::string code) {
 	httpResponse += "Content-Length: " + toString(file.length()) + "\r\n";
 	httpResponse += "Connection: close\r\n";
 	httpResponse += "\r\n";
-	httpResponse += file;
+	if (!file.empty())
+		httpResponse += file;
 	return httpResponse;
 }
 
-std::string errorPage(int error, std::vector<t_server>::iterator server, std::string code) {
+std::string errorPage(int error, servIt server, std::string code) {
 	std::string err;
 	isMap::iterator errNum = server->errorPages.find(error);
 	if (errNum == server->errorPages.end())
@@ -71,7 +72,7 @@ std::string errorPage(int error, std::vector<t_server>::iterator server, std::st
 	return httpResponse(file, "text/html", code);
 }
 
-std::string readHtml(std::string index, std::vector<t_server>::iterator server, std::string code) {
+std::string readHtml(std::string index, servIt server, std::string code) {
 	std::string	line;
 	std::string	finalFile;
 

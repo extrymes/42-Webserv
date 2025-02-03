@@ -28,7 +28,7 @@ void checkEmptyPlace(t_socket &socketConfig, struct pollfd *clients, int server_
 	}
 }
 
-void addIndexOrUrl(std::vector<t_server>::iterator server, std::vector<std::string> indexes, ClientRequest &clientRequest, std::string &path) {
+void addIndexOrUrl(servIt server, std::vector<std::string> indexes, ClientRequest &clientRequest, std::string &path) {
 	int err = 403;
 	if (clientRequest.getValueHeader("url").size() <= 1) {
 		std::vector<std::string>::iterator it = indexes.begin();
@@ -68,15 +68,15 @@ std::string	handleDeleteMethod(std::string file) {
 	}
 }
 
-bool isMethodAllowed(std::string method, std::vector<t_server>::iterator server, ClientRequest &clientRequest) {
+bool isMethodAllowed(std::string method, servIt server, ClientRequest &clientRequest) {
 	std::string referer;
-	if (method != "GET") {
-		referer = clientRequest.getValueHeader("Referer");
-		// std::cout << clientRequest.getValueHeader("Origin") << std::endl;
-		referer = referer.substr(clientRequest.getValueHeader("Origin").size() - 1);
-	} else
+	if (method == "GET")
 		referer = clientRequest.getValueHeader("url");
-	// std::cout << "referer = " << referer << std::endl;
+	else {
+		referer = clientRequest.getValueHeader("Referer");
+		if (clientRequest.getValueHeader("Origin").size() > 0)
+			referer = referer.substr(clientRequest.getValueHeader("Origin").size() - 1);
+	}
 	std::vector<t_location>::iterator location = whichLocation(server, clientRequest, referer, "");
 	if (location == server->locations.end() || location->allowedMethods.empty() || location->allowedMethods.find(method) != std::string::npos)
 		return true;
@@ -84,10 +84,15 @@ bool isMethodAllowed(std::string method, std::vector<t_server>::iterator server,
 	return false;
 }
 
-bool isCGIAllowed(std::string url, std::vector<t_server>::iterator server, ClientRequest &clientRequest) {
+bool isCGIAllowed(std::string url, servIt server, ClientRequest &clientRequest) {
 	std::string referer, extension;
-	referer = clientRequest.getValueHeader("Referer");
-	referer = referer.substr(clientRequest.getValueHeader("Origin").size() - 1);
+	if (clientRequest.getValueHeader("method") == "GET")
+		referer = clientRequest.getValueHeader("url");
+	else {
+		referer = clientRequest.getValueHeader("Referer");
+		if (clientRequest.getValueHeader("Origin").size() > 0)
+			referer = referer.substr(clientRequest.getValueHeader("Origin").size() - 1);
+	}
 	std::vector<t_location>::iterator location = whichLocation(server, clientRequest, referer, "");
 	size_t idx = url.find_last_of('.');
 	extension = url.substr(idx);

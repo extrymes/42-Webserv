@@ -21,8 +21,8 @@ int handlePollout(t_socket &socketConfig, ClientRequest &clientRequest, int i) {
 	return 0;
 }
 
-std::vector<t_server>::iterator findIf(std::string port, std::vector<t_server> &servers) {
-	std::vector<t_server>::iterator it = servers.begin();
+servIt findIf(std::string port, std::vector<t_server> &servers) {
+	servIt it = servers.begin();
 	for (; it != servers.end(); ++it) {
 		if (it->port == atoi(port.c_str()))
 			return it;
@@ -30,7 +30,7 @@ std::vector<t_server>::iterator findIf(std::string port, std::vector<t_server> &
 	return it;
 }
 
-std::vector<t_location>::iterator whichLocation(std::vector<t_server>::iterator it, ClientRequest &clientRequest, std::string clientUrl, std::string str) {
+std::vector<t_location>::iterator whichLocation(servIt it, ClientRequest &clientRequest, std::string clientUrl, std::string str) {
 	std::vector<t_location>::iterator location = it->locations.begin();
 	for (; location != it->locations.end(); ++location) {
 		const int pathSize = location->path.size();
@@ -42,7 +42,7 @@ std::vector<t_location>::iterator whichLocation(std::vector<t_server>::iterator 
 	return location;
 }
 
-std::string	createUrl(std::vector<t_server>::iterator server, ClientRequest &clientRequest, std::string &clientUrl, std::vector<t_location>::iterator &location) {
+std::string	createUrl(servIt server, ClientRequest &clientRequest, std::string &clientUrl, std::vector<t_location>::iterator &location) {
 	std::string file;
 	location = whichLocation(server, clientRequest, clientUrl, "url");
 	if (location == server->locations.end()) { //Si on ne trouve pas de partie location qui correspond à l'URL
@@ -72,7 +72,7 @@ int handlePollin(t_socket &socketConfig, std::vector<t_server> &servers, ClientR
 		return (handleClientDisconnection(i, socketConfig.clients), -1);
 	clientRequest.parseBuffer(buffer);
 	// std::cout << buffer << std::endl;
-	std::vector<t_server>::iterator server = findIf(clientRequest.getValueHeader("port"), servers);
+	servIt server = findIf(clientRequest.getValueHeader("port"), servers);
 	if (server == servers.end())
 		return -1;
 	socketConfig.clients[i].events = POLLOUT;
@@ -80,34 +80,51 @@ int handlePollin(t_socket &socketConfig, std::vector<t_server> &servers, ClientR
 		clientRequest.setServerResponse(readHtml("413", server, CODE413), i);
 		return (clientRequest.clearBuff(), 0);
 	}
-	std::string clientUrl = clientRequest.getValueHeader("url"), output, file;
+	std::string clientUrl = clientRequest.getValueHeader("url"), file, method;
 	std::vector<t_location>::iterator location;
-	if (!isMethodAllowed("GET", server, clientRequest))
-		return (clientRequest.setServerResponse(readHtml("405", server, CODE405), i), 0);
 	file = createUrl(server, clientRequest, clientUrl, location);
-	std::cout << CYAN << clientRequest.getValueHeader("method") << RESET << " " << file << " " << clientRequest.getValueHeader("protocol") << std::endl;
-	if (isCGIFile(clientUrl) && clientRequest.getValueHeader("method") == "POST") {
-		if (!isMethodAllowed("POST", server, clientRequest))
-			return (clientRequest.setServerResponse(readHtml("405", server, CODE405), i), 0);
-		if (!isCGIAllowed(clientUrl, server, clientRequest))
-			return (clientRequest.setServerResponse(readHtml("403", server, CODE403), i), 0);
-		output = executeCGI(clientUrl, server->root, clientRequest.getBody()); // serveeur root false
-		return (clientRequest.setServerResponse(httpResponse(output, "text/html", CODE200), i), 0);
-	}
-	if (clientRequest.getValueHeader("method") == "DELETE") {
-		if (!isMethodAllowed("DELETE", server, clientRequest))
-			return (clientRequest.setServerResponse(readHtml("405", server, CODE405), i), 0);
-		return (clientRequest.setServerResponse(httpResponse("", "", handleDeleteMethod(file)), i), 0);
-	}
-	clientRequest.setServerResponse(readHtml(file, server, CODE200), i);
+	method = clientRequest.getValueHeader("method");
+	std::cout << CYAN << method << RESET << " " << file << " " << clientRequest.getValueHeader("protocol") << std::endl;
+	if (isCGIFile(clientUrl) && !isCGIAllowed(clientUrl, server, clientRequest))
+		return (clientRequest.setServerResponse(readHtml("403", server, CODE403), i), 0);
+	if (method == "GET")
+		handleGetMethod(server, clientRequest, clientUrl, file, i);
+	else if (method == "POST")
+		handlePostMethod(server, clientRequest, clientUrl, file, i);
+	else if (method == "DELETE")
+		handleDeleteMethod(server, clientRequest, file, i);
 	clientRequest.clearHeader();
 	return 0;
+}
+
+void handleGetMethod(servIt server, ClientRequest &clientRequest, std::string clientUrl, std::string file, int i) {
+	if (!isMethodAllowed("GET", server, clientRequest))
+		return clientRequest.setServerResponse(readHtml("405", server, CODE405), i);
+	if (!isCGIFile(clientUrl))
+		return clientRequest.setServerResponse(readHtml(file, server, CODE200), i);
+	std::string output = executeCGI(clientUrl, server->root, clientRequest.getBody());
+	return clientRequest.setServerResponse(httpResponse(output, "text/html", CODE200), i);
+}
+
+void handlePostMethod(servIt server, ClientRequest &clientRequest, std::string clientUrl, std::string file, int i) {
+	if (!isMethodAllowed("POST", server, clientRequest))
+		return clientRequest.setServerResponse(readHtml("405", server, CODE405), i);
+	if (!isCGIFile(clientUrl))
+		return clientRequest.setServerResponse(readHtml(file, server, CODE200), i);
+	std::string output = executeCGI(clientUrl, server->root, clientRequest.getBody());
+	return clientRequest.setServerResponse(httpResponse(output, "text/html", CODE200), i);
+}
+
+void handleDeleteMethod(servIt server, ClientRequest &clientRequest, std::string file, int i) {
+	if (!isMethodAllowed("DELETE", server, clientRequest))
+		return clientRequest.setServerResponse(readHtml("405", server, CODE405), i);
+	return clientRequest.setServerResponse(httpResponse("", "", handleDeleteMethod(file)), i);
 }
 
 void initSocket(t_socket &socketConfig, std::vector<t_server> &servers) {
 	int	i = 0;
 	struct addrinfo hints, *res;
-	for (std::vector<t_server>::iterator it = servers.begin(); it != servers.end(); ++it) {
+	for (servIt it = servers.begin(); it != servers.end(); ++it) {
 		initAddrInfo(servers, i, &hints, &res);
 
 		socketConfig.serverFd.push_back(socket(res->ai_family, res->ai_socktype, 0));
