@@ -9,7 +9,7 @@ void handleSignal(int signal) {
 
 void setupSignalHandler() {
 	struct sigaction sa;
-	memset(&sa, 0, sizeof(sa));
+	std::memset(&sa, 0, sizeof(sa));
 	sa.sa_handler = handleSignal;
 	sigemptyset(&sa.sa_mask);
 	sa.sa_flags = 0;

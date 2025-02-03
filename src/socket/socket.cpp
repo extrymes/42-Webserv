@@ -130,7 +130,7 @@ void initSocket(t_socket &socketConfig, std::vector<t_server> servers) {
 void handleSocket(std::vector<t_server> servers, t_socket &socketConfig) {
 	ClientRequest clientRequest;
 	socketConfig.clientCount = servers.size();
-	memset(socketConfig.clients, 0, sizeof(socketConfig.clients));
+	std::memset(socketConfig.clients, 0, sizeof(socketConfig.clients));
 	initSocket(socketConfig, servers);
 	setupSignalHandler();
 	while (!stopRequested) {
