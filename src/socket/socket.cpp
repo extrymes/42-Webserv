@@ -85,7 +85,6 @@ int handlePollin(t_socket &socketConfig, std::vector<t_server> &servers, ClientR
 	if (location != server->locations.end() && !location->redirCode.empty()) {
 		return (clientRequest.setServerResponse(redir(location), i), 0);
 	}
-	std::cout << "test" << std::endl;
 	method = clientRequest.getValueHeader("method");
 	std::cout << CYAN << method << RESET << " " << file << " " << clientRequest.getValueHeader("protocol") << std::endl;
 	if (isCGIFile(clientUrl) && !isCGIAllowed(clientUrl, server, clientRequest))
