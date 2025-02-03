@@ -56,8 +56,10 @@ std::vector<t_location>::iterator whichLocation(servIt it, ClientRequest &client
 	for (; location != it->locations.end(); ++location) {
 		std::string newLocation = urlWithoutSlash(location->path);
 		std::string newClientUrl = urlWithoutSlash(goodUrl);
-		if (strncmp(newLocation.c_str(), newClientUrl.c_str(), newLocation.size()) == 0) {
-			clientRequest.setValueHeader(str, goodUrl.substr(newLocation.size()));
+		const int pathSize = newLocation.size();
+		if (strncmp(newLocation.c_str(), newClientUrl.c_str(), pathSize) == 0
+			&& (!newClientUrl[pathSize] || newClientUrl[pathSize] == '/')) {
+			clientRequest.setValueHeader(str, goodUrl.substr(pathSize));
 			return location;
 		}
 	}
@@ -126,7 +128,7 @@ void handleGetMethod(servIt server, ClientRequest &clientRequest, std::string cl
 		return clientRequest.setServerResponse(readHtml("405", server, CODE405), i);
 	if (!isCGIFile(clientUrl))
 		return clientRequest.setServerResponse(readHtml(file, server, CODE200), i);
-	std::string output = executeCGI(clientUrl, server->root, clientRequest.getBody());
+	std::string output = executeCGI(clientUrl, server->root, clientRequest.getBody()); //server root seg
 	return clientRequest.setServerResponse(httpResponse(output, "text/html", CODE200), i);
 }
 

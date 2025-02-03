@@ -13,6 +13,6 @@ void setupSignalHandler() {
 	sa.sa_handler = handleSignal;
 	sigemptyset(&sa.sa_mask);
 	sa.sa_flags = 0;
-	 if (sigaction(SIGINT, &sa, NULL) == -1)
+	if (sigaction(SIGINT, &sa, NULL) == -1)
 		throw std::runtime_error("sigaction failed");
 }

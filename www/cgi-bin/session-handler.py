@@ -1,16 +1,14 @@
 #!/usr/bin/pyhon3
 
 import os
-import cgi
 from session import Session
 
 # Init session
 session = Session()
 session.load_session()
 
-# Get form data
-form = cgi.FieldStorage()
-username = form.getvalue("username")
+# Get username
+username = os.environ.get("username", None)
 
 if username:
 	session.set("username", username)

@@ -244,6 +244,9 @@ void ParseConfig::parseClientMaxBodySize(std::string args, long &clientMaxBodySi
 void ParseConfig::parseLocationPath(std::string args, std::string &path) {
 	if (countArgs(args) != 1)
 		error("invalid number of arguments in \"location\" directive");
+	// Add slash at end
+	if (args[args.size() - 1] != '/')
+		args.append("/");
 	path = args;
 }
 
