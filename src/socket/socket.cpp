@@ -30,12 +30,34 @@ servIt findIf(std::string port, std::vector<t_server> &servers) {
 	return it;
 }
 
+std::string createGoodUrl(std::string oldUrl) {
+	std::string goodUrl;
+	size_t first = oldUrl.find_first_not_of('/');
+	for (size_t i = first; i < oldUrl.size(); i++) {
+		if (oldUrl[i] != '/' || (oldUrl[i] == '/' && isalnum(oldUrl[i + 1])))
+			goodUrl += oldUrl[i];
+	}
+	return goodUrl;
+}
+
+std::string urlWithoutSlash(std::string location) {
+	std::string newLocation;
+	for(size_t i = location.find_first_not_of('/'); i < location.size(); i++) {
+		if (location[i] == '/')
+			break ;
+		newLocation += location[i];
+	}
+	return newLocation;
+}
+
 std::vector<t_location>::iterator whichLocation(servIt it, ClientRequest &clientRequest, std::string clientUrl, std::string str) {
 	std::vector<t_location>::iterator location = it->locations.begin();
+	std::string goodUrl = createGoodUrl(clientUrl);
 	for (; location != it->locations.end(); ++location) {
-		const int pathSize = location->path.size();
-		if (strncmp(location->path.c_str(), clientUrl.c_str(), pathSize) == 0) {
-			clientRequest.setValueHeader(str, clientUrl.substr(pathSize - 1));
+		std::string newLocation = urlWithoutSlash(location->path);
+		std::string newClientUrl = urlWithoutSlash(goodUrl);
+		if (strncmp(newLocation.c_str(), newClientUrl.c_str(), newLocation.size()) == 0) {
+			clientRequest.setValueHeader(str, goodUrl.substr(newLocation.size()));
 			return location;
 		}
 	}

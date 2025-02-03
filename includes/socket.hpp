@@ -71,3 +71,5 @@ void closeAllFds(t_socket &socketConfig);
 void handleGetMethod(servIt server, ClientRequest &clientRequest, std::string clientUrl, std::string file, int i);
 void handlePostMethod(servIt server, ClientRequest &clientRequest, std::string clientUrl, std::string file, int i);
 void handleDeleteMethod(servIt server, ClientRequest &clientRequest, std::string file, int i);
+std::string createGoodUrl(std::string oldUrl);
+std::string urlWithoutSlash(std::string location);
