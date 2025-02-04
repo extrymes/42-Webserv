@@ -51,8 +51,8 @@ std::string urlWithoutSlash(std::string location) {
 	return newLocation;
 }
 
-std::vector<t_location>::iterator whichLocation(servIt it, ClientRequest &clientRequest, std::string clientUrl, std::string str) {
-	std::vector<t_location>::iterator location = it->locations.begin();
+locIt whichLocation(servIt it, ClientRequest &clientRequest, std::string clientUrl, std::string str) {
+	locIt location = it->locations.begin();
 	std::string goodUrl = createGoodUrl(clientUrl);
 	for (; location != it->locations.end(); ++location) {
 		std::string newLocation = urlWithoutSlash(location->path);
@@ -66,7 +66,7 @@ std::vector<t_location>::iterator whichLocation(servIt it, ClientRequest &client
 	return location;
 }
 
-std::string	createUrl(servIt server, ClientRequest &clientRequest, std::string &clientUrl, std::vector<t_location>::iterator &location) {
+std::string	createUrl(servIt server, ClientRequest &clientRequest, std::string &clientUrl, locIt &location) {
 	std::string file;
 	location = whichLocation(server, clientRequest, clientUrl, "url");
 	if (location == server->locations.end()) { //Si on ne trouve pas de partie location qui correspond à l'URL
@@ -105,7 +105,7 @@ int handlePollin(t_socket &socketConfig, std::vector<t_server> &servers, ClientR
 		return (clientRequest.clearBuff(), 0);
 	}
 	std::string clientUrl = clientRequest.getValueHeader("url"), file, method;
-	std::vector<t_location>::iterator location;
+	locIt location;
 	file = createUrl(server, clientRequest, clientUrl, location);
 	if (location != server->locations.end() && !location->redirCode.empty()) {
 		return (clientRequest.setServerResponse(redir(location), i), 0);
@@ -115,30 +115,32 @@ int handlePollin(t_socket &socketConfig, std::vector<t_server> &servers, ClientR
 	if (isCGIFile(clientUrl) && !isCGIAllowed(clientUrl, server, clientRequest))
 		return (clientRequest.setServerResponse(readHtml("403", server, CODE403), i), 0);
 	if (method == "GET")
-		handleGetMethod(server, clientRequest, clientUrl, file, i);
+		handleGetMethod(server, location, clientRequest, clientUrl, file, i);
 	else if (method == "POST")
-		handlePostMethod(server, clientRequest, clientUrl, file, i);
+		handlePostMethod(server, location, clientRequest, clientUrl, file, i);
 	else if (method == "DELETE")
 		handleDeleteMethod(server, clientRequest, file, i);
 	clientRequest.clearHeader();
 	return 0;
 }
 
-void handleGetMethod(servIt server, ClientRequest &clientRequest, std::string clientUrl, std::string file, int i) {
+void handleGetMethod(servIt server, locIt location, ClientRequest &clientRequest, std::string clientUrl, std::string file, int i) {
 	if (!isMethodAllowed("GET", server, clientRequest))
 		return clientRequest.setServerResponse(readHtml("405", server, CODE405), i);
 	if (!isCGIFile(clientUrl))
 		return clientRequest.setServerResponse(readHtml(file, server, CODE200), i);
-	std::string output = executeCGI(clientUrl, server->root, clientRequest.getBody()); //server root seg
+	std::string root = (location != server->locations.end() && !location->root.empty()) ? location->root : server->root;
+	std::string output = executeCGI(clientUrl, root, clientRequest.getBody()); //server root seg
 	return clientRequest.setServerResponse(httpResponse(output, "text/html", CODE200), i);
 }
 
-void handlePostMethod(servIt server, ClientRequest &clientRequest, std::string clientUrl, std::string file, int i) {
+void handlePostMethod(servIt server, locIt location, ClientRequest &clientRequest, std::string clientUrl, std::string file, int i) {
 	if (!isMethodAllowed("POST", server, clientRequest))
 		return clientRequest.setServerResponse(readHtml("405", server, CODE405), i);
 	if (!isCGIFile(clientUrl))
 		return clientRequest.setServerResponse(readHtml(file, server, CODE200), i);
-	std::string output = executeCGI(clientUrl, server->root, clientRequest.getBody());
+	std::string root = (location != server->locations.end() && !location->root.empty()) ? location->root : server->root;
+	std::string output = executeCGI(clientUrl, root, clientRequest.getBody());
 	return clientRequest.setServerResponse(httpResponse(output, "text/html", CODE200), i);
 }
 

@@ -77,7 +77,7 @@ bool isMethodAllowed(std::string method, servIt server, ClientRequest &clientReq
 		if (clientRequest.getValueHeader("Origin").size() > 0)
 			referer = referer.substr(clientRequest.getValueHeader("Origin").size() - 1);
 	}
-	std::vector<t_location>::iterator location = whichLocation(server, clientRequest, referer, "");
+	locIt location = whichLocation(server, clientRequest, referer, "");
 	if (location == server->locations.end() || location->allowedMethods.empty() || location->allowedMethods.find(method) != std::string::npos)
 		return true;
 	std::cout << RED << "error: method " << method << " is not allowed!" << RESET << std::endl;
@@ -93,7 +93,7 @@ bool isCGIAllowed(std::string url, servIt server, ClientRequest &clientRequest) 
 		if (clientRequest.getValueHeader("Origin").size() > 0)
 			referer = referer.substr(clientRequest.getValueHeader("Origin").size() - 1);
 	}
-	std::vector<t_location>::iterator location = whichLocation(server, clientRequest, referer, "");
+	locIt location = whichLocation(server, clientRequest, referer, "");
 	size_t idx = url.find_last_of('.');
 	extension = url.substr(idx);
 	if (location == server->locations.end() || location->cgiExtension.empty() || location->cgiExtension == extension)
