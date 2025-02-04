@@ -16,7 +16,10 @@ void ClientRequest::parseBuffer(char *buffer) {
 			flag = 1;
 			continue;
 		}
-		flag == 0 ? parseHeader(line) : parseBody(line);
+		if (flag == 0)
+			parseHeader(line);
+		else
+			_body += line;
 	}
 }
 
@@ -33,16 +36,16 @@ void ClientRequest::parseRequestHost(std::istringstream &infileBuff) {
 	// 	std::cout << "buffer = " << infileBuff.str() << std::endl;
 	// 	throw std::runtime_error("invalid HTTP method");
 	// }
-	_headers["method"] = method;
-	_headers["url"] = url;
-	_headers["protocol"] = protocol;
+	_headerMap["method"] = method;
+	_headerMap["url"] = url;
+	_headerMap["protocol"] = protocol;
 	std::getline(infileBuff, hostLine);
 	std::istringstream iss2(hostLine);
 	iss2 >> tmp, iss2 >> std::ws;
 	std::getline(iss2, host, ':');
 	std::getline(iss2, port);
-	_headers["host"] = host;
-	_headers["port"] = port;
+	_headerMap["host"] = host;
+	_headerMap["port"] = port;
 }
 
 void ClientRequest::parseHeader(std::string line) {
@@ -50,30 +53,21 @@ void ClientRequest::parseHeader(std::string line) {
 	std::string key, value;
 	std::getline(iss, key, ':');
 	std::getline(iss >> std::ws, value);
-	_headers[key] = value;
-}
-
-void ClientRequest::parseBody(std::string line) {
-	std::istringstream iss(line);
-	std::string key, value;
-	while (getline(iss, key, '=')) {
-		getline(iss, value, '&');
-		_body[key] = value;
-	}
+	_headerMap[key] = value;
 }
 
 const std::string ClientRequest::getValueHeader(std::string key) {
-	ssMap::iterator it = _headers.find(key);
-	if (it == _headers.end())
+	ssMap::iterator it = _headerMap.find(key);
+	if (it == _headerMap.end())
 		return "";
 	return it->second;
 }
 
-ssMap ClientRequest::getHeaders() const {
-	return _headers;
+ssMap ClientRequest::getHeaderMap() const {
+	return _headerMap;
 }
 
-ssMap ClientRequest::getBody() const {
+std::string ClientRequest::getBody() const {
 	return _body;
 }
 
@@ -82,15 +76,8 @@ const std::string ClientRequest::getServerResponse(int i) {
 	return it->second;
 }
 
-const std::string ClientRequest::getValueBody(std::string key) {
-	ssMap::iterator it = _body.find(key);
-	if (it == _body.end())
-		return "";
-	return it->second;
-}
-
 void ClientRequest::setValueHeader(std::string key, std::string value) {
-	_headers[key] = value;
+	_headerMap[key] = value;
 }
 
 void ClientRequest::setServerResponse(std::string serverResponse, int i) {
@@ -106,7 +93,7 @@ void ClientRequest::clearBody() {
 }
 
 void ClientRequest::clearHeader() {
-	_headers.clear();
+	_headerMap.clear();
 }
 
 void ClientRequest::clearBuff() {

@@ -3,12 +3,26 @@
 # Import OS module
 import os
 
-# Get data from fields
-first_name = os.environ.get("first_name", "Unknown").replace("+", " ")
-last_name = os.environ.get("last_name", "Unknown").replace("+", " ")
-email = os.environ.get("email", "Unknown").replace("%40", "@")
-number = os.environ.get("number", "Unknown")
-password = os.environ.get("password", "Unknown")
+# Get body in environment
+body = os.environ.get("body")
+if not body:
+	exit()
+
+# Parse body into dictionary
+data_dict = {}
+splitted_body = body.split('&')
+for item in splitted_body:
+	pair = item.split('=', 1)
+	if len(pair) == 2:
+		key, value = pair
+		data_dict[key] = value
+
+# Get each data
+first_name = data_dict["first_name"].replace("+", " ")
+last_name = data_dict["last_name"].replace("+", " ")
+email = data_dict["email"].replace("%40", "@")
+number = data_dict["number"]
+password = data_dict["password"]
 cryped_password = '*' * len(password)
 
 # Print HTML

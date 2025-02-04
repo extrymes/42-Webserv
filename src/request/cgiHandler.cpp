@@ -6,19 +6,21 @@ bool isCGIFile(std::string url) {
 	return false;
 }
 
-char **createCGIEnvironment(ssMap body) {
+char **createCGIEnvironment(ssMap headerMap, std::string body) {
 	std::vector<std::string> env;
-	for (ssMap::iterator it = body.begin(); it != body.end(); ++it)
+	for (ssMap::iterator it = headerMap.begin(); it != headerMap.end(); ++it)
 		env.push_back(it->first + "=" + it->second);
 	// Convert to char array
 	char **envp = new char *[env.size() + 1];
-	for (size_t i = 0; i < env.size(); ++i)
+	size_t i;
+	for (i = 0; i < env.size(); ++i)
 		envp[i] = strdup(env[i].c_str());
-	envp[env.size()] = NULL;
+	envp[i] = strdup(("body=" + body).c_str());
+	envp[i + 1] = NULL;
 	return envp;
 }
 
-std::string executeCGI(std::string url, std::string root, ssMap body) {
+std::string executeCGI(std::string url, std::string root, ssMap headerMap, std::string body) {
 	int pipefd[2];
 	if (pipe(pipefd) == -1)
 		throw std::runtime_error("pipe error");
@@ -33,7 +35,7 @@ std::string executeCGI(std::string url, std::string root, ssMap body) {
 		close(pipefd[1]);
 		url = root.empty() ? url : root + url;
 		char *argv[] = {const_cast<char*>(url.c_str()), NULL};
-		char **envp = createCGIEnvironment(body);
+		char **envp = createCGIEnvironment(headerMap, body);
 		execve(url.c_str(), argv, envp);
 		freeCGIEnvironment(envp);
 		throw std::runtime_error("child process failed");

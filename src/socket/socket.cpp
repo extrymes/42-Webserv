@@ -94,7 +94,7 @@ int handlePollin(t_socket &socketConfig, std::vector<t_server> &servers, ClientR
 	char buffer[4096];
 	if (recv(socketConfig.clients[i].fd, buffer, sizeof(buffer), 0) < 0)
 		return (handleClientDisconnection(i, socketConfig.clients), -1);
-	std::cout << buffer << std::endl;
+	// std::cout << buffer << std::endl;
 	clientRequest.parseBuffer(buffer);
 	servIt server = findIf(clientRequest.getValueHeader("port"), servers);
 	if (server == servers.end())
@@ -130,7 +130,7 @@ void handleGetMethod(servIt server, locIt location, ClientRequest &clientRequest
 	if (!isCGIFile(clientUrl))
 		return clientRequest.setServerResponse(readHtml(file, server, CODE200), i);
 	std::string root = (location != server->locations.end() && !location->root.empty()) ? location->root : server->root;
-	std::string output = executeCGI(clientUrl, root, clientRequest.getBody()); //server root seg
+	std::string output = executeCGI(clientUrl, root, clientRequest.getHeaderMap(), clientRequest.getBody()); //server root seg
 	return clientRequest.setServerResponse(httpResponse(output, "text/html", CODE200), i);
 }
 
@@ -140,7 +140,7 @@ void handlePostMethod(servIt server, locIt location, ClientRequest &clientReques
 	if (!isCGIFile(clientUrl))
 		return clientRequest.setServerResponse(readHtml(file, server, CODE200), i);
 	std::string root = (location != server->locations.end() && !location->root.empty()) ? location->root : server->root;
-	std::string output = executeCGI(clientUrl, root, clientRequest.getBody());
+	std::string output = executeCGI(clientUrl, root, clientRequest.getHeaderMap(), clientRequest.getBody());
 	return clientRequest.setServerResponse(httpResponse(output, "text/html", CODE200), i);
 }
 
