@@ -46,7 +46,7 @@ std::string errorPage(int error, servIt server, std::string code) {
 	if (errNum == server->errorPages.end())
 		err = toString(error);
 	else
-		return (readHtml(errNum->second, server, CODE200));
+		return (readHtml(errNum->second, server, code));
 	std::string file =
 	"<!DOCTYPE html>\n"
 		"<html lang=\"en\">\n"
@@ -87,10 +87,10 @@ std::string readHtml(std::string index, servIt server, std::string code) {
 		return errorPage(std::atoi(index.c_str()), server, code);
 	int isDir = open(index.c_str(), O_DIRECTORY);
 	if (isDir > 0)
-		return (close(isDir), errorPage(404, server, code));
+		return (close(isDir), errorPage(404, server, CODE404));
 	std::ifstream	infile(index.c_str());
 	if (!infile)
-		return errorPage(404, server, code);
+		return errorPage(404, server, CODE404);
 	while (std::getline(infile, line))
 		finalFile += line + "\n";
 	infile.close();
