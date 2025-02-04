@@ -6,7 +6,7 @@ ClientRequest::ClientRequest() {}
 
 ClientRequest::~ClientRequest () {}
 
-void ClientRequest::parseBuffer(char *buffer) {
+void ClientRequest::parseBuffer(char *buffer, int i) {
 	int	flag = 0;
 	std::string line;
 	std::istringstream infileBuff(buffer);
@@ -19,7 +19,7 @@ void ClientRequest::parseBuffer(char *buffer) {
 		if (flag == 0)
 			parseHeader(line);
 		else
-			_body += line;
+			_body[i].append(line);
 	}
 }
 
@@ -36,16 +36,16 @@ void ClientRequest::parseRequestHost(std::istringstream &infileBuff) {
 	// 	std::cout << "buffer = " << infileBuff.str() << std::endl;
 	// 	throw std::runtime_error("invalid HTTP method");
 	// }
-	_headerMap["method"] = method;
-	_headerMap["url"] = url;
-	_headerMap["protocol"] = protocol;
+	_header["method"] = method;
+	_header["url"] = url;
+	_header["protocol"] = protocol;
 	std::getline(infileBuff, hostLine);
 	std::istringstream iss2(hostLine);
 	iss2 >> tmp, iss2 >> std::ws;
 	std::getline(iss2, host, ':');
 	std::getline(iss2, port);
-	_headerMap["host"] = host;
-	_headerMap["port"] = port;
+	_header["host"] = host;
+	_header["port"] = port;
 }
 
 void ClientRequest::parseHeader(std::string line) {
@@ -53,22 +53,27 @@ void ClientRequest::parseHeader(std::string line) {
 	std::string key, value;
 	std::getline(iss, key, ':');
 	std::getline(iss >> std::ws, value);
-	_headerMap[key] = value;
+	_header[key] = value;
 }
 
 const std::string ClientRequest::getValueHeader(std::string key) {
-	ssMap::iterator it = _headerMap.find(key);
-	if (it == _headerMap.end())
+	ssMap::iterator it = _header.find(key);
+	if (it == _header.end())
 		return "";
 	return it->second;
 }
 
 ssMap ClientRequest::getHeaderMap() const {
-	return _headerMap;
+	return _header;
 }
 
-std::string ClientRequest::getBody() const {
-	return _body;
+void ClientRequest::setBody(int i, std::string body) {
+	_body[i] = body;
+}
+
+const std::string ClientRequest::getBody(int i) {
+	isMap::iterator it = _body.find(i);
+	return it->second;
 }
 
 const std::string ClientRequest::getServerResponse(int i) {
@@ -77,7 +82,7 @@ const std::string ClientRequest::getServerResponse(int i) {
 }
 
 void ClientRequest::setValueHeader(std::string key, std::string value) {
-	_headerMap[key] = value;
+	_header[key] = value;
 }
 
 void ClientRequest::setServerResponse(std::string serverResponse, int i) {
@@ -88,15 +93,10 @@ void ClientRequest::clearServerResponse(int i) {
 	_serverResponse.erase(i);
 }
 
-void ClientRequest::clearBody() {
-	_body.clear();
-}
-
 void ClientRequest::clearHeader() {
-	_headerMap.clear();
+	_header.clear();
 }
 
-void ClientRequest::clearBuff() {
-	clearBody();
-	clearHeader();
+void ClientRequest::clearBody(int i) {
+	_body.erase(i);
 }

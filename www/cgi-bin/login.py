@@ -6,6 +6,9 @@ import os
 # Get body in environment
 body = os.environ.get("body")
 if not body:
+	print("<!DOCTYPE html><html><body>")
+	print("<h1>Hello Guest!</h1>")
+	print("</html></body>")
 	exit()
 
 # Parse body into dictionary

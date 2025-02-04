@@ -95,14 +95,14 @@ int handlePollin(t_socket &socketConfig, std::vector<t_server> &servers, ClientR
 	if (recv(socketConfig.clients[i].fd, buffer, sizeof(buffer), 0) < 0)
 		return (handleClientDisconnection(i, socketConfig.clients), -1);
 	// std::cout << buffer << std::endl;
-	clientRequest.parseBuffer(buffer);
+	clientRequest.parseBuffer(buffer, i);
 	servIt server = findIf(clientRequest.getValueHeader("port"), servers);
 	if (server == servers.end())
 		return -1;
 	socketConfig.clients[i].events = POLLOUT;
 	if (std::atol(clientRequest.getValueHeader("Content-Length").c_str()) > server->clientMaxBodySize) {
 		clientRequest.setServerResponse(readHtml("413", server, CODE413), i);
-		return (clientRequest.clearBuff(), 0);
+		return 0;
 	}
 	std::string clientUrl = clientRequest.getValueHeader("url"), file, method;
 	locIt location;
@@ -130,7 +130,7 @@ void handleGetMethod(servIt server, locIt location, ClientRequest &clientRequest
 	if (!isCGIFile(clientUrl))
 		return clientRequest.setServerResponse(readHtml(file, server, CODE200), i);
 	std::string root = (location != server->locations.end() && !location->root.empty()) ? location->root : server->root;
-	std::string output = executeCGI(clientUrl, root, clientRequest.getHeaderMap(), clientRequest.getBody()); //server root seg
+	std::string output = executeCGI(clientUrl, root, clientRequest.getHeaderMap(), clientRequest.getBody(i));
 	return clientRequest.setServerResponse(httpResponse(output, "text/html", CODE200), i);
 }
 
@@ -140,7 +140,7 @@ void handlePostMethod(servIt server, locIt location, ClientRequest &clientReques
 	if (!isCGIFile(clientUrl))
 		return clientRequest.setServerResponse(readHtml(file, server, CODE200), i);
 	std::string root = (location != server->locations.end() && !location->root.empty()) ? location->root : server->root;
-	std::string output = executeCGI(clientUrl, root, clientRequest.getHeaderMap(), clientRequest.getBody());
+	std::string output = executeCGI(clientUrl, root, clientRequest.getHeaderMap(), clientRequest.getBody(i));
 	return clientRequest.setServerResponse(httpResponse(output, "text/html", CODE200), i);
 }
 
@@ -188,6 +188,7 @@ void handleSocket(std::vector<t_server> &servers, t_socket &socketConfig) {
 			if (socketConfig.clients[i].revents & POLLIN) {
 				if (handlePollin(socketConfig, servers, clientRequest, i) == -1)
 					continue;
+				clientRequest.clearBody(i);
 			}
 			if (socketConfig.clients[i].revents & POLLOUT) {
 				if (handlePollout(socketConfig, clientRequest, i) == -1)

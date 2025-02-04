@@ -11,10 +11,12 @@ char **createCGIEnvironment(ssMap headerMap, std::string body) {
 	for (ssMap::iterator it = headerMap.begin(); it != headerMap.end(); ++it)
 		env.push_back(it->first + "=" + it->second);
 	// Convert to char array
-	char **envp = new char *[env.size() + 1];
-	size_t i;
-	for (i = 0; i < env.size(); ++i)
+	char **envp = new char *[env.size() + 2];
+	size_t i = 0;
+	for (; i < env.size(); ++i)
 		envp[i] = strdup(env[i].c_str());
+	if (body.empty())
+		return (envp[i] = NULL, envp);
 	envp[i] = strdup(("body=" + body).c_str());
 	envp[i + 1] = NULL;
 	return envp;
