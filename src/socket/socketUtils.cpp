@@ -14,7 +14,6 @@ void handleClientDisconnection(int i, struct pollfd *clients, cMap &clientMap) {
 	clients[i].events = 0;
 	clients[i].revents = 0;
 	delete clientMap[i];
-	// clientMap.erase(i);
 	// std::cout << "Closing a Client" << std::endl;
 }
 

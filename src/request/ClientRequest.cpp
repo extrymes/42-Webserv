@@ -23,10 +23,13 @@ void ClientRequest::parseBuffer(char *buffer, ssize_t size) {
 		parseHeader(line);
 	}
 	if (getValueHeader("method") == "POST") {
+		std::string strBuff = buffer;
+		while (j < size && strBuff.compare(j, 5, "-----") != 0)
+			j++;
 		for (; j < size; j++)
 			_body += buffer[j];
 	}
-	// std::cout << "_body = " << _body << std::endl;
+	std::cout << _body << std::endl;
 }
 
 void ClientRequest::parseRequestHost(std::istringstream &infileBuff, ssize_t &j) {

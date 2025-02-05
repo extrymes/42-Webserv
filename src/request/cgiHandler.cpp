@@ -18,7 +18,6 @@ char **createCGIEnvironment(ssMap headerMap, std::string body) {
 	if (body.empty())
 		return (envp[i] = NULL, envp);
 	envp[i] = strdup(("body=" + body).c_str());
-	std::cout << envp[i] << std::endl;
 	envp[i + 1] = NULL;
 	return envp;
 }
