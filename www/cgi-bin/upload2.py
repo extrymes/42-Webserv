@@ -25,8 +25,8 @@ except ValueError:
     content_length = 0
 
 # Lecture du corps de la requête
-# if content_length > 0:
-#     # body = sys.stdin.buffer.read(content_length)
-#     print(f"🔹 Body reçu ({len(body)} octets) :\n", body)
-# else:
-#     print("⚠️ Aucun body reçu ou Content-Length invalide")
+if content_length > 0:
+    body = sys.stdin.buffer.read(content_length)
+    print(f"🔹 Body reçu ({len(body)} octets) :\n", body)
+else:
+    print("⚠️ Aucun body reçu ou Content-Length invalide")

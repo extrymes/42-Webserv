@@ -45,32 +45,36 @@ struct s_socket {
 };
 
 // --- Functions ---
-// socketUtils.hpp
-void initAddrInfo(std::vector<t_server> &servers, int i, struct addrinfo *hints, struct addrinfo **res);
+
+// serverRespone.cpp
 std::string readHtml(std::string index, servIt server, std::string code);
 std::string httpResponse(std::string file, std::string ext, std::string code);
 std::string redir(locIt &location);
 std::string errorPage(int error, servIt server, std::string code);
-void handleClientDisconnection(int i, struct pollfd *clients);
-void checkEmptyPlace(t_socket &socketConfig, struct pollfd *clients, int server_fd);
-void addIndexOrUrl(servIt server, std::vector<std::string> indexes, ClientRequest &clientRequest, std::string &path);
+std::string checkExt(std::string file);
+
+// socketUtils.cpp
+void initAddrInfo(std::vector<t_server> &servers, int i, struct addrinfo *hints, struct addrinfo **res);
+void handleClientDisconnection(int i, struct pollfd *clients, cMap &clientMap);
+void checkEmptyPlace(t_socket &socketConfig, cMap &clientMap, int server_fd);
+void addIndexOrUrl(servIt server, std::vector<std::string> indexes, ClientRequest *clientRequest, std::string &path);
 std::string toString(int nbr);
 std::string	handleDeleteMethod(std::string file);
-bool isMethodAllowed(std::string method, servIt server, ClientRequest &clientRequest);
-bool isCGIAllowed(std::string url, servIt server, ClientRequest &clientRequest);
+bool isMethodAllowed(std::string method, servIt server, ClientRequest *clientRequest);
+bool isCGIAllowed(std::string url, servIt server, ClientRequest *clientRequest);
 
 // socket.cpp
-std::string checkExt(std::string file);
-int handlePollout(t_socket &socketConfig, ClientRequest &clientRequest, int i);
+int handlePollout(t_socket &socketConfig, cMap &clientMap, int i);
 servIt findIf(std::string port, std::vector<t_server> &servers);
-locIt whichLocation(servIt it, ClientRequest &clientRequest, std::string clientUrl, std::string str);
-int handlePollin(t_socket &socketConfig, std::vector<t_server> &servers, ClientRequest &clientRequest, int i);
-void initSocket(t_socket &socketConfig, std::vector<t_server> &servers);
-void handleSocket(std::vector<t_server> &servers, t_socket &socketConfig);
-bool isCGIFile(std::string url);
-void closeAllFds(t_socket &socketConfig);
-void handleGetMethod(servIt server, locIt location, ClientRequest &clientRequest, std::string clientUrl, std::string file, int i);
-void handlePostMethod(servIt server, locIt location, ClientRequest &clientRequest, std::string clientUrl, std::string file, int i);
-void handleDeleteMethod(servIt server, ClientRequest &clientRequest, std::string file, int i);
 std::string createGoodUrl(std::string oldUrl);
 std::string urlWithoutSlash(std::string location);
+locIt whichLocation(servIt it, ClientRequest *clientRequest, std::string clientUrl, std::string str);
+std::string	createUrl(servIt server, ClientRequest *clientRequest, std::string &clientUrl, locIt &location);
+int checkLenBody(ClientRequest *clientRequest, servIt server);
+int handlePollin(t_socket &socketConfig, std::vector<t_server> &servers, cMap &clientMap, int i);
+void handleGetMethod(servIt server, locIt location, ClientRequest *clientRequest, std::string clientUrl, std::string file);
+void handlePostMethod(servIt server, locIt location, ClientRequest *clientRequest, std::string clientUrl, std::string file);
+void handleDeleteMethod(servIt server, ClientRequest *clientRequest, std::string file);
+void initSocket(t_socket &socketConfig, std::vector<t_server> &servers);
+void handleSocket(std::vector<t_server> &servers, t_socket &socketConfig);
+void closeAllFds(t_socket &socketConfig, cMap &clientMap);

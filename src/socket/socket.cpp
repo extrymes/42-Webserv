@@ -4,20 +4,20 @@
 
 extern sig_atomic_t stopRequested;
 
-int handlePollout(t_socket &socketConfig, ClientRequest &clientRequest, int i) {
-	std::string serverResponse = clientRequest.getServerResponse(i);
+int handlePollout(t_socket &socketConfig, cMap &clientMap, int i) {
+	std::string serverResponse = clientMap[i]->getServerResponse();
 	long totalLen = serverResponse.size();
 	long len = send(socketConfig.clients[i].fd, serverResponse.c_str(), totalLen, 0);
 	if (len < 0) {
-		handleClientDisconnection(i, socketConfig.clients);
+		handleClientDisconnection(i, socketConfig.clients, clientMap);
 		return -1;
 	}
-	clientRequest.clearServerResponse(i);
+	clientMap[i]->clearServerResponse();
 	if (len < totalLen) {
-		clientRequest.setServerResponse(serverResponse.substr(len), i);
+		clientMap[i]->setServerResponse(serverResponse.substr(len));
 		socketConfig.clients[i].events = POLLOUT;
 	} else
-		handleClientDisconnection(i, socketConfig.clients);
+		handleClientDisconnection(i, socketConfig.clients, clientMap);
 	return 0;
 }
 
@@ -50,7 +50,7 @@ std::string urlWithoutSlash(std::string location) {
 	return newLocation;
 }
 
-locIt whichLocation(servIt it, ClientRequest &clientRequest, std::string clientUrl, std::string str) {
+locIt whichLocation(servIt it, ClientRequest *clientRequest, std::string clientUrl, std::string str) {
 	locIt location = it->locations.begin();
 	std::string goodUrl = createGoodUrl(clientUrl);
 	for (; location != it->locations.end(); ++location) {
@@ -58,14 +58,14 @@ locIt whichLocation(servIt it, ClientRequest &clientRequest, std::string clientU
 		std::string newClientUrl = urlWithoutSlash(goodUrl);
 		const int pathSize = newLocation.size();
 		if (strncmp(newLocation.c_str(), newClientUrl.c_str(), pathSize) == 0 && (newLocation.size() == newClientUrl.size())) {
-			clientRequest.setValueHeader(str, goodUrl.substr(pathSize));
+			clientRequest->setValueHeader(str, goodUrl.substr(pathSize));
 			return location;
 		}
 	}
 	return location;
 }
 
-std::string	createUrl(servIt server, ClientRequest &clientRequest, std::string &clientUrl, locIt &location) {
+std::string	createUrl(servIt server, ClientRequest *clientRequest, std::string &clientUrl, locIt &location) {
 	std::string file;
 	location = whichLocation(server, clientRequest, clientUrl, "url");
 	if (location == server->locations.end()) { //Si on ne trouve pas de partie location qui correspond à l'URL
@@ -81,23 +81,24 @@ std::string	createUrl(servIt server, ClientRequest &clientRequest, std::string &
 	return file;
 }
 
-int checkLenBody(ClientRequest &clientRequest, servIt server, int i) {
-	std::string test = clientRequest.getValueHeader("Content-Length");
+int checkLenBody(ClientRequest *clientRequest, servIt server) {
+	std::string test = clientRequest->getValueHeader("Content-Length");
 	if (test.empty())
 		return 1;
 	long contentLenght = std::atol(test.c_str());
 	if (contentLenght > server->clientMaxBodySize)
-		return (clientRequest.setServerResponse(readHtml("413", server, CODE413), i), 0);
-	if ((size_t)contentLenght < clientRequest.getBody(i).size())
+		return (clientRequest->setServerResponse(readHtml("413", server, CODE413)), 0);
+	std::cout << clientRequest->getBody() << std::endl;
+	if ((size_t)contentLenght < clientRequest->getBody().size())
 		return -1;
 	return 1;
 }
 
-int handlePollin(t_socket &socketConfig, std::vector<t_server> &servers, ClientRequest &clientRequest, int i) {
+int handlePollin(t_socket &socketConfig, std::vector<t_server> &servers, cMap &clientMap, int i) {
 	std::vector<int>::iterator it = std::find(socketConfig.serverFd.begin(), socketConfig.serverFd.end(), socketConfig.clients[i].fd);
 	if (it != socketConfig.serverFd.end()) {
 		socketConfig.clientLen = sizeof(socketConfig.clientAddr);
-		checkEmptyPlace(socketConfig, socketConfig.clients, *it);
+		checkEmptyPlace(socketConfig, clientMap, *it);
 		if (socketConfig.clientCount < MAX_CLIENTS)
 			socketConfig.clientCount++;
 		return 0;
@@ -105,64 +106,60 @@ int handlePollin(t_socket &socketConfig, std::vector<t_server> &servers, ClientR
 	char buffer[4096];
 	ssize_t size = recv(socketConfig.clients[i].fd, buffer, sizeof(buffer), 0);
 	if (size < 0)
-		return (handleClientDisconnection(i, socketConfig.clients), -1);
-	// for (ssize_t i = 0; i < size; i++)
-	// 	std::cout << buffer[i];
-	// std::cout << std::endl << std::endl << "---------------------------------------" << std::endl << std::endl;
-	// std::cout << buffer << std::endl;
-	clientRequest.parseBuffer(buffer, size, i);
-	servIt server = findIf(clientRequest.getValueHeader("port"), servers);
+		return (handleClientDisconnection(i, socketConfig.clients, clientMap), -1);
+	clientMap[i]->parseBuffer(buffer, size);
+	std::cout << buffer << std::endl;
+	servIt server = findIf(clientMap[i]->getValueHeader("port"), servers);
 	if (server == servers.end())
 		return -1;
 	socketConfig.clients[i].events = POLLOUT;
-	int isToLarge = checkLenBody(clientRequest, server, i);
+	int isToLarge = checkLenBody(clientMap[i], server);
 	if (isToLarge < 1) {
 		std::cout << "isToLarge = " << isToLarge << std::endl;
 		return isToLarge;
 	}
-	std::string clientUrl = clientRequest.getValueHeader("url"), file, method;
+	std::string clientUrl = clientMap[i]->getValueHeader("url"), file, method;
 	locIt location;
-	file = createUrl(server, clientRequest, clientUrl, location);
+	file = createUrl(server, clientMap[i], clientUrl, location);
 	if (location != server->locations.end() && !location->redirCode.empty())
-		return (clientRequest.setServerResponse(redir(location), i), 0);
-	method = clientRequest.getValueHeader("method");
-	std::cout << CYAN << method << RESET << " " << file << " " << clientRequest.getValueHeader("protocol") << std::endl;
-	if (isCGIFile(clientUrl) && !isCGIAllowed(clientUrl, server, clientRequest))
-		return (clientRequest.setServerResponse(readHtml("403", server, CODE403), i), 0);
+		return (clientMap[i]->setServerResponse(redir(location)), 0);
+	method = clientMap[i]->getValueHeader("method");
+	std::cout << CYAN << method << RESET << " " << file << " " << clientMap[i]->getValueHeader("protocol") << std::endl;
+	if (isCGIFile(clientUrl) && !isCGIAllowed(clientUrl, server, clientMap[i]))
+		return (clientMap[i]->setServerResponse(readHtml("403", server, CODE403)), 0);
 	if (method == "GET")
-		handleGetMethod(server, location, clientRequest, clientUrl, file, i);
+		handleGetMethod(server, location, clientMap[i], clientUrl, file);
 	else if (method == "POST")
-		handlePostMethod(server, location, clientRequest, clientUrl, file, i);
+		handlePostMethod(server, location, clientMap[i], clientUrl, file);
 	else if (method == "DELETE")
-		handleDeleteMethod(server, clientRequest, file, i);
-	clientRequest.clearHeader();
+		handleDeleteMethod(server, clientMap[i], file);
 	return 0;
 }
 
-void handleGetMethod(servIt server, locIt location, ClientRequest &clientRequest, std::string clientUrl, std::string file, int i) {
+void handleGetMethod(servIt server, locIt location, ClientRequest *clientRequest, std::string clientUrl, std::string file) {
 	if (!isMethodAllowed("GET", server, clientRequest))
-		return clientRequest.setServerResponse(readHtml("405", server, CODE405), i);
+		return clientRequest->setServerResponse(readHtml("405", server, CODE405));
 	if (!isCGIFile(clientUrl))
-		return clientRequest.setServerResponse(readHtml(file, server, CODE200), i);
+		return clientRequest->setServerResponse(readHtml(file, server, CODE200));
 	std::string root = (location != server->locations.end() && !location->root.empty()) ? location->root : server->root;
-	std::string output = executeCGI(clientUrl, root, clientRequest.getHeaderMap(), clientRequest.getBody(i));
-	return clientRequest.setServerResponse(httpResponse(output, "text/html", CODE200), i);
+	std::string output = executeCGI(clientUrl, root, clientRequest->getHeaderMap(), clientRequest->getBody());
+	return clientRequest->setServerResponse(httpResponse(output, "text/html", CODE200));
 }
 
-void handlePostMethod(servIt server, locIt location, ClientRequest &clientRequest, std::string clientUrl, std::string file, int i) {
+void handlePostMethod(servIt server, locIt location, ClientRequest *clientRequest, std::string clientUrl, std::string file) {
 	if (!isMethodAllowed("POST", server, clientRequest))
-		return clientRequest.setServerResponse(readHtml("405", server, CODE405), i);
+		return clientRequest->setServerResponse(readHtml("405", server, CODE405));
 	if (!isCGIFile(clientUrl))
-		return clientRequest.setServerResponse(readHtml(file, server, CODE200), i);
+		return clientRequest->setServerResponse(readHtml(file, server, CODE200));
 	std::string root = (location != server->locations.end() && !location->root.empty()) ? location->root : server->root;
-	std::string output = executeCGI(clientUrl, root, clientRequest.getHeaderMap(), clientRequest.getBody(i));
-	return clientRequest.setServerResponse(httpResponse(output, "text/html", CODE200), i);
+	std::string output = executeCGI(clientUrl, root, clientRequest->getHeaderMap(), clientRequest->getBody());
+	return clientRequest->setServerResponse(httpResponse(output, "text/html", CODE200));
 }
 
-void handleDeleteMethod(servIt server, ClientRequest &clientRequest, std::string file, int i) {
-	if (!isMethodAllowed("DELETE", server, clientRequest))
-		return clientRequest.setServerResponse(readHtml("405", server, CODE405), i);
-	return clientRequest.setServerResponse(httpResponse("", "", handleDeleteMethod(file)), i);
+void handleDeleteMethod(servIt server, ClientRequest *clientRequest, std::string file) {
+	if (!isMethodAllowed("DELETE", server, clientRequest)) //attention | potentiel timeout
+		return clientRequest->setServerResponse(readHtml("405", server, CODE405));
+	return clientRequest->setServerResponse(httpResponse("", "", handleDeleteMethod(file)));
 }
 
 void initSocket(t_socket &socketConfig, std::vector<t_server> &servers) {
@@ -191,7 +188,7 @@ void initSocket(t_socket &socketConfig, std::vector<t_server> &servers) {
 }
 
 void handleSocket(std::vector<t_server> &servers, t_socket &socketConfig) {
-	ClientRequest clientRequest;
+	cMap clientMap;
 	socketConfig.clientCount = servers.size();
 	std::memset(socketConfig.clients, 0, sizeof(socketConfig.clients));
 	initSocket(socketConfig, servers);
@@ -201,27 +198,32 @@ void handleSocket(std::vector<t_server> &servers, t_socket &socketConfig) {
 			continue;
 		for (int i = 0; i < socketConfig.clientCount; ++i) {
 			if (socketConfig.clients[i].revents & POLLIN) {
-				if (handlePollin(socketConfig, servers, clientRequest, i) == -1) {
+				if (handlePollin(socketConfig, servers, clientMap, i) == -1) {
 					socketConfig.clients[i].events = POLLIN;
 					continue;
 				}
-				clientRequest.clearBody(i);
-				clientRequest.clearHeader(i);
+				if (i > (int)servers.size()) {
+					clientMap[i]->clearHeader();
+					clientMap[i]->clearBody();
+				}
 			}
 			if (socketConfig.clients[i].revents & POLLOUT) {
-				if (handlePollout(socketConfig, clientRequest, i) == -1)
+				if (handlePollout(socketConfig, clientMap, i) == -1)
 					continue;
 			}
 		}
 	}
 	std::cout << std::endl << RED << "[-] All servers are shut down" << RESET << std::endl;
-	closeAllFds(socketConfig);
+	closeAllFds(socketConfig, clientMap);
 }
 
-void closeAllFds(t_socket &socketConfig) {
+void closeAllFds(t_socket &socketConfig, cMap &clientMap) {
 	std::vector<int>::iterator it;
 	for (it = socketConfig.serverFd.begin(); it != socketConfig.serverFd.end(); ++it)
 		close(*it);
-	for (int i = 0; i < MAX_CLIENTS; ++i)
+	for (int i = 0; i < MAX_CLIENTS; ++i) {
+		if (socketConfig.clients[i].fd != 0)
+			delete clientMap[i];
 		close(socketConfig.clients[i].fd);
+	}
 }

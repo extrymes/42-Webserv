@@ -8,29 +8,32 @@ void initAddrInfo(std::vector<t_server> &servers, int i, struct addrinfo *hints,
 			throw std::runtime_error("getaddrinfo fail" + (std::string)gai_strerror(result));
 }
 
-void handleClientDisconnection(int i, struct pollfd *clients) {
+void handleClientDisconnection(int i, struct pollfd *clients, cMap &clientMap) {
 	close(clients[i].fd);
 	clients[i].fd = 0;
 	clients[i].events = 0;
 	clients[i].revents = 0;
+	delete clientMap[i];
+	// clientMap.erase(i);
 	// std::cout << "Closing a Client" << std::endl;
 }
 
-void checkEmptyPlace(t_socket &socketConfig, struct pollfd *clients, int server_fd) {
+void checkEmptyPlace(t_socket &socketConfig, cMap &clientMap, int server_fd) {
 	for (int i = 0; i < MAX_CLIENTS; ++i) {
-		if (clients[i].fd == 0) {
+		if (socketConfig.clients[i].fd == 0) {
 			// std::cout << "Creating a new Client" << std::endl;
 			socklen_t len = sizeof(socketConfig.clientAddr);
-			clients[i].fd = accept(server_fd, (struct sockaddr *)&socketConfig.clientAddr, &len);
-			clients[i].events = POLLIN;
+			clientMap[i] = new ClientRequest;
+			socketConfig.clients[i].fd = accept(server_fd, (struct sockaddr *)&socketConfig.clientAddr, &len);
+			socketConfig.clients[i].events = POLLIN;
 			break;
 		}
 	}
 }
 
-void addIndexOrUrl(servIt server, std::vector<std::string> indexes, ClientRequest &clientRequest, std::string &path) {
+void addIndexOrUrl(servIt server, std::vector<std::string> indexes, ClientRequest *clientRequest, std::string &path) {
 	int err = 403;
-	if (clientRequest.getValueHeader("url").size() <= 1) {
+	if (clientRequest->getValueHeader("url").size() <= 1) {
 		std::vector<std::string>::iterator it = indexes.begin();
 		if (path[path.size() - 1] != '/')
 			path += '/';
@@ -47,7 +50,7 @@ void addIndexOrUrl(servIt server, std::vector<std::string> indexes, ClientReques
 		path = errNum == server->errorPages.end() ? toString(err) : errNum->second;
 	}
 	else
-		path += clientRequest.getValueHeader("url"); // Ex: root=www, url=etch-a-sketch/index.html
+		path += clientRequest->getValueHeader("url"); // Ex: root=www, url=etch-a-sketch/index.html
 }
 
 std::string toString(int nbr) {
@@ -68,14 +71,14 @@ std::string	handleDeleteMethod(std::string file) {
 	}
 }
 
-bool isMethodAllowed(std::string method, servIt server, ClientRequest &clientRequest) {
+bool isMethodAllowed(std::string method, servIt server, ClientRequest *clientRequest) {
 	std::string referer;
 	if (method == "GET")
-		referer = clientRequest.getValueHeader("url");
+		referer = clientRequest->getValueHeader("url");
 	else {
-		referer = clientRequest.getValueHeader("Referer");
-		if (clientRequest.getValueHeader("Origin").size() > 0)
-			referer = referer.substr(clientRequest.getValueHeader("Origin").size() - 1);
+		referer = clientRequest->getValueHeader("Referer");
+		if (clientRequest->getValueHeader("Origin").size() > 0)
+			referer = referer.substr(clientRequest->getValueHeader("Origin").size() - 1);
 	}
 	locIt location = whichLocation(server, clientRequest, referer, "");
 	if (location == server->locations.end() || location->allowedMethods.empty() || location->allowedMethods.find(method) != std::string::npos)
@@ -84,14 +87,14 @@ bool isMethodAllowed(std::string method, servIt server, ClientRequest &clientReq
 	return false;
 }
 
-bool isCGIAllowed(std::string url, servIt server, ClientRequest &clientRequest) {
+bool isCGIAllowed(std::string url, servIt server, ClientRequest *clientRequest) {
 	std::string referer, extension;
-	if (clientRequest.getValueHeader("method") == "GET")
-		referer = clientRequest.getValueHeader("url");
+	if (clientRequest->getValueHeader("method") == "GET")
+		referer = clientRequest->getValueHeader("url");
 	else {
-		referer = clientRequest.getValueHeader("Referer");
-		if (clientRequest.getValueHeader("Origin").size() > 0)
-			referer = referer.substr(clientRequest.getValueHeader("Origin").size() - 1);
+		referer = clientRequest->getValueHeader("Referer");
+		if (clientRequest->getValueHeader("Origin").size() > 0)
+			referer = referer.substr(clientRequest->getValueHeader("Origin").size() - 1);
 	}
 	locIt location = whichLocation(server, clientRequest, referer, "");
 	size_t idx = url.find_last_of('.');

@@ -6,13 +6,13 @@ ClientRequest::ClientRequest() {}
 
 ClientRequest::~ClientRequest () {}
 
-void ClientRequest::parseBuffer(char *buffer, ssize_t size, int i) {
+void ClientRequest::parseBuffer(char *buffer, ssize_t size) {
 	ssize_t j = 0;
 	std::string line;
 	std::istringstream infileBuff(buffer);
 	if (!_header.empty()) {
 		while (std::getline(infileBuff, line) )
-			_body[i].append(line);
+			_body.append(line);
 		return;
 	}
 	parseRequestHost(infileBuff, j);
@@ -24,9 +24,9 @@ void ClientRequest::parseBuffer(char *buffer, ssize_t size, int i) {
 	}
 	if (getValueHeader("method") == "POST") {
 		for (; j < size; j++)
-			_body[i] += buffer[j];
+			_body += buffer[j];
 	}
-	// std::cout << "_body[i] = " << _body[i] << std::endl;
+	// std::cout << "_body = " << _body << std::endl;
 }
 
 void ClientRequest::parseRequestHost(std::istringstream &infileBuff, ssize_t &j) {
@@ -71,36 +71,34 @@ ssMap ClientRequest::getHeaderMap() const {
 	return _header;
 }
 
-void ClientRequest::setBody(int i, std::string body) {
-	_body[i] = body;
+void ClientRequest::setBody(std::string body) {
+	_body = body;
 }
 
-const std::string ClientRequest::getBody(int i) {
-	isMap::iterator it = _body.find(i);
-	return it->second;
+const std::string ClientRequest::getBody() {
+	return _body;
 }
 
-const std::string ClientRequest::getServerResponse(int i) {
-	isMap::iterator it = _serverResponse.find(i);
-	return it->second;
+const std::string ClientRequest::getServerResponse() {
+	return _serverResponse;
 }
 
 void ClientRequest::setValueHeader(std::string key, std::string value) {
 	_header[key] = value;
 }
 
-void ClientRequest::setServerResponse(std::string serverResponse, int i) {
-	_serverResponse[i] = serverResponse;
+void ClientRequest::setServerResponse(std::string serverResponse) {
+	_serverResponse = serverResponse;
 }
 
-void ClientRequest::clearServerResponse(int i) {
-	_serverResponse.erase(i);
+void ClientRequest::clearServerResponse() {
+	_serverResponse.clear();
 }
 
 void ClientRequest::clearHeader() {
 	_header.clear();
 }
 
-void ClientRequest::clearBody(int i) {
-	_body.erase(i);
+void ClientRequest::clearBody() {
+	_body = "";
 }
