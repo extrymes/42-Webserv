@@ -18,8 +18,8 @@ class ClientRequest {
 		ClientRequest();
 		~ClientRequest();
 
-		void parseBuffer(char *buffer, int i);
-		void parseRequestHost(std::istringstream &infileBuff);
+		void parseBuffer(char *buffer, ssize_t size, int i);
+		void parseRequestHost(std::istringstream &infileBuff, ssize_t &i);
 		void parseHeader(std::string line);
 
 		const std::string getValueHeader(std::string key);
@@ -40,4 +40,5 @@ class ClientRequest {
 		ssMap _header;
 		isMap _body;
 		isMap _serverResponse;
+		std::string	_bodyString;
 };

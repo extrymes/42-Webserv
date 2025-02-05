@@ -6,40 +6,44 @@ ClientRequest::ClientRequest() {}
 
 ClientRequest::~ClientRequest () {}
 
-void ClientRequest::parseBuffer(char *buffer, int i) {
-	int	flag = 0;
+void ClientRequest::parseBuffer(char *buffer, ssize_t size, int i) {
+	ssize_t j = 0;
 	std::string line;
 	std::istringstream infileBuff(buffer);
-	parseRequestHost(infileBuff);
-	while (std::getline(infileBuff, line) ) {
-		if (line.size() == 1 && getValueHeader("method") == "POST") {
-			flag = 1;
-			continue;
-		}
-		if (flag == 0)
-			parseHeader(line);
-		else
+	if (!_header.empty()) {
+		while (std::getline(infileBuff, line) )
 			_body[i].append(line);
+		return;
 	}
+	parseRequestHost(infileBuff, j);
+	while (std::getline(infileBuff, line)) {
+		j += line.size();
+		if (line.size() == 1 && getValueHeader("method") == "POST")
+			break;
+		parseHeader(line);
+	}
+	if (getValueHeader("method") == "POST") {
+		for (; j < size; j++)
+			_body[i] += buffer[j];
+	}
+	// std::cout << "_body[i] = " << _body[i] << std::endl;
 }
 
-void ClientRequest::parseRequestHost(std::istringstream &infileBuff) {
+void ClientRequest::parseRequestHost(std::istringstream &infileBuff, ssize_t &j) {
 	std::string	requestLine, hostLine, method, url, protocol, host, port, tmp;
 	if (!infileBuff)
 		throw std::runtime_error("opening buffer failed");
 	std::getline(infileBuff, requestLine);
+	j += requestLine.size();
 	std::istringstream iss(requestLine);
 	iss >> method, iss >> url, iss >> protocol;
 	if (method.empty() || url.empty() || protocol.empty())
 		std::runtime_error("invalid HTTP header");
-	// if (method != "GET" && method != "POST" && method != "DELETE") {
-	// 	std::cout << "buffer = " << infileBuff.str() << std::endl;
-	// 	throw std::runtime_error("invalid HTTP method");
-	// }
 	_header["method"] = method;
 	_header["url"] = url;
 	_header["protocol"] = protocol;
 	std::getline(infileBuff, hostLine);
+	j += hostLine.size();
 	std::istringstream iss2(hostLine);
 	iss2 >> tmp, iss2 >> std::ws;
 	std::getline(iss2, host, ':');

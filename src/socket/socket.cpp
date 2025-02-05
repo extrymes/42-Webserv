@@ -37,7 +37,6 @@ std::string createGoodUrl(std::string oldUrl) {
 		if ((oldUrl[i] != '/' && std::isprint(oldUrl[i])) || (oldUrl[i] == '/' && isalnum(oldUrl[i + 1])))
 			goodUrl += oldUrl[i];
 	}
-	// std::cout << "good url = " << goodUrl << std::endl;
 	return goodUrl;
 }
 
@@ -82,6 +81,18 @@ std::string	createUrl(servIt server, ClientRequest &clientRequest, std::string &
 	return file;
 }
 
+int checkLenBody(ClientRequest &clientRequest, servIt server, int i) {
+	std::string test = clientRequest.getValueHeader("Content-Length");
+	if (test.empty())
+		return 1;
+	long contentLenght = std::atol(test.c_str());
+	if (contentLenght > server->clientMaxBodySize)
+		return (clientRequest.setServerResponse(readHtml("413", server, CODE413), i), 0);
+	if ((size_t)contentLenght < clientRequest.getBody(i).size())
+		return -1;
+	return 1;
+}
+
 int handlePollin(t_socket &socketConfig, std::vector<t_server> &servers, ClientRequest &clientRequest, int i) {
 	std::vector<int>::iterator it = std::find(socketConfig.serverFd.begin(), socketConfig.serverFd.end(), socketConfig.clients[i].fd);
 	if (it != socketConfig.serverFd.end()) {
@@ -92,24 +103,28 @@ int handlePollin(t_socket &socketConfig, std::vector<t_server> &servers, ClientR
 		return 0;
 	}
 	char buffer[4096];
-	if (recv(socketConfig.clients[i].fd, buffer, sizeof(buffer), 0) < 0)
+	ssize_t size = recv(socketConfig.clients[i].fd, buffer, sizeof(buffer), 0);
+	if (size < 0)
 		return (handleClientDisconnection(i, socketConfig.clients), -1);
+	// for (ssize_t i = 0; i < size; i++)
+	// 	std::cout << buffer[i];
+	// std::cout << std::endl << std::endl << "---------------------------------------" << std::endl << std::endl;
 	// std::cout << buffer << std::endl;
-	clientRequest.parseBuffer(buffer, i);
+	clientRequest.parseBuffer(buffer, size, i);
 	servIt server = findIf(clientRequest.getValueHeader("port"), servers);
 	if (server == servers.end())
 		return -1;
 	socketConfig.clients[i].events = POLLOUT;
-	if (std::atol(clientRequest.getValueHeader("Content-Length").c_str()) > server->clientMaxBodySize) {
-		clientRequest.setServerResponse(readHtml("413", server, CODE413), i);
-		return 0;
+	int isToLarge = checkLenBody(clientRequest, server, i);
+	if (isToLarge < 1) {
+		std::cout << "isToLarge = " << isToLarge << std::endl;
+		return isToLarge;
 	}
 	std::string clientUrl = clientRequest.getValueHeader("url"), file, method;
 	locIt location;
 	file = createUrl(server, clientRequest, clientUrl, location);
-	if (location != server->locations.end() && !location->redirCode.empty()) {
+	if (location != server->locations.end() && !location->redirCode.empty())
 		return (clientRequest.setServerResponse(redir(location), i), 0);
-	}
 	method = clientRequest.getValueHeader("method");
 	std::cout << CYAN << method << RESET << " " << file << " " << clientRequest.getValueHeader("protocol") << std::endl;
 	if (isCGIFile(clientUrl) && !isCGIAllowed(clientUrl, server, clientRequest))
@@ -186,9 +201,12 @@ void handleSocket(std::vector<t_server> &servers, t_socket &socketConfig) {
 			continue;
 		for (int i = 0; i < socketConfig.clientCount; ++i) {
 			if (socketConfig.clients[i].revents & POLLIN) {
-				if (handlePollin(socketConfig, servers, clientRequest, i) == -1)
+				if (handlePollin(socketConfig, servers, clientRequest, i) == -1) {
+					socketConfig.clients[i].events = POLLIN;
 					continue;
+				}
 				clientRequest.clearBody(i);
+				clientRequest.clearHeader(i);
 			}
 			if (socketConfig.clients[i].revents & POLLOUT) {
 				if (handlePollout(socketConfig, clientRequest, i) == -1)
@@ -198,7 +216,6 @@ void handleSocket(std::vector<t_server> &servers, t_socket &socketConfig) {
 	}
 	std::cout << std::endl << RED << "[-] All servers are shut down" << RESET << std::endl;
 	closeAllFds(socketConfig);
-	// close(socketConfig.server_fd);
 }
 
 void closeAllFds(t_socket &socketConfig) {

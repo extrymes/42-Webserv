@@ -14,3 +14,4 @@ bool isCGIFile(std::string url);
 char **createCGIEnvironment(ssMap headerMap, std::string body);
 void freeCGIEnvironment(char **envp);
 std::string executeCGI(std::string url, std::string root, ssMap header, std::string body);
+std::string executeCGI(std::string url, std::string root, ssMap header, std::string body);
