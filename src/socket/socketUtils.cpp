@@ -60,7 +60,7 @@ std::string toString(int nbr) {
 }
 
 std::string	handleDeleteMethod(std::string file) {
-	int status = remove(file.c_str());
+	int status = std::remove(file.c_str());
 	if (status != 0) {
 		perror("Error deleting file");
 		return CODE404;

@@ -88,8 +88,9 @@ int checkLenBody(ClientRequest *clientRequest, servIt server) {
 	long contentLenght = std::atol(test.c_str());
 	if (contentLenght > server->clientMaxBodySize)
 		return (clientRequest->setServerResponse(readHtml("413", server, CODE413)), 0);
-	std::cout << clientRequest->getBody() << std::endl;
-	if ((size_t)contentLenght < clientRequest->getBody().size())
+	std::cout << "clientRequest->getBody() = " << clientRequest->getBody().size() << std::endl;
+	std::cout << "contentLenght = " <<  contentLenght << std::endl;
+	if ((size_t)contentLenght > clientRequest->getBody().size())
 		return -1;
 	return 1;
 }
@@ -202,7 +203,7 @@ void handleSocket(std::vector<t_server> &servers, t_socket &socketConfig) {
 					socketConfig.clients[i].events = POLLIN;
 					continue;
 				}
-				if (i > (int)servers.size()) {
+				if (i >= (int)servers.size()) {
 					clientMap[i]->clearHeader();
 					clientMap[i]->clearBody();
 				}
