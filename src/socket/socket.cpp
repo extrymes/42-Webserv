@@ -105,7 +105,6 @@ int handlePollin(t_socket &socketConfig, std::vector<t_server> &servers, cMap &c
 			socketConfig.clientCount++;
 		return 0;
 	}
-	// std::cout << "bizarre" << std::endl;
 	char buffer[4096];
 	ssize_t size = recv(socketConfig.clients[i].fd, buffer, sizeof(buffer), 0);
 	if (size < 0)
