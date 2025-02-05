@@ -1,15 +1,16 @@
 #!/usr/bin/python3
 
-import os
-import sys
-# import linecache as lc 
+# import os
+# import sys
+# # import linecache as lc 
 
-contentType = os.environ.get("Content-Type", "Unknown")
-boundary = contentType.split("=")[1]
+# contentType = os.environ.get("Content-Type", "Unknown")
+print("bonjour")
+# boundary = contentType.split("=")[1]
 
-content_length = int(os.environ.get("Content-Length", "Unknown"))
-print(content_length)
-body = sys.stdin.buffer.read(content_length)
+# content_length = int(os.environ.get("Content-Length", "Unknown"))
+# print(content_length)
+# body = sys.stdin.buffer.read(content_length)
 
 # print(body)
 # body = os.environ.get("body", "Unknown").split(boundary)[1]

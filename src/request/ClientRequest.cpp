@@ -11,8 +11,8 @@ void ClientRequest::parseBuffer(char *buffer, ssize_t size) {
 	std::string line;
 	std::istringstream infileBuff(buffer);
 	if (!_header.empty()) {
-		while (std::getline(infileBuff, line) )
-			_body.append(line);
+		std::string strBuff = buffer;
+		_body += strBuff;
 		return;
 	}
 	parseRequestHost(infileBuff, j);
@@ -24,12 +24,13 @@ void ClientRequest::parseBuffer(char *buffer, ssize_t size) {
 	}
 	if (getValueHeader("method") == "POST") {
 		std::string strBuff = buffer;
-		while (j < size && strBuff.compare(j, 5, "-----") != 0)
+		while (j < size && strBuff.compare(j, 4, "\r\n\r\n") != 0)
 			j++;
+		j += 4;
 		for (; j < size; j++)
 			_body += buffer[j];
 	}
-	std::cout << _body << std::endl;
+	// std::cout << _body << std::endl;
 }
 
 void ClientRequest::parseRequestHost(std::istringstream &infileBuff, ssize_t &j) {

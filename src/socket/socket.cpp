@@ -88,6 +88,9 @@ int checkLenBody(ClientRequest *clientRequest, servIt server) {
 	long contentLenght = std::atol(test.c_str());
 	if (contentLenght > server->clientMaxBodySize)
 		return (clientRequest->setServerResponse(readHtml("413", server, CODE413)), 0);
+	std::cout << std::endl << "=============================================================" << std::endl << clientRequest->getBody() << std::endl << "=============================================================" << std::endl;
+	std::cout << "clientRequest->getBody().size() = " << clientRequest->getBody().size() << std::endl;
+	std::cout << "contentLenght = " << contentLenght << std::endl;
 	if ((size_t)contentLenght > clientRequest->getBody().size())
 		return -1;
 	return 1;
@@ -102,15 +105,20 @@ int handlePollin(t_socket &socketConfig, std::vector<t_server> &servers, cMap &c
 			socketConfig.clientCount++;
 		return 0;
 	}
+	// std::cout << "bizarre" << std::endl;
 	char buffer[4096];
 	ssize_t size = recv(socketConfig.clients[i].fd, buffer, sizeof(buffer), 0);
 	if (size < 0)
 		return (handleClientDisconnection(i, socketConfig.clients, clientMap), -1);
 	clientMap[i]->parseBuffer(buffer, size);
-	// std::cout << buffer << std::endl;
+	std::cout << "buffer = " << buffer << std::endl;
+	std::cout << "i = " << i << std::endl;
+	std::cout << "clientMap[i] = " << clientMap[i]->getValueHeader("port") << std::endl;
 	servIt server = findIf(clientMap[i]->getValueHeader("port"), servers);
-	if (server == servers.end())
+	if (server == servers.end()) {
+		std::cout << "ici" << std::endl;
 		return -1;
+	}
 	socketConfig.clients[i].events = POLLOUT;
 	int isToLarge = checkLenBody(clientMap[i], server);
 	if (isToLarge < 1) {
@@ -123,7 +131,9 @@ int handlePollin(t_socket &socketConfig, std::vector<t_server> &servers, cMap &c
 	if (location != server->locations.end() && !location->redirCode.empty())
 		return (clientMap[i]->setServerResponse(redir(location)), 0);
 	method = clientMap[i]->getValueHeader("method");
+
 	std::cout << CYAN << method << RESET << " " << file << " " << clientMap[i]->getValueHeader("protocol") << std::endl;
+	
 	if (isCGIFile(clientUrl) && !isCGIAllowed(clientUrl, server, clientMap[i]))
 		return (clientMap[i]->setServerResponse(readHtml("403", server, CODE403)), 0);
 	if (method == "GET")
