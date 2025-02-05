@@ -88,8 +88,6 @@ int checkLenBody(ClientRequest *clientRequest, servIt server) {
 	long contentLenght = std::atol(test.c_str());
 	if (contentLenght > server->clientMaxBodySize)
 		return (clientRequest->setServerResponse(readHtml("413", server, CODE413)), 0);
-	std::cout << "clientRequest->getBody() = " << clientRequest->getBody().size() << std::endl;
-	std::cout << "contentLenght = " <<  contentLenght << std::endl;
 	if ((size_t)contentLenght > clientRequest->getBody().size())
 		return -1;
 	return 1;
@@ -109,7 +107,7 @@ int handlePollin(t_socket &socketConfig, std::vector<t_server> &servers, cMap &c
 	if (size < 0)
 		return (handleClientDisconnection(i, socketConfig.clients, clientMap), -1);
 	clientMap[i]->parseBuffer(buffer, size);
-	std::cout << buffer << std::endl;
+	// std::cout << buffer << std::endl;
 	servIt server = findIf(clientMap[i]->getValueHeader("port"), servers);
 	if (server == servers.end())
 		return -1;
@@ -148,6 +146,7 @@ void handleGetMethod(servIt server, locIt location, ClientRequest *clientRequest
 }
 
 void handlePostMethod(servIt server, locIt location, ClientRequest *clientRequest, std::string clientUrl, std::string file) {
+	// std::cout << "ici" << std::endl;
 	if (!isMethodAllowed("POST", server, clientRequest))
 		return clientRequest->setServerResponse(readHtml("405", server, CODE405));
 	if (!isCGIFile(clientUrl))
