@@ -18,28 +18,24 @@ class ClientRequest {
 		ClientRequest();
 		~ClientRequest();
 
-		void parseBuffer(char *buffer);
-		void parseRequestHost(std::istringstream &infileBuff);
+		void parseBuffer(char *buffer, ssize_t size);
+		void parseRequestHost(std::istringstream &infileBuff, ssize_t &i);
 		void parseHeader(std::string line);
-		void parseBody(std::string line);
 
 		const std::string getValueHeader(std::string key);
 		ssMap getHeaders() const;
-		ssMap getBody() const;
+		std::string getBodyString() const;
 		const std::string getServerResponse(int i);
-		const std::string getValueBody(std::string key);
 
 		void setValueHeader(std::string key, std::string value);
 		void setServerResponse(std::string serverResponse, int i);
 
 		void clearServerResponse(int i);
-		void clearBody();
 		void clearHeader();
-		void clearBuff();
 
 	private:
 
 		ssMap _headers;
-		ssMap _body;
 		isMap _serverResponse;
+		std::string	_bodyString;
 };
