@@ -36,8 +36,9 @@ std::string parseURL(std::string &url) {
 }
 
 std::string executeCGI(std::string url, std::string root, ssMap headerMap, std::string body) {
-	int pipefd[2];
-	if (pipe(pipefd) == -1)
+	int	pipefdOut[2];
+	int	pipefdIn[2];
+	if (pipe(pipefdOut) == -1 || pipe(pipefdIn) == -1)
 		throw std::runtime_error("pipe error");
 	pid_t pid = fork();
 	if (pid < 0)
@@ -45,9 +46,12 @@ std::string executeCGI(std::string url, std::string root, ssMap headerMap, std::
 	std::string output = "";
 	if (pid == 0) {
 		// Child process
-		close(pipefd[0]);
-		dup2(pipefd[1], STDOUT_FILENO);
-		close(pipefd[1]);
+		close(pipefdOut[0]);
+		if (dup2(pipefdOut[1], STDOUT_FILENO) < 0 || dup2(pipefdIn[0], STDIN_FILENO) < 0)
+			throw std::logic_error("Dup2 failed when executing CGI at url: " + url);
+		close(pipefdOut[1]);
+		close(pipefdIn[0]);
+		close(pipefdIn[1]);
 		url = root.empty() ? url : root + url;
 		char *argv[] = {const_cast<char*>(url.c_str()), NULL};
 		if (body.empty())
@@ -58,12 +62,17 @@ std::string executeCGI(std::string url, std::string root, ssMap headerMap, std::
 		throw std::runtime_error("child process failed");
 	} else {
 		// Parent process
-		close(pipefd[1]);
+		for(int i = 0; i < (int)body.size(); ++i)
+			std::cout << body[i];
+		write(pipefdIn[1], body.c_str(), body.size());
+		close(pipefdIn[0]);
+		close(pipefdIn[1]);
+		close(pipefdOut[1]);
 		char buffer[1024];
 		int bytesRead;
-		while ((bytesRead = read(pipefd[0], buffer, sizeof(buffer))))
+		while ((bytesRead = read(pipefdOut[0], buffer, sizeof(buffer))))
 			output.append(buffer, bytesRead);
-		close(pipefd[0]);
+		close(pipefdOut[0]);
 		int status;
 		waitpid(pid, &status, 0);
 		if (!WIFEXITED(status) || WEXITSTATUS(status) != 0)

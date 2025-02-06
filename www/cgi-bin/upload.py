@@ -1,36 +1,51 @@
 #!/usr/bin/python3
 
-# import os
-# import sys
+import os
+import sys
 # # import linecache as lc 
 
-# contentType = os.environ.get("Content-Type", "Unknown")
-print("bonjour")
-# boundary = contentType.split("=")[1]
+contentType = os.environ.get("Content-Type", "Unknown")
+boundary = contentType.split("=")[1]
 
-# content_length = int(os.environ.get("Content-Length", "Unknown"))
-# print(content_length)
-# body = sys.stdin.buffer.read(content_length)
+body = sys.stdin.buffer.read()
 
-# print(body)
-# body = os.environ.get("body", "Unknown").split(boundary)[1]
+body = body.split(boundary.encode())[1]
 
-# startFile = body.find('filename="') + len('filename="')
-# endFile = body.index('"', startFile)
-# filename = body[startFile:endFile].replace(' ', '_')
+startFile = body.find(b'filename="') + len(b'filename="')
+endFile = body.index(b'"', startFile)
+filename = body[startFile:endFile].replace(b' ', b'_')
 
 # print(filename)
 
-# startType = body.find('Content-Type: ') + len('Content-Type: ')
-# endType = body.index('\r', startType)
-# contentType = body[startType:endType]
+startType = body.find(b'Content-Type: ') + len(b'Content-Type: ')
+endType = body.index(b'\r', startType)
+contentType = body[startType:endType]
 
-# # print(contentType)
+# print(contentType)
 
-# end_data = body.rfind("--")
+endData = body.rfind(b"--")
 
-# data = body[endType:end_data]
+# print(end_data)
 
-# with open("www/upload/" + filename, 'wb') as file:
-# 	string = data.encode('utf-8', 'backslashreplace')
-# 	file.write(string)
+data = body[endType:endData]
+
+print(data)
+
+with open("www/upload/" + filename.decode(), 'wb') as file:
+	file.write(data)
+
+
+# content_length = os.getenv('Content-Length')
+# content_type = os.getenv('Content-Type')
+# # upload_save = os.getenv('UPLOAD_SAVE')
+
+# if ((not content_length) or (not content_type)):
+# 	sys.exit(1)
+
+# boundary = content_type.split("=")[-1]
+# boundary_b = b"\r\n--" + boundary.encode()
+# input_data = sys.stdin.buffer.read()
+
+# # print(input_data)
+
+# split_input = input_data.split(boundary_b)

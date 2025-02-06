@@ -22,7 +22,7 @@ class ClientRequest {
 		~ClientRequest();
 
 		void parseBuffer(char *buffer, ssize_t size);
-		void parseRequestHost(std::istringstream &infileBuff, ssize_t &i);
+		void parseRequestHost(std::istringstream &infileBuff);
 		void parseHeader(std::string line);
 
 		const std::string getValueHeader(std::string key);

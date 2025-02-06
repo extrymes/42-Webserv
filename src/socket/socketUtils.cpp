@@ -70,10 +70,10 @@ std::string	handleDeleteMethod(std::string file) {
 	}
 }
 
-bool isMethodAllowed(std::string method, servIt server, ClientRequest *clientRequest) {
+bool isMethodAllowed(std::string method, servIt server, ClientRequest *clientRequest, std::string clientUrl) {
 	std::string referer;
 	if (method == "GET")
-		referer = clientRequest->getValueHeader("url");
+		referer = clientUrl;
 	else {
 		referer = clientRequest->getValueHeader("Referer");
 		if (clientRequest->getValueHeader("Origin").size() > 0)

@@ -81,6 +81,14 @@ std::string	createUrl(servIt server, ClientRequest *clientRequest, std::string &
 	return file;
 }
 
+std::string printAll(std::string str) {
+	int len = str.size();
+	for (int i = 0; i < len; i++) {
+		std::cout << str[i];
+	}
+	return "";
+}
+
 int checkLenBody(ClientRequest *clientRequest, servIt server) {
 	std::string test = clientRequest->getValueHeader("Content-Length");
 	if (test.empty())
@@ -88,10 +96,10 @@ int checkLenBody(ClientRequest *clientRequest, servIt server) {
 	long contentLenght = std::atol(test.c_str());
 	if (contentLenght > server->clientMaxBodySize)
 		return (clientRequest->setServerResponse(readHtml("413", server, CODE413)), 0);
-	// std::cout << std::endl << "=============================================================" << std::endl << clientRequest->getBody() << std::endl << "=============================================================" << std::endl;
+	// std::cout << std::endl << "=============================================================" << std::endl << printAll(clientRequest->getBody()) << std::endl << "=============================================================" << std::endl;
 	// std::cout << "clientRequest->getBody().size() = " << clientRequest->getBody().size() << std::endl;
 	// std::cout << "contentLenght = " << contentLenght << std::endl;
-	if ((size_t)contentLenght > clientRequest->getBody().size())
+	if ((size_t)contentLenght> clientRequest->getBody().size())
 		return -1;
 	return 1;
 }
@@ -105,20 +113,20 @@ int handlePollin(t_socket &socketConfig, std::vector<t_server> &servers, cMap &c
 			socketConfig.clientCount++;
 		return 0;
 	}
-	char buffer[4096];
+	char buffer[4096] = {0};
 	ssize_t size = recv(socketConfig.clients[i].fd, buffer, sizeof(buffer), 0);
-	if (size < 0)
+	if (size <= 0)
 		return (handleClientDisconnection(i, socketConfig.clients, clientMap), -1);
 	clientMap[i]->parseBuffer(buffer, size);
-	// std::cout << "buffer = " << buffer << std::endl;
 	servIt server = findIf(clientMap[i]->getValueHeader("port"), servers);
-	if (server == servers.end()) {
+	if (server == servers.end())
 		return -1;
-	}
 	socketConfig.clients[i].events = POLLOUT;
 	int isToLarge = checkLenBody(clientMap[i], server);
-	if (isToLarge < 1)
+	if (isToLarge < 1) {
+		std::cout << "isToLarge = " << isToLarge << std::endl;
 		return isToLarge;
+	}
 	std::string clientUrl = clientMap[i]->getValueHeader("url"), file, method;
 	locIt location;
 	file = createUrl(server, clientMap[i], clientUrl, location);
@@ -140,7 +148,7 @@ int handlePollin(t_socket &socketConfig, std::vector<t_server> &servers, cMap &c
 }
 
 void handleGetMethod(servIt server, locIt location, ClientRequest *clientRequest, std::string clientUrl, std::string file) {
-	if (!isMethodAllowed("GET", server, clientRequest))
+	if (!isMethodAllowed("GET", server, clientRequest, clientUrl))
 		return clientRequest->setServerResponse(readHtml("405", server, CODE405));
 	if (!isCGIFile(clientUrl))
 		return clientRequest->setServerResponse(readHtml(file, server, CODE200));
@@ -150,8 +158,7 @@ void handleGetMethod(servIt server, locIt location, ClientRequest *clientRequest
 }
 
 void handlePostMethod(servIt server, locIt location, ClientRequest *clientRequest, std::string clientUrl, std::string file) {
-	// std::cout << "ici" << std::endl;
-	if (!isMethodAllowed("POST", server, clientRequest))
+	if (!isMethodAllowed("POST", server, clientRequest, ""))
 		return clientRequest->setServerResponse(readHtml("405", server, CODE405));
 	if (!isCGIFile(clientUrl))
 		return clientRequest->setServerResponse(readHtml(file, server, CODE200));
@@ -161,7 +168,7 @@ void handlePostMethod(servIt server, locIt location, ClientRequest *clientReques
 }
 
 void handleDeleteMethod(servIt server, ClientRequest *clientRequest, std::string file) {
-	if (!isMethodAllowed("DELETE", server, clientRequest)) //attention | potentiel timeout
+	if (!isMethodAllowed("DELETE", server, clientRequest, "")) //attention | potentiel timeout
 		return clientRequest->setServerResponse(readHtml("405", server, CODE405));
 	return clientRequest->setServerResponse(httpResponse("", "", handleDeleteMethod(file)));
 }
