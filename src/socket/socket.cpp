@@ -127,7 +127,7 @@ int handlePollin(t_socket &socketConfig, std::vector<t_server> &servers, cMap &c
 	method = clientMap[i]->getValueHeader("method");
 
 	std::cout << CYAN << method << RESET << " " << file << " " << clientMap[i]->getValueHeader("protocol") << std::endl;
-	
+
 	if (isCGIFile(clientUrl) && !isCGIAllowed(clientUrl, server, clientMap[i]))
 		return (clientMap[i]->setServerResponse(readHtml("403", server, CODE403)), 0);
 	if (method == "GET")

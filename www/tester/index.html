@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Simple Form</title>
+	<link rel="stylesheet" href="style.css">
+</head>
+<body>
+	<h1>Methods tester</h1>
+	<div class="flex gap">
+		<div>
+			<h2>GET</h2>
+			<form action="../cgi-bin/form.php" method="get">
+				<div>
+					<div>
+						<div class="mt">Name</div>
+						<input class="input" name="name" placeholder="Marie Gaelle" />
+					</div>
+					<div class="mt">
+						<div>Message</div>
+						<textarea class="input" name="message" placeholder="Hello guys!"></textarea>
+					</div>
+				</div>
+				<div class="mt">
+					<button class="button bg-blue" type="submit">GET</button>
+				</div>
+			</form>
+		</div>
+		<div>
+			<h2>POST</h2>
+			<form action="../cgi-bin/login.py" method="post">
+				<div>
+					<div class="mt">
+						<div>First name</div>
+						<input class="input" type="text" name="first_name" placeholder="Simon" />
+					</div>
+					<div class="mt">
+						<div>Last name</div>
+						<input class="input" type="text" name="last_name" placeholder="Abras" />
+					</div>
+					<div class="mt">
+						<div>Email</div>
+						<input class="input" type="text" name="email" placeholder="sabras@student.42.fr" />
+					</div>
+					<div class="mt">
+						<div>Phone number</div>
+						<input class="input" type="text" name="number" placeholder="06 06 06 06 06" />
+					</div>
+					<div class="mt">
+						<div>Password</div>
+						<input class="input" type="password" name="password" placeholder="Secret password" />
+					</div>
+				</div>
+				<div class="mt">
+					<button class="button bg-green" type="submit">POST</button>
+				</div>
+			</form>
+		</div>
+		<div>
+			<h2>DELETE</h2>
+			<form>
+				<div>
+					<div>
+						<div>File name</div>
+						<input class="input" placeholder="miguelita.txt" />
+					</div>
+				</div>
+				<div class="mt">
+					<button class="button bg-red" type="submit">DELETE</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</body>
+</html>

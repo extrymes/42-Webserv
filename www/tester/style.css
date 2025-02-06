@@ -1,0 +1,64 @@
+.input {
+	width: 100%;
+	padding: 10px;
+	resize: none;
+	border: none;
+	background-color: lightgray;
+	border-radius: 10px;
+}
+
+.input:focus {
+	outline-style: solid;
+	outline-color: black;
+}
+
+.button {
+	width: 100%;
+	padding: 10px;
+	border: none;
+	border-radius: 10px;
+	cursor: pointer;
+	color: white;
+	font-weight: bold;
+}
+
+
+.flex {
+	display: flex;
+}
+
+.gap {
+	gap: 5rem;
+}
+
+.mt {
+	margin-top: 15px;
+}
+
+.ml {
+	margin-left: 15px;
+}
+
+.bg-blue {
+	background-color: blue
+}
+
+.bg-green {
+	background-color: green
+}
+
+.bg-red {
+	background-color: red
+}
+
+.bg-blue:active {
+	background-color: darkblue
+}
+
+.bg-green:active {
+	background-color: darkgreen;
+}
+
+.bg-red:active {
+	background-color: darkred;
+}
