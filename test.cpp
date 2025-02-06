@@ -19,9 +19,7 @@
 # include <netdb.h>
 # include <cstdio>
 
-int main(){
-	for (int i = 0; i < 4200; ++i) {
+int main(void) {
+	for (int i = 0; i < 10000; ++i)
 		std::cout << "a";
-	}
-	return 0;
 }

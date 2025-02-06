@@ -10,12 +10,15 @@ void ClientRequest::parseBuffer(char *buffer, ssize_t size) {
 	ssize_t j = 0;
 	std::string line;
 	std::istringstream infileBuff(buffer);
+	// std::cout << "strlen(buffer) = " << strlen(buffer) << std::endl;
 	if (!_header.empty()) {
 		std::string strBuff = buffer;
-		for(ssize_t i = _body.size(); i < std::atoi(getValueHeader("Content-Length").c_str()); ++i) {
+		// std::cout << "strBuff.size() = " << strBuff.size() << std::endl;
+		for(ssize_t i = _body.size(); i < std::atoi(getValueHeader("Content-Length").c_str()) && j < size; ++i, ++j) {
 			_body += strBuff[j];
-			++j;
+			std::cout << strBuff[j];
 		}
+		std::cout << std::endl;
 		return;
 	}
 	parseRequestHost(infileBuff, j);
@@ -30,8 +33,11 @@ void ClientRequest::parseBuffer(char *buffer, ssize_t size) {
 		while (j < size && strBuff.compare(j, 4, "\r\n\r\n") != 0)
 			j++;
 		j += 4;
-		for (; j < size; j++)
+		for (; j < size; j++) {
 			_body += buffer[j];
+			std::cout << buffer[j];
+		}
+		std::cout << std::endl;
 	}
 }
 
