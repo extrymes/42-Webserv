@@ -97,9 +97,9 @@ int checkLenBody(ClientRequest *clientRequest, servIt server) {
 	if (contentLenght > server->clientMaxBodySize)
 		return (clientRequest->setServerResponse(readHtml("413", server, CODE413)), 0);
 	// std::cout << std::endl << "=============================================================" << std::endl << printAll(clientRequest->getBody()) << std::endl << "=============================================================" << std::endl;
-	std::cout << "clientRequest->getBody().size() = " << clientRequest->getBody().size() << std::endl;
-	std::cout << "contentLenght = " << contentLenght << std::endl;
-	if ((size_t)contentLenght > clientRequest->getBody().size())
+	// std::cout << "clientRequest->getBody().size() = " << clientRequest->getBody().size() << std::endl;
+	// std::cout << "contentLenght = " << contentLenght << std::endl;
+	if ((size_t)contentLenght> clientRequest->getBody().size())
 		return -1;
 	return 1;
 }
@@ -113,7 +113,6 @@ int handlePollin(t_socket &socketConfig, std::vector<t_server> &servers, cMap &c
 			socketConfig.clientCount++;
 		return 0;
 	}
-	// std::cout << "#######################################################################################################" << std::endl;
 	char buffer[4096] = {0};
 	ssize_t size = recv(socketConfig.clients[i].fd, buffer, sizeof(buffer), 0);
 	if (size <= 0)
@@ -149,7 +148,7 @@ int handlePollin(t_socket &socketConfig, std::vector<t_server> &servers, cMap &c
 }
 
 void handleGetMethod(servIt server, locIt location, ClientRequest *clientRequest, std::string clientUrl, std::string file) {
-	if (!isMethodAllowed("GET", server, clientRequest))
+	if (!isMethodAllowed("GET", server, clientRequest, clientUrl))
 		return clientRequest->setServerResponse(readHtml("405", server, CODE405));
 	if (!isCGIFile(clientUrl))
 		return clientRequest->setServerResponse(readHtml(file, server, CODE200));
@@ -159,8 +158,7 @@ void handleGetMethod(servIt server, locIt location, ClientRequest *clientRequest
 }
 
 void handlePostMethod(servIt server, locIt location, ClientRequest *clientRequest, std::string clientUrl, std::string file) {
-	// std::cout << "ici" << std::endl;
-	if (!isMethodAllowed("POST", server, clientRequest))
+	if (!isMethodAllowed("POST", server, clientRequest, ""))
 		return clientRequest->setServerResponse(readHtml("405", server, CODE405));
 	if (!isCGIFile(clientUrl))
 		return clientRequest->setServerResponse(readHtml(file, server, CODE200));
@@ -170,7 +168,7 @@ void handlePostMethod(servIt server, locIt location, ClientRequest *clientReques
 }
 
 void handleDeleteMethod(servIt server, ClientRequest *clientRequest, std::string file) {
-	if (!isMethodAllowed("DELETE", server, clientRequest)) //attention | potentiel timeout
+	if (!isMethodAllowed("DELETE", server, clientRequest, "")) //attention | potentiel timeout
 		return clientRequest->setServerResponse(readHtml("405", server, CODE405));
 	return clientRequest->setServerResponse(httpResponse("", "", handleDeleteMethod(file)));
 }

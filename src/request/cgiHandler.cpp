@@ -18,9 +18,6 @@ char **createCGIEnvironment(ssMap headerMap, std::string body) {
 	if (body.empty())
 		return (envp[i] = NULL, envp);
 	envp[i] = strdup(("body=" + body).c_str());
-	// for (int j = 0; j < (int)body.size(); ++j)
-	// 	std::cerr << envp[i][j];
-	// std::cerr << "body = " << envp[i] << std::endl;
 	envp[i + 1] = NULL;
 	return envp;
 }
@@ -50,6 +47,8 @@ std::string executeCGI(std::string url, std::string root, ssMap headerMap, std::
 		throw std::runtime_error("child process failed");
 	} else {
 		// Parent process
+		for(int i = 0; i < (int)body.size(); ++i)
+			std::cout << body[i];
 		write(pipefdIn[1], body.c_str(), body.size());
 		close(pipefdIn[0]);
 		close(pipefdIn[1]);
