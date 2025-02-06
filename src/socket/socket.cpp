@@ -88,9 +88,9 @@ int checkLenBody(ClientRequest *clientRequest, servIt server) {
 	long contentLenght = std::atol(test.c_str());
 	if (contentLenght > server->clientMaxBodySize)
 		return (clientRequest->setServerResponse(readHtml("413", server, CODE413)), 0);
-	std::cout << std::endl << "=============================================================" << std::endl << clientRequest->getBody() << std::endl << "=============================================================" << std::endl;
-	std::cout << "clientRequest->getBody().size() = " << clientRequest->getBody().size() << std::endl;
-	std::cout << "contentLenght = " << contentLenght << std::endl;
+	// std::cout << std::endl << "=============================================================" << std::endl << clientRequest->getBody() << std::endl << "=============================================================" << std::endl;
+	// std::cout << "clientRequest->getBody().size() = " << clientRequest->getBody().size() << std::endl;
+	// std::cout << "contentLenght = " << contentLenght << std::endl;
 	if ((size_t)contentLenght > clientRequest->getBody().size())
 		return -1;
 	return 1;
@@ -110,20 +110,15 @@ int handlePollin(t_socket &socketConfig, std::vector<t_server> &servers, cMap &c
 	if (size < 0)
 		return (handleClientDisconnection(i, socketConfig.clients, clientMap), -1);
 	clientMap[i]->parseBuffer(buffer, size);
-	std::cout << "buffer = " << buffer << std::endl;
-	std::cout << "i = " << i << std::endl;
-	std::cout << "clientMap[i] = " << clientMap[i]->getValueHeader("port") << std::endl;
+	// std::cout << "buffer = " << buffer << std::endl;
 	servIt server = findIf(clientMap[i]->getValueHeader("port"), servers);
 	if (server == servers.end()) {
-		std::cout << "ici" << std::endl;
 		return -1;
 	}
 	socketConfig.clients[i].events = POLLOUT;
 	int isToLarge = checkLenBody(clientMap[i], server);
-	if (isToLarge < 1) {
-		std::cout << "isToLarge = " << isToLarge << std::endl;
+	if (isToLarge < 1)
 		return isToLarge;
-	}
 	std::string clientUrl = clientMap[i]->getValueHeader("url"), file, method;
 	locIt location;
 	file = createUrl(server, clientMap[i], clientUrl, location);

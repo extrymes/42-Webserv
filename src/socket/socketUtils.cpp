@@ -9,7 +9,6 @@ void initAddrInfo(std::vector<t_server> &servers, int i, struct addrinfo *hints,
 }
 
 void handleClientDisconnection(int i, struct pollfd *clients, cMap &clientMap) {
-	std::cout << "ici" << std::endl;
 	close(clients[i].fd);
 	clients[i].fd = 0;
 	clients[i].events = 0;
