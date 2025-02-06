@@ -22,6 +22,19 @@ char **createCGIEnvironment(ssMap headerMap, std::string body) {
 	return envp;
 }
 
+std::string parseURL(std::string &url) {
+	std::string body;
+	// Find query params in URL
+	size_t i = url.find_last_of('?');
+	if (i == std::string::npos)
+		return body;
+	// Update body with query params
+	body = url.substr(i + 1);
+	// Remove query params from url
+	url = url.substr(0, i);
+	return body;
+}
+
 std::string executeCGI(std::string url, std::string root, ssMap headerMap, std::string body) {
 	int pipefd[2];
 	if (pipe(pipefd) == -1)
@@ -37,6 +50,8 @@ std::string executeCGI(std::string url, std::string root, ssMap headerMap, std::
 		close(pipefd[1]);
 		url = root.empty() ? url : root + url;
 		char *argv[] = {const_cast<char*>(url.c_str()), NULL};
+		if (body.empty())
+			body = parseURL(url);
 		char **envp = createCGIEnvironment(headerMap, body);
 		execve(url.c_str(), argv, envp);
 		freeCGIEnvironment(envp);
