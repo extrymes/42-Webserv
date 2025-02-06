@@ -10,10 +10,8 @@ void ClientRequest::parseBuffer(char *buffer, ssize_t size) {
 	ssize_t j = 0;
 	std::string line;
 	std::istringstream infileBuff(buffer);
-	// std::cout << "strlen(buffer) = " << strlen(buffer) << std::endl;
 	if (!_header.empty()) {
-		std::string strBuff = buffer;
-		// std::cout << "strBuff.size() = " << strBuff.size() << std::endl;
+		std::string strBuff(buffer, size);
 		for(ssize_t i = _body.size(); i < std::atoi(getValueHeader("Content-Length").c_str()) && j < size; ++i, ++j)
 			_body += strBuff[j];
 		return;

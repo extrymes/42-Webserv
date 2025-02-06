@@ -81,13 +81,13 @@ std::string	createUrl(servIt server, ClientRequest *clientRequest, std::string &
 	return file;
 }
 
-std::string printAll(std::string str) {
-	int len = str.size();
-	for (int i = 0; i < len; i++) {
-		std::cout << str[i];
-	}
-	return "";
-}
+// std::string printAll(std::string str) {
+// 	int len = str.size();
+// 	for (int i = 0; i < len; i++) {
+// 		std::cout << str[i];
+// 	}
+// 	return "";
+// }
 
 int checkLenBody(ClientRequest *clientRequest, servIt server) {
 	std::string test = clientRequest->getValueHeader("Content-Length");
@@ -122,12 +122,9 @@ int handlePollin(t_socket &socketConfig, std::vector<t_server> &servers, cMap &c
 	if (server == servers.end())
 		return -1;
 	socketConfig.clients[i].events = POLLOUT;
-	int isToLarge = checkLenBody(clientMap[i], server);
-	if (isToLarge < 1) {
-		std::cout << "isToLarge = " << isToLarge << std::endl;
-		return isToLarge;
-	}
-	std::string clientUrl = clientMap[i]->getValueHeader("url"), file, method;
+	if (checkLenBody(clientMap[i], server) < 1)
+		return -1;
+	std::string clientUrl = clientMap[i]->getValueHeader("xurl"), file, method;
 	locIt location;
 	file = createUrl(server, clientMap[i], clientUrl, location);
 	if (location != server->locations.end() && !location->redirCode.empty())
