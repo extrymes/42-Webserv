@@ -37,10 +37,3 @@ print(f"<p>Email: {email}</p>")
 print(f"<p>Phone: {number}</p>")
 print(f"<p>Password: {cryped_password}</p>")
 print("</html></body>")
-
-# email=test%40gmail.com
-# first_name=ergeg
-# last_name=eveav
-# number=541651
-# password=aer
-# password2=aarvarav
