@@ -14,13 +14,11 @@ void handleClientDisconnection(int i, struct pollfd *clients, cMap &clientMap) {
 	clients[i].events = 0;
 	clients[i].revents = 0;
 	delete clientMap[i];
-	// std::cout << "Closing a Client" << std::endl;
 }
 
 void checkEmptyPlace(t_socket &socketConfig, cMap &clientMap, int server_fd) {
 	for (int i = 0; i < MAX_CLIENTS; ++i) {
 		if (socketConfig.clients[i].fd == 0) {
-			// std::cout << "Creating a new Client" << std::endl;
 			socklen_t len = sizeof(socketConfig.clientAddr);
 			clientMap[i] = new ClientRequest;
 			socketConfig.clients[i].fd = accept(server_fd, (struct sockaddr *)&socketConfig.clientAddr, &len);

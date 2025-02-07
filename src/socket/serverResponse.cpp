@@ -76,7 +76,6 @@ std::string errorHtml(std::string code) {
 
 std::string errorPage(servIt server, std::string code) {
 	std::string nb(code, 0, 3);
-	std::cout << nb << std::endl;
 	int err = std::atoi(nb.c_str());
 	isMap::iterator errNum = server->errorPages.find(err);
 	if (errNum != server->errorPages.end())
@@ -89,7 +88,6 @@ std::string	displayDirectory(std::string index) {
 	std::string	display;
 	size_t	found = index.find_first_of("/") + 1;
 	std::string newIndex(index, found);
-	// std::cout << newIndex << std::endl;
 	DIR* dir = opendir(index.c_str());
 	struct dirent* entry;
 	while ((entry = readdir(dir)) != NULL) {
