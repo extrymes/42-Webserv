@@ -286,6 +286,9 @@ void ParseConfig::parseLocationCgiExtension(std::string args, std::string &cgiEx
 void ParseConfig::parseLocationUploadSave(std::string args, std::string &uploadSave) {
 	if (countArgs(args) != 1)
 		error("invalid number of arguments in \"upload_save\" directive");
+	// Add slash at end
+	if (args[args.size() - 1] != '/')
+		args.append("/");
 	uploadSave = args;
 }
 
