@@ -60,7 +60,7 @@ void checkEmptyPlace(t_socket &socketConfig, cMap &clientMap, int server_fd);
 void addIndexOrUrl(servIt server, std::vector<std::string> indexes, ClientRequest *clientRequest, std::string &path);
 std::string toString(int nbr);
 std::string	handleDeleteMethod(std::string file);
-bool isMethodAllowed(std::string method, servIt server, ClientRequest *clientRequest);
+bool isMethodAllowed(std::string method, servIt server, ClientRequest *clientRequest, std::string clientUrl);
 bool isCGIAllowed(std::string url, servIt server, ClientRequest *clientRequest);
 
 // socket.cpp

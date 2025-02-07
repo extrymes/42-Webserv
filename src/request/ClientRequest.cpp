@@ -11,20 +11,18 @@ void ClientRequest::parseBuffer(char *buffer, ssize_t size) {
 	std::string line;
 	std::istringstream infileBuff(buffer);
 	if (!_header.empty()) {
-		std::string strBuff = buffer;
-		for(ssize_t i = _body.size(); i < std::atoi(getValueHeader("Content-Length").c_str()); ++i) {
+		std::string strBuff(buffer, size);
+		for(ssize_t i = _body.size(); i < std::atoi(getValueHeader("Content-Length").c_str()) && j < size; ++i, ++j)
 			_body += strBuff[j];
-			++j;
-		}
 		return;
 	}
-	parseRequestHost(infileBuff, j);
-	while (std::getline(infileBuff, line)) {
-		j += line.size();
+	parseRequestHost(infileBuff);
+	while (std::getline(infileBuff, line)){
 		if (line.size() == 1 && getValueHeader("method") == "POST")
 			break;
 		parseHeader(line);
 	}
+
 	if (getValueHeader("method") == "POST") {
 		std::string strBuff = buffer;
 		while (j < size && strBuff.compare(j, 4, "\r\n\r\n") != 0)
@@ -35,12 +33,11 @@ void ClientRequest::parseBuffer(char *buffer, ssize_t size) {
 	}
 }
 
-void ClientRequest::parseRequestHost(std::istringstream &infileBuff, ssize_t &j) {
+void ClientRequest::parseRequestHost(std::istringstream &infileBuff) {
 	std::string	requestLine, hostLine, method, url, protocol, host, port, tmp;
 	if (!infileBuff)
 		throw std::runtime_error("opening buffer failed");
 	std::getline(infileBuff, requestLine);
-	j += requestLine.size();
 	std::istringstream iss(requestLine);
 	iss >> method, iss >> url, iss >> protocol;
 	if (method.empty() || url.empty() || protocol.empty())
@@ -49,7 +46,6 @@ void ClientRequest::parseRequestHost(std::istringstream &infileBuff, ssize_t &j)
 	_header["url"] = url;
 	_header["protocol"] = protocol;
 	std::getline(infileBuff, hostLine);
-	j += hostLine.size();
 	std::istringstream iss2(hostLine);
 	iss2 >> tmp, iss2 >> std::ws;
 	std::getline(iss2, host, ':');

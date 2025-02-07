@@ -1,36 +1,42 @@
 #!/usr/bin/python3
 
-# import os
-# import sys
-# # import linecache as lc 
+import os
+import sys
 
-# contentType = os.environ.get("Content-Type", "Unknown")
-print("bonjour")
-# boundary = contentType.split("=")[1]
+content_type = os.environ.get("Content-Type", "Unknown")
+content_length = os.environ.get('Content-Lenght', "Unknown")
 
-# content_length = int(os.environ.get("Content-Length", "Unknown"))
-# print(content_length)
-# body = sys.stdin.buffer.read(content_length)
+# sys.stderr.write(content_length)
+# sys.stderr.write(content_type)
 
-# print(body)
-# body = os.environ.get("body", "Unknown").split(boundary)[1]
+# if ((not content_length) or (not content_type)):
+#     sys.exit(1)
 
-# startFile = body.find('filename="') + len('filename="')
-# endFile = body.index('"', startFile)
-# filename = body[startFile:endFile].replace(' ', '_')
 
-# print(filename)
+boundary = content_type.split("boundary=")[-1]
+boundary_b = b"\r\n--" + boundary.encode()
+input_data = sys.stdin.buffer.read()
 
-# startType = body.find('Content-Type: ') + len('Content-Type: ')
-# endType = body.index('\r', startType)
-# contentType = body[startType:endType]
+split_input = input_data.split(boundary_b)
 
-# # print(contentType)
+for content in split_input:
+    if b"filename" in content:
+        # sys.stderr.write("ok1\n")
+        filename = content.split(b"filename=\"")[1].split(b"\"")[0].decode()
+        file_content = content.split(b"\r\n\r\n")[1]
 
-# end_data = body.rfind("--")
+        # file_path = '.' + os.path.join(os.path.dirname(__file__), filename)
+        # os.makedirs(os.path.dirname(file_path), exist_ok=True)
+        with open("www/upload/" + filename, 'wb') as file:
+            file.write(file_content)
 
-# data = body[endType:end_data]
+        body = "File succesfully uploaded !"
+        body_length = len(body)
 
-# with open("www/upload/" + filename, 'wb') as file:
-# 	string = data.encode('utf-8', 'backslashreplace')
-# 	file.write(string)
+        sys.stderr.write(f"{body}\r")
+        print("Content-Type: text/plain\r")
+        print(f"Content-Length: {body_length}\r\n\r")
+        print(f"{body}")
+        sys.exit(0)
+
+sys.exit(1)

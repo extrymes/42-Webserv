@@ -34,19 +34,26 @@ for item in splitted_body:
 		data_dict[key] = value
 
 # Get each data from dictionary
-first_name = data_dict["first_name"].replace("+", " ")
-first_name = first_name
+first_name = data_dict.get("first_name", "Unknown")
 if first_name:
 	first_name = first_name.replace("+", " ")
-last_name = data_dict["last_name"]
+last_name = data_dict.get("last_name", "Unknown")
 if last_name:
 	last_name = last_name.replace("+", " ")
-email = data_dict["email"].replace("%40", "@")
+email = data_dict.get("email", "Unknown")
 if email:
 	email = email.replace("%40", "@")
-number = data_dict["number"]
-password = data_dict["password"]
-cryped_password = '*' * len(password)
+phone = data_dict.get("phone", "Unknown")
+password = data_dict.get("password", None)
+if password:
+	password = '*' * len(password)
 
 # Print HTML
-print_html(first_name, last_name, email, number, cryped_password)
+print("<!DOCTYPE html><html><body>")
+print(f"<h1>Hello {first_name}!</h1>")
+print(f"<p>First name: {first_name}</p>")
+print(f"<p>Last name: {last_name}</p>")
+print(f"<p>Email: {email}</p>")
+print(f"<p>Phone: {phone}</p>")
+print(f"<p>Password: {password}</p>")
+print("</html></body>")
