@@ -2,14 +2,19 @@
 
 <?php
 
-// Get form data
-$body = getenv("body");
-if (!$body) {
+function print_html($name, $message) {
 	echo "<html><body>";
 	echo "<h1>Simple Form</h1>";
-	echo "<p>name: Unknown</p>";
-	echo "<p>message: No message</p>";
+	echo "<p>name: " . (htmlspecialchars($name) ?: "Unknown") . "</p>";
+	echo "<p>message: " . (htmlspecialchars($message) ?: "No message") . "</p>";
 	echo "</html></body>";
+}
+
+// Get body in environment
+$body = getenv("body");
+if (!$body) {
+	// Print HTML
+	print_html(NULL, NULL);
 	exit();
 }
 
@@ -24,15 +29,11 @@ foreach ($splitted_body as $item) {
 	}
 }
 
-// Get each data
+// Get each data from dictionary
 $name = $data_dict["name"];
 $message = $data_dict["message"];
 
-// Print HTML
-echo "<html><body>";
-echo "<h1>Simple Form</h1>";
-echo "<p>name: " . htmlspecialchars($name) . "</p>";
-echo "<p>message: " . htmlspecialchars($message) . "</p>";
-echo "</html></body>";
+# Print HTML
+print_html($name, $message)
 
 ?>

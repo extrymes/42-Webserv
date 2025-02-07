@@ -6,7 +6,7 @@ bool isCGIFile(std::string url) {
 	return false;
 }
 
-char **createCGIEnvironment(ssMap headerMap, std::string body) {
+char **createEnvWithBody(ssMap headerMap, std::string body) {
 	std::vector<std::string> env;
 	for (ssMap::iterator it = headerMap.begin(); it != headerMap.end(); ++it)
 		env.push_back(it->first + "=" + it->second);
@@ -20,6 +20,34 @@ char **createCGIEnvironment(ssMap headerMap, std::string body) {
 	envp[i] = strdup(("body=" + body).c_str());
 	envp[i + 1] = NULL;
 	return envp;
+}
+
+char **createEnvWithArgs(ssMap headerMap, std::vector<std::string> args) {
+	std::vector<std::string> env;
+	for (ssMap::iterator it = headerMap.begin(); it != headerMap.end(); ++it)
+		env.push_back(it->first + "=" + it->second);
+	for (std::vector<std::string>::iterator it = args.begin(); it != args.end(); ++it)
+		env.push_back(*it);
+	// Convert to char array
+	char **envp = new char *[env.size() + 1];
+	size_t i = 0;
+	for (; i < env.size(); ++i)
+		envp[i] = strdup(env[i].c_str());
+	envp[i] = NULL;
+	return envp;
+}
+
+std::string parseURL(std::string &url) {
+	std::string body;
+	// Find query params in URL
+	size_t i = url.find_last_of('?');
+	if (i == std::string::npos)
+		return body;
+	// Update body with query params
+	body = url.substr(i + 1);
+	// Remove query params from url
+	url = url.substr(0, i);
+	return body;
 }
 
 std::string executeCGI(std::string url, std::string root, ssMap headerMap, std::string body) {
@@ -37,7 +65,15 @@ std::string executeCGI(std::string url, std::string root, ssMap headerMap, std::
 		close(pipefd[1]);
 		url = root.empty() ? url : root + url;
 		char *argv[] = {const_cast<char*>(url.c_str()), NULL};
-		char **envp = createCGIEnvironment(headerMap, body);
+		char **envp;
+		if (body.empty()) {
+			body = parseURL(url);
+			envp = createEnvWithBody(headerMap, body);
+		} else
+			envp = createEnvWithBody(headerMap, body);
+		int i = 0;
+		while (envp[i])
+			std::cerr << envp[i++] << std::endl;
 		execve(url.c_str(), argv, envp);
 		freeCGIEnvironment(envp);
 		throw std::runtime_error("child process failed");

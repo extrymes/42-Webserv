@@ -5,6 +5,7 @@
 # include <string>
 # include <vector>
 # include <map>
+# include <cmath>
 
 // --- Structures ---
 typedef struct s_server t_server;
