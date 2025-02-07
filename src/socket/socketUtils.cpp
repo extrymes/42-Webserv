@@ -25,6 +25,7 @@ void checkEmptyPlace(t_socket &socketConfig, cMap &clientMap, int server_fd) {
 			clientMap[i] = new ClientRequest;
 			socketConfig.clients[i].fd = accept(server_fd, (struct sockaddr *)&socketConfig.clientAddr, &len);
 			socketConfig.clients[i].events = POLLIN;
+			clientMap[i]->setStart();
 			break;
 		}
 	}

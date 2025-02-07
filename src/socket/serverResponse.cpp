@@ -40,20 +40,15 @@ std::string httpResponse(std::string file, std::string ext, std::string code) {
 	return httpResponse;
 }
 
-std::string errorPage(int error, servIt server, std::string code) {
-	std::string err;
-	isMap::iterator errNum = server->errorPages.find(error);
-	if (errNum == server->errorPages.end())
-		err = toString(error);
-	else
-		return (readHtml(errNum->second, server, code));
+std::string errorHtml(std::string code) {
+	std::string nb(code, 3);
 	std::string file =
 	"<!DOCTYPE html>\n"
 		"<html lang=\"en\">\n"
 		"<head>\n"
 		"	<meta charset=\"UTF-8\">\n"
 		"	<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n"
-		"	<title>Error " + err + "</title>\n"
+		"	<title>Title</title>\n"
 		"	<style>\n"
 		"		body {\n"
 		"			font-family: Arial, sans-serif;\n"
@@ -73,24 +68,89 @@ std::string errorPage(int error, servIt server, std::string code) {
 		"</head>\n"
 		"<body>\n"
 		"	<h1>Error " + code + "</h1>\n"
-		"	<p>Oops! Something went wrong (HTTP Error " + err + ").</p>\n"
+		"	<p>Oops! Something went wrong (HTTP Error " + nb + ").</p>\n"
 		"</body>\n"
 		"</html>";
+		return httpResponse(file, "text/html", code);
+}
+
+std::string errorPage(servIt server, std::string code) {
+	std::string nb(code, 0, 3);
+	std::cout << nb << std::endl;
+	int err = std::atoi(nb.c_str());
+	isMap::iterator errNum = server->errorPages.find(err);
+	if (errNum != server->errorPages.end())
+		return (readHtml(errNum->second, server, code, ""));
+	std::string file = errorHtml(code);
+	return file;
+}
+
+std::string	displayDirectory(std::string index) {
+	std::string	display;
+	size_t	found = index.find_first_of("/") + 1;
+	std::string newIndex(index, found);
+	// std::cout << newIndex << std::endl;
+	DIR* dir = opendir(index.c_str());
+	struct dirent* entry;
+	while ((entry = readdir(dir)) != NULL) {
+		std::string dirName(entry->d_name);
+		display += "<p><a href=" + dirName + ">" + dirName + "</a>\n" + "</p>";
+	}
+	closedir(dir);
+	return display;
+}
+
+std::string handleAutoIndex(std::string code, std::string index, servIt server, std::string clientUrl) {
+	locIt location;
+	for(location = server->locations.begin(); location != server->locations.end(); ++location) {
+		if (location->path == clientUrl)
+			break;
+	}
+	if ((location != server->locations.end() && location->autoindex != "on") || (location == server->locations.end() && server->autoindex != "on"))
+		return (errorPage(server, CODE403));
+	std::string nb(code, 3);
+	std::string file =
+	"<!DOCTYPE html>\n"
+	"<html lang=\"en\">\n"
+	"<head>\n"
+	"	<meta charset=\"UTF-8\">\n"
+	"	<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n"
+	"	<title>Title</title>\n"
+	"	<style>\n"
+	"		body {\n"
+	"			font-family: Arial, sans-serif;\n"
+	"			text-align: center;\n"
+	"			padding: 50px;\n"
+	"			background-color: #f8f9fa;\n"
+	"		}\n"
+	"		h1 {\n"
+	"			font-size: 3em;\n"
+	"			color:rgb(4, 85, 123);\n"
+	"		}\n"
+	"	</style>\n"
+	"</head>\n"
+	"<body>\n"
+	"	<h1>Index of " + index + "</h1>\n"
+	"	<div>\n"
+	"		" + displayDirectory(index) + "\n"
+	"	</div>\n"
+	"</body>\n"
+	"</html>";
 	return httpResponse(file, "text/html", code);
 }
 
-std::string readHtml(std::string index, servIt server, std::string code) {
+std::string readHtml(std::string index, servIt server, std::string code, std::string clientUrl) {
 	std::string	line;
 	std::string	finalFile;
 
 	if (isError(index))
-		return errorPage(std::atoi(index.c_str()), server, code);
+		return errorPage(server, code);
 	int isDir = open(index.c_str(), O_DIRECTORY);
 	if (isDir > 0)
-		return (close(isDir), errorPage(404, server, CODE404));
+		return (close(isDir), handleAutoIndex(code, index, server, clientUrl));
 	std::ifstream	infile(index.c_str());
 	if (!infile)
-		return errorPage(404, server, CODE404);
+		return errorPage(server, CODE404);
 	while (std::getline(infile, line))
 		finalFile += line + "\n";
 	infile.close();

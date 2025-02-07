@@ -24,6 +24,7 @@
 # include <netdb.h>
 # include <cstdio>
 # include "code.hpp"
+# include <dirent.h>
 
 # define MAX_CLIENTS 100
 
@@ -47,11 +48,12 @@ struct s_socket {
 // --- Functions ---
 
 // serverRespone.cpp
-std::string readHtml(std::string index, servIt server, std::string code);
+std::string readHtml(std::string index, servIt server, std::string code, std::string clientUrl);
 std::string httpResponse(std::string file, std::string ext, std::string code);
 std::string redir(locIt &location);
-std::string errorPage(int error, servIt server, std::string code);
+std::string errorPage(servIt server, std::string code);
 std::string checkExt(std::string file);
+std::string errorHtml(std::string code);
 
 // socketUtils.cpp
 void initAddrInfo(std::vector<t_server> &servers, int i, struct addrinfo *hints, struct addrinfo **res);
@@ -70,7 +72,7 @@ std::string createGoodUrl(std::string oldUrl);
 std::string urlWithoutSlash(std::string location);
 locIt whichLocation(servIt it, ClientRequest *clientRequest, std::string clientUrl, std::string str);
 std::string	createUrl(servIt server, ClientRequest *clientRequest, std::string &clientUrl, locIt &location);
-int checkLenBody(ClientRequest *clientRequest, servIt server);
+int checkLenBody(ClientRequest *clientRequest, servIt server, ssize_t size);
 int handlePollin(t_socket &socketConfig, std::vector<t_server> &servers, cMap &clientMap, int i);
 void handleGetMethod(servIt server, locIt location, ClientRequest *clientRequest, std::string clientUrl, std::string file);
 void handlePostMethod(servIt server, locIt location, ClientRequest *clientRequest, std::string clientUrl, std::string file);
