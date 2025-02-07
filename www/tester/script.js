@@ -8,6 +8,8 @@ function setMethod2(method) {
 
 function deleteFile() {
 	const filePath = document.getElementById("filename").value;
+	if (!filePath)
+		return alert("Please complete the required field!");
 
 	fetch(filePath, {
 		method: 'DELETE'

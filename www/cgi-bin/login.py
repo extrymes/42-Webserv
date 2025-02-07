@@ -3,25 +3,12 @@
 # Import OS module
 import os
 
-def print_html(first_name, last_name, email, number, password):
-	print("<!DOCTYPE html><html><body>")
-	if first_name:
-		print(f"<h1>Hello {first_name}!</h1>")
-		print(f"<p>First name: {first_name}</p>")
-		print(f"<p>Last name: {last_name}</p>")
-		print(f"<p>Email: {email}</p>")
-		print(f"<p>Phone: {number}</p>")
-		print(f"<p>Password: {password}</p>")
-	else:
-		print("<h1>Hello Guest!</h1>")
-	print("</html></body>")
-
-
 # Get body in environment
 body = os.environ.get("body")
 if not body:
-	# Print HTML
-	print_html(None, None, None, None, None)
+	print("<!DOCTYPE html><html><body>")
+	print(f"<h1>Hello Guest!</h1>")
+	print("</html></body>")
 	exit()
 
 # Parse body into dictionary

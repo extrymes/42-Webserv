@@ -124,7 +124,7 @@ int handlePollin(t_socket &socketConfig, std::vector<t_server> &servers, cMap &c
 	socketConfig.clients[i].events = POLLOUT;
 	if (checkLenBody(clientMap[i], server) < 1)
 		return -1;
-	std::string clientUrl = clientMap[i]->getValueHeader("xurl"), file, method;
+	std::string clientUrl = clientMap[i]->getValueHeader("url"), file, method;
 	locIt location;
 	file = createUrl(server, clientMap[i], clientUrl, location);
 	if (location != server->locations.end() && !location->redirCode.empty())

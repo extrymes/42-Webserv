@@ -237,8 +237,12 @@ void ParseConfig::parseClientMaxBodySize(std::string args, long &clientMaxBodySi
 	// Check if value is valid
 	if (end != args.c_str() + args.size() || clientMaxBodySize < 0)
 		error("invalid value \"" + args + "\"");
-	if (unit != 'K')
+	if (unit == 'K')
 		clientMaxBodySize *= 1024;
+	else if (unit == 'M')
+		clientMaxBodySize *= std::pow(1024, 2);
+	if (clientMaxBodySize > std::pow(1024, 3) * 10)
+		error("invalid value \"" + args + "\"");
 }
 
 void ParseConfig::parseLocationPath(std::string args, std::string &path) {
