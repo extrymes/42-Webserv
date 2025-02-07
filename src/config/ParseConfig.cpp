@@ -54,6 +54,8 @@ void ParseConfig::fillServer(t_server &server) {
 			parseRoot(args, server.root);
 		else if (directive == "index")
 			parseIndex(args, server.indexes);
+		else if (directive == "autoindex")
+			parseAutoindex(args, server.autoindex);
 		else if (directive == "error_page")
 			parseErrorPage(args, server.errorPages);
 		else if (directive == "client_max_body_size")
@@ -86,7 +88,7 @@ void ParseConfig::fillLocation(t_location &location) {
 		else if (directive == "index")
 			parseIndex(args, location.indexes);
 		else if (directive == "autoindex")
-			parseLocationAutoindex(args, location.autoindex);
+			parseAutoindex(args, location.autoindex);
 		else if (directive == "allowed_methods")
 			parseLocationAllowedMethods(args, location.allowedMethods);
 		else if (directive == "return")
@@ -202,6 +204,14 @@ void ParseConfig::parseIndex(std::string args, std::vector<std::string> &indexes
 		indexes.push_back(index);
 }
 
+void ParseConfig::parseAutoindex(std::string args, std::string &autoindex) {
+	if (countArgs(args) != 1)
+		error("invalid number of arguments in \"autoindex\" directive");
+	if (args != "on" && args != "off")
+		error("invalid value \"" + args + "\"");
+	autoindex = args;
+}
+
 void ParseConfig::parseErrorPage(std::string args, std::map<int, std::string> &errorPages) {
 	if (countArgs(args) != 2)
 		error("invalid number of arguments in \"error_page\" directive");
@@ -252,14 +262,6 @@ void ParseConfig::parseLocationPath(std::string args, std::string &path) {
 	if (args[args.size() - 1] != '/')
 		args.append("/");
 	path = args;
-}
-
-void ParseConfig::parseLocationAutoindex(std::string args, std::string &autoindex) {
-	if (countArgs(args) != 1)
-		error("invalid number of arguments in \"autoindex\" directive");
-	if (args != "on" && args != "off")
-		error("invalid value \"" + args + "\"");
-	autoindex = args;
 }
 
 void ParseConfig::parseLocationAllowedMethods(std::string args, std::string &allowedMethods) {

@@ -17,6 +17,7 @@ struct s_server {
 	std::string name; // Server name
 	std::string root; // Default root
 	std::vector<std::string> indexes; // Index files
+	std::string autoindex; // Directory listing
 	std::map<int, std::string> errorPages; // Error pages
 	long clientMaxBodySize; // Client max body size
 	std::vector<t_location> locations; // Server routes
@@ -47,10 +48,10 @@ class ParseConfig {
 		void parseServerName(std::string args, std::string &serverName);
 		void parseRoot(std::string args, std::string &root);
 		void parseIndex(std::string args, std::vector<std::string> &indexes);
+		void parseAutoindex(std::string args, std::string &autoindex);
 		void parseErrorPage(std::string args, std::map<int, std::string> &errorPages);
 		void parseClientMaxBodySize(std::string args, long &clientMaxBodySize);
 		void parseLocationPath(std::string args, std::string &path);
-		void parseLocationAutoindex(std::string args, std::string &autoindex);
 		void parseLocationAllowedMethods(std::string args, std::string &allowedMethods);
 		void parseLocationCgiExtension(std::string args, std::string &cgiExtension);
 		void parseLocationUploadSave(std::string args, std::string &uploadSave);
