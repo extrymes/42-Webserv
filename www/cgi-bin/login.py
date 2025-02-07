@@ -21,18 +21,28 @@ for item in splitted_body:
 		data_dict[key] = value
 
 # Get each data from dictionary
-first_name = data_dict.get("first_name", "Unknown")
-if first_name:
+first_name = data_dict.get("first_name")
+if not first_name or first_name == "":
+	first_name = "Guest"
+else:
 	first_name = first_name.replace("+", " ")
-last_name = data_dict.get("last_name", "Unknown")
-if last_name:
+last_name = data_dict.get("last_name")
+if not last_name or last_name == "":
+	last_name = "Unknown"
+else:
 	last_name = last_name.replace("+", " ")
-email = data_dict.get("email", "Unknown")
-if email:
+email = data_dict.get("email")
+if not email or last_name == "":
+	email = "Unknown"
+else:
 	email = email.replace("%40", "@")
-phone = data_dict.get("phone", "Unknown")
-password = data_dict.get("password", None)
-if password:
+phone = data_dict.get("phone")
+if not phone or last_name == "":
+	phone = "Unknown"
+password = data_dict.get("password")
+if not password or password == "":
+	password = "None"
+else:
 	password = '*' * len(password)
 
 # Print HTML
