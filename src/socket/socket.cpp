@@ -82,9 +82,7 @@ std::string	createUrl(servIt server, ClientRequest *clientRequest, std::string &
 }
 
 int checkLenBody(ClientRequest *clientRequest, servIt server, ssize_t size) {
-	// std::cout << "size = " << size << std::endl;
 	std::string requestLength = clientRequest->getValueHeader("Content-Length");
-	// std::cout << " clientRequest->getValueHeader(url).size() = " << clientRequest->getValueHeader("url").size() << std::endl;
 	long contentLength = std::atol(requestLength.c_str());
 	if (contentLength > server->clientMaxBodySize || clientRequest->getValueHeader("url").size() == 4096) {
 		if (clock() - clientRequest->getStart() < 1000 && size == 4096)
