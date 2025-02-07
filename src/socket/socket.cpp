@@ -146,7 +146,8 @@ void handleGetMethod(servIt server, locIt location, ClientRequest *clientRequest
 	if (!isCGIFile(clientUrl))
 		return clientRequest->setServerResponse(readHtml(file, server, CODE200, clientUrl));
 	std::string root = (location != server->locations.end() && !location->root.empty()) ? location->root : server->root;
-	std::string output = executeCGI(clientUrl, root, clientRequest->getHeaderMap(), clientRequest->getBody());
+	std::string uploadLocation = (location != server->locations.end() && !location->uploadSave.empty()) ? location->uploadSave : "www/upload";
+	std::string output = executeCGI(clientUrl, root, clientRequest->getHeaderMap(), clientRequest->getBody(), uploadLocation);
 	return clientRequest->setServerResponse(httpResponse(output, "text/html", CODE200));
 }
 
@@ -156,7 +157,8 @@ void handlePostMethod(servIt server, locIt location, ClientRequest *clientReques
 	if (!isCGIFile(clientUrl))
 		return clientRequest->setServerResponse(readHtml(file, server, CODE200, clientUrl));
 	std::string root = (location != server->locations.end() && !location->root.empty()) ? location->root : server->root;
-	std::string output = executeCGI(clientUrl, root, clientRequest->getHeaderMap(), clientRequest->getBody());
+	std::string uploadLocation = (location != server->locations.end() && !location->uploadSave.empty()) ? location->uploadSave : "www/upload";
+	std::string output = executeCGI(clientUrl, root, clientRequest->getHeaderMap(), clientRequest->getBody(), uploadLocation);
 	return clientRequest->setServerResponse(httpResponse(output, "text/html", CODE200));
 }
 
