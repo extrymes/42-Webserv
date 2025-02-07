@@ -57,6 +57,7 @@ locIt whichLocation(servIt it, ClientRequest *clientRequest, std::string clientU
 		std::string newLocation = urlWithoutSlash(location->path);
 		std::string newClientUrl = urlWithoutSlash(goodUrl);
 		const int pathSize = newLocation.size();
+		// std::cout << "newClientUrl = " << newClientUrl << std::endl;
 		if (strncmp(newLocation.c_str(), newClientUrl.c_str(), pathSize) == 0 && (newLocation.size() == newClientUrl.size())) {
 			clientRequest->setValueHeader(str, goodUrl.substr(pathSize));
 			return location;
@@ -144,8 +145,8 @@ void handleGetMethod(servIt server, locIt location, ClientRequest *clientRequest
 	if (!isCGIFile(clientUrl))
 		return clientRequest->setServerResponse(readHtml(file, server, CODE200, clientUrl));
 	std::string root = (location != server->locations.end() && !location->root.empty()) ? location->root : server->root;
-	std::string uploadLocation = (location != server->locations.end() && !location->uploadSave.empty()) ? location->uploadSave : "www/upload";
-	std::string output = executeCGI(clientUrl, root, clientRequest->getHeaderMap(), clientRequest->getBody(), uploadLocation);
+	std::string uploadLoc = uploadLocation(server, clientRequest);
+	std::string output = executeCGI(clientUrl, root, clientRequest->getHeaderMap(), clientRequest->getBody(), uploadLoc);
 	return clientRequest->setServerResponse(httpResponse(output, "text/html", CODE200));
 }
 
@@ -155,8 +156,8 @@ void handlePostMethod(servIt server, locIt location, ClientRequest *clientReques
 	if (!isCGIFile(clientUrl))
 		return clientRequest->setServerResponse(readHtml(file, server, CODE200, clientUrl));
 	std::string root = (location != server->locations.end() && !location->root.empty()) ? location->root : server->root;
-	std::string uploadLocation = (location != server->locations.end() && !location->uploadSave.empty()) ? location->uploadSave : "www/upload";
-	std::string output = executeCGI(clientUrl, root, clientRequest->getHeaderMap(), clientRequest->getBody(), uploadLocation);
+	std::string uploadLoc = uploadLocation(server, clientRequest);
+	std::string output = executeCGI(clientUrl, root, clientRequest->getHeaderMap(), clientRequest->getBody(), uploadLoc);
 	return clientRequest->setServerResponse(httpResponse(output, "text/html", CODE200));
 }
 

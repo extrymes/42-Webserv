@@ -18,6 +18,7 @@ char **createCGIEnvironment(ssMap headerMap, std::string body, std::string uploa
 	envp[i] = strdup(("upload_location=" + uploadLocation).c_str());
 	if (body.empty())
 		return (envp[i] = NULL, envp);
+	++i;
 	envp[i] = strdup(("body=" + body).c_str());
 	envp[i + 1] = NULL;
 	return envp;

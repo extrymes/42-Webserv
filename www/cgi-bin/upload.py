@@ -26,7 +26,7 @@ for content in split_input:
 		body = "File succesfully uploaded !"
 		body_length = len(body)
 
-		sys.stderr.write(f"{body}\r")
+		# sys.stderr.write(f"{body}\r")
 		print("Content-Type: text/plain\r")
 		print(f"Content-Length: {body_length}\r\n\r")
 		print(f"{body}")

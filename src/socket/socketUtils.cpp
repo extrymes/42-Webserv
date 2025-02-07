@@ -85,6 +85,16 @@ bool isMethodAllowed(std::string method, servIt server, ClientRequest *clientReq
 	return false;
 }
 
+std::string	uploadLocation(servIt server, ClientRequest *clientRequest) {
+	std::string referer = clientRequest->getValueHeader("Referer");
+	if (clientRequest->getValueHeader("Origin").size() > 0)
+			referer = referer.substr(clientRequest->getValueHeader("Origin").size() - 1);
+	locIt location = whichLocation(server, clientRequest, referer, "");
+
+	std::string uploadSave = (location != server->locations.end() && !location->uploadSave.empty()) ? location->uploadSave : "www/upload/";
+	return uploadSave;
+}
+
 bool isCGIAllowed(std::string url, servIt server, ClientRequest *clientRequest) {
 	std::string referer, extension;
 	if (clientRequest->getValueHeader("method") == "GET")

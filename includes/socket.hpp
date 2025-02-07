@@ -64,6 +64,7 @@ std::string toString(int nbr);
 std::string	handleDeleteMethod(std::string file);
 bool isMethodAllowed(std::string method, servIt server, ClientRequest *clientRequest, std::string clientUrl);
 bool isCGIAllowed(std::string url, servIt server, ClientRequest *clientRequest);
+std::string	uploadLocation(servIt server, ClientRequest *clientRequest);
 
 // socket.cpp
 int handlePollout(t_socket &socketConfig, cMap &clientMap, int i);
