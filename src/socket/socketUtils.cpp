@@ -91,7 +91,7 @@ std::string	uploadLocation(servIt server, ClientRequest *clientRequest) {
 			referer = referer.substr(clientRequest->getValueHeader("Origin").size() - 1);
 	locIt location = whichLocation(server, clientRequest, referer, "");
 
-	std::string uploadSave = (location != server->locations.end() && !location->uploadSave.empty()) ? location->uploadSave : "www/upload/";
+	std::string uploadSave = (location != server->locations.end() && !location->uploadSave.empty()) ? server->root + location->uploadSave : "www/upload/";
 	return uploadSave;
 }
 
