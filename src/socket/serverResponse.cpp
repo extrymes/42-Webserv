@@ -40,6 +40,19 @@ std::string httpResponse(std::string file, std::string ext, std::string code) {
 	return httpResponse;
 }
 
+std::string httpResponse301(std::string file, std::string ext, locIt &location) {
+	std::cout << "ici" << std::endl;
+	std::string httpResponse = "HTTP/1.1 301 Moved Permanently\r\n";
+	httpResponse += "Location: " + location->path + "\r\n";
+	httpResponse += "Content-Type: " + ext + "\r\n";
+	httpResponse += "Content-Length: " + toString(file.length()) + "\r\n";
+	httpResponse += "Connection: close\r\n";
+	httpResponse += "\r\n";
+	if (!file.empty())
+		httpResponse += file;
+	return httpResponse;
+}
+
 std::string errorHtml(std::string code) {
 	std::string nb(code, 3);
 	std::string file =
@@ -152,5 +165,13 @@ std::string readHtml(std::string index, servIt server, std::string code, std::st
 	while (std::getline(infile, line))
 		finalFile += line + "\n";
 	infile.close();
+	locIt location;
+	std::string	goodUrl = '/' + createGoodUrl(clientUrl);
+	if (clientUrl[clientUrl.size() - 1] != '/') {
+		for(location = server->locations.begin(); location != server->locations.end(); ++location) {
+			if (location->path.substr(0, goodUrl.size()) == goodUrl)
+				return (httpResponse301(finalFile, checkExt(index), location));
+		}
+	}
 	return httpResponse(finalFile, checkExt(index), code);
 }

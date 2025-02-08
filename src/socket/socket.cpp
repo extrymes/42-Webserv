@@ -57,7 +57,6 @@ locIt whichLocation(servIt it, ClientRequest *clientRequest, std::string clientU
 		std::string newLocation = urlWithoutSlash(location->path);
 		std::string newClientUrl = urlWithoutSlash(goodUrl);
 		const int pathSize = newLocation.size();
-		// std::cout << "newClientUrl = " << newClientUrl << std::endl;
 		if (strncmp(newLocation.c_str(), newClientUrl.c_str(), pathSize) == 0 && (newLocation.size() == newClientUrl.size())) {
 			clientRequest->setValueHeader(str, goodUrl.substr(pathSize));
 			return location;
@@ -104,6 +103,7 @@ int handlePollin(t_socket &socketConfig, std::vector<t_server> &servers, cMap &c
 			socketConfig.clientCount++;
 		return 0;
 	}
+
 	char buffer[4096] = {0};
 	ssize_t size = recv(socketConfig.clients[i].fd, buffer, sizeof(buffer), 0);
 	if (size <= 0)
@@ -142,8 +142,9 @@ int handlePollin(t_socket &socketConfig, std::vector<t_server> &servers, cMap &c
 void handleGetMethod(servIt server, locIt location, ClientRequest *clientRequest, std::string clientUrl, std::string file) {
 	if (!isMethodAllowed("GET", server, clientRequest, clientUrl))
 		return clientRequest->setServerResponse(readHtml("405", server, CODE405, ""));
-	if (!isCGIFile(clientUrl))
+	if (!isCGIFile(clientUrl)) {
 		return clientRequest->setServerResponse(readHtml(file, server, CODE200, clientUrl));
+	}
 	std::string root = (location != server->locations.end() && !location->root.empty()) ? location->root : server->root;
 	std::string uploadLoc = uploadLocation(server, clientRequest);
 	std::string output = executeCGI(clientUrl, root, clientRequest->getHeaderMap(), clientRequest->getBody(), uploadLoc);
