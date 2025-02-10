@@ -169,7 +169,7 @@ std::string readHtml(std::string index, servIt server, std::string code, std::st
 	std::string	goodUrl = '/' + createGoodUrl(clientUrl);
 	if (clientUrl[clientUrl.size() - 1] != '/') {
 		for(location = server->locations.begin(); location != server->locations.end(); ++location) {
-			if (location->path.substr(0, goodUrl.size()) == goodUrl)
+			if (location->path.substr(0, goodUrl.size()) == goodUrl && goodUrl.size() > 1)
 				return (httpResponse301(finalFile, checkExt(index), location));
 		}
 	}

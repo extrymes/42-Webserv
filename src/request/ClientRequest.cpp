@@ -39,7 +39,7 @@ void ClientRequest::parseRequestHost(std::istringstream &infileBuff) {
 	std::istringstream iss(requestLine);
 	iss >> method, iss >> url, iss >> protocol;
 	if (method.empty() || url.empty() || protocol.empty())
-		std::runtime_error("invalid HTTP header");
+		throw std::runtime_error("invalid HTTP header");
 	_header["method"] = method;
 	_header["url"] = url;
 	_header["protocol"] = protocol;

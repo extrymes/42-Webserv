@@ -65,6 +65,7 @@ std::string	handleDeleteMethod(std::string file);
 bool isMethodAllowed(std::string method, servIt server, ClientRequest *clientRequest, std::string clientUrl);
 bool isCGIAllowed(std::string url, servIt server, ClientRequest *clientRequest);
 std::string	uploadLocation(servIt server, ClientRequest *clientRequest);
+std::string removeFirstSlash(std::string str);
 
 // socket.cpp
 int handlePollout(t_socket &socketConfig, cMap &clientMap, int i);

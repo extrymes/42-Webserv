@@ -68,9 +68,9 @@ locIt whichLocation(servIt it, ClientRequest *clientRequest, std::string clientU
 std::string	createUrl(servIt server, ClientRequest *clientRequest, std::string &clientUrl, locIt &location) {
 	std::string file;
 	location = whichLocation(server, clientRequest, clientUrl, "url");
-	if (location == server->locations.end()) { //Si on ne trouve pas de partie location qui correspond à l'URL
-		if (server->root.empty()) file = "";// s'il n'y a pas de root, je ne renvoie rien afin que l'erreur 404 soit affichée
-		else { //sinon je prends le root et je test d'ajouter la partie index via la fonction addIndexOrUrl
+	if (location == server->locations.end()) {
+		if (server->root.empty()) file = "";
+		else { 
 			file = server->root;
 			addIndexOrUrl(server, server->indexes, clientRequest, file);
 		}
@@ -99,7 +99,7 @@ int handlePollin(t_socket &socketConfig, std::vector<t_server> &servers, cMap &c
 	if (it != socketConfig.serverFd.end()) {
 		socketConfig.clientLen = sizeof(socketConfig.clientAddr);
 		checkEmptyPlace(socketConfig, clientMap, *it);
-		if (socketConfig.clientCount < MAX_CLIENTS)
+		if (socketConfig.clientCount < MAX_CLIENTS) // max Client
 			socketConfig.clientCount++;
 		return 0;
 	}
@@ -209,19 +209,25 @@ void handleSocket(std::vector<t_server> &servers, t_socket &socketConfig) {
 		if (poll(socketConfig.clients, socketConfig.clientCount, 0) < 0)
 			continue;
 		for (int i = 0; i < socketConfig.clientCount; ++i) {
-			if (socketConfig.clients[i].revents & POLLIN && socketConfig.clients[i].fd != 0) {
-				if (handlePollin(socketConfig, servers, clientMap, i) == -1) {
-					socketConfig.clients[i].events = POLLIN;
-					continue;
+			try {
+				if (socketConfig.clients[i].revents & POLLIN && socketConfig.clients[i].fd != 0) {
+					if (handlePollin(socketConfig, servers, clientMap, i) == -1) {
+						socketConfig.clients[i].events = POLLIN;
+						continue;
+					}
+					if (i >= (int)servers.size()) {
+						clientMap[i]->clearHeader();
+						clientMap[i]->clearBody();
+					}
 				}
-				if (i >= (int)servers.size()) {
-					clientMap[i]->clearHeader();
-					clientMap[i]->clearBody();
+				if (socketConfig.clients[i].revents & POLLOUT && socketConfig.clients[i].fd != 0) {
+					if (handlePollout(socketConfig, clientMap, i) == -1)
+						continue;
 				}
 			}
-			if (socketConfig.clients[i].revents & POLLOUT && socketConfig.clients[i].fd != 0) {
-				if (handlePollout(socketConfig, clientMap, i) == -1)
-					continue;
+			catch (const std::exception& e) {
+				socketConfig.clients[i].events = POLLOUT;
+				clientMap[i]->setServerResponse(errorHtml(CODE500));
 			}
 		}
 	}

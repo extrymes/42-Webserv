@@ -17,15 +17,22 @@ void handleClientDisconnection(int i, struct pollfd *clients, cMap &clientMap) {
 }
 
 void checkEmptyPlace(t_socket &socketConfig, cMap &clientMap, int server_fd) {
-	for (int i = 0; i < MAX_CLIENTS; ++i) {
-		if (socketConfig.clients[i].fd == 0) {
-			socklen_t len = sizeof(socketConfig.clientAddr);
-			clientMap[i] = new ClientRequest;
-			socketConfig.clients[i].fd = accept(server_fd, (struct sockaddr *)&socketConfig.clientAddr, &len);
-			socketConfig.clients[i].events = POLLIN;
-			clientMap[i]->setStart();
-			break;
+	try {
+		for (int i = 0; i < MAX_CLIENTS; ++i) {
+			if (socketConfig.clients[i].fd == 0) {
+				socklen_t len = sizeof(socketConfig.clientAddr);
+				socketConfig.clients[i].fd = accept(server_fd, (struct sockaddr *)&socketConfig.clientAddr, &len);
+				if (socketConfig.clients[i].fd < 0)
+					throw std::runtime_error("accept fail");
+				clientMap[i] = new ClientRequest;
+				socketConfig.clients[i].events = POLLIN;
+				clientMap[i]->setStart();
+				break;
+			}
 		}
+	}
+	catch (const std::exception& e) {
+		std::cout << RED << e.what() << RESET << std::endl;
 	}
 }
 
@@ -45,14 +52,23 @@ void addIndexOrUrl(servIt server, std::vector<std::string> indexes, ClientReques
 		isMap::iterator errNum = server->errorPages.find(err);
 		path = errNum == server->errorPages.end() ? toString(err) : errNum->second;
 	}
-	else
-		path += clientRequest->getValueHeader("url"); // Ex: root=www, url=etch-a-sketch/index.html
+	else {
+		path += removeFirstSlash(clientRequest->getValueHeader("url")); // Ex: root=www, url=etch-a-sketch/index.html
+	}
 }
 
 std::string toString(int nbr) {
 	std::stringstream ss;
 	ss << nbr;
 	return ss.str();
+}
+
+std::string removeFirstSlash(std::string str) {
+	if (str[0] == '/') {
+		std::string newStr = str.substr(1);
+		return newStr;
+	}
+	return str;
 }
 
 std::string	handleDeleteMethod(std::string file) {
