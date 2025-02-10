@@ -58,10 +58,8 @@ void addIndexOrUrl(servIt server, std::vector<std::string> indexes, ClientReques
 			path = errNum == server->errorPages.end() ? toString(err) : errNum->second;
 		}
 	}
-	else {
-		std::cout << clientRequest->getValueHeader("url") << std::endl;
-		path += removeFirstSlash(clientRequest->getValueHeader("url")); // Ex: root=www, url=etch-a-sketch/index.html
-	}
+	else 
+		path += removeFirstSlash(clientRequest->getValueHeader("url"));
 }
 
 std::string toString(int nbr) {

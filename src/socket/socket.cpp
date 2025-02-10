@@ -43,7 +43,7 @@ std::string createGoodUrl(std::string oldUrl) {
 std::string urlWithoutSlash(std::string location) {
 	std::string newLocation;
 	for(size_t i = location.find_first_not_of('/'); i < location.size(); i++) {
-		if (location[i] == '/')
+		if (location[i] == '/' && !isalnum(location[i + 1]))
 			break ;
 		newLocation += location[i];
 	}
@@ -108,24 +108,25 @@ int handlePollin(t_socket &socketConfig, std::vector<t_server> &servers, cMap &c
 	ssize_t size = recv(socketConfig.clients[i].fd, buffer, sizeof(buffer), 0);
 	if (size <= 0)
 		return (handleClientDisconnection(i, socketConfig.clients, clientMap), -1);
-	std::cout << buffer << std::endl;
 	clientMap[i]->parseBuffer(buffer, size);
-	std::string port = clientMap[i]->getValueHeader("port");
+	std::string port = clientMap[i]->getValueHeader("port"), method;
 	servIt server = findIf(port, servers);
 	socketConfig.clients[i].events = POLLOUT;
+	method = clientMap[i]->getValueHeader("method");
+	if (method != "GET" && method != "POST" && method != "DELETE")
+		return (clientMap[i]->setServerResponse(errorHtml(CODE405)), 0);
 	if (port.empty())
-		return (clientMap[i]->setServerResponse(errorHtml(CODE413)), 0);
+		return (clientMap[i]->setServerResponse(errorHtml(CODE414)), 0);
 	if (server == servers.end())
 		return -1;
 	int isTooLarge = checkLenBody(clientMap[i], server, size);
 	if ( isTooLarge < 1)
 		return isTooLarge;
-	std::string clientUrl = clientMap[i]->getValueHeader("url"), file, method;
+	std::string clientUrl = clientMap[i]->getValueHeader("url"), file;
 	locIt location;
 	file = createUrl(server, clientMap[i], clientUrl, location);
 	if (location != server->locations.end() && !location->redirCode.empty())
 		return (clientMap[i]->setServerResponse(redir(location)), 0);
-	method = clientMap[i]->getValueHeader("method");
 
 	std::cout << CYAN << method << RESET << " " << file << " " << clientMap[i]->getValueHeader("protocol") << std::endl;
 

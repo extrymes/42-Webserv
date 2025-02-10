@@ -96,15 +96,14 @@ std::string errorPage(servIt server, std::string code) {
 	return file;
 }
 
-std::string	displayDirectory(std::string index) {
+std::string	displayDirectory(std::string index, std::string root) {
 	std::string	display;
-	size_t	found = index.find_first_of("/") + 1;
-	std::string newIndex(index, found);
+	std::string newIndex(index, root.size());
 	DIR* dir = opendir(index.c_str());
 	struct dirent* entry;
 	while ((entry = readdir(dir)) != NULL) {
 		std::string dirName(entry->d_name);
-		display += "<p><a href=" + dirName + ">" + dirName + "</a>\n" + "</p>";
+		display += "<p><a href=" + newIndex + "/" + dirName + ">" + dirName + "</a>\n" + "</p>";
 	}
 	closedir(dir);
 	return display;
@@ -118,6 +117,7 @@ std::string handleAutoIndex(std::string code, std::string index, servIt server, 
 	}
 	if ((location != server->locations.end() && location->autoindex != "on") || (location == server->locations.end() && server->autoindex != "on"))
 		return (errorPage(server, CODE403));
+	std::string root = (location != server->locations.end() && !location->root.empty()) ? location->root : server->root;
 	std::string nb(code, 3);
 	std::string file =
 	"<!DOCTYPE html>\n"
@@ -142,7 +142,7 @@ std::string handleAutoIndex(std::string code, std::string index, servIt server, 
 	"<body>\n"
 	"	<h1>Index of " + index + "</h1>\n"
 	"	<div>\n"
-	"		" + displayDirectory(index) + "\n"
+	"		" + displayDirectory(index, root) + "\n"
 	"	</div>\n"
 	"</body>\n"
 	"</html>";
