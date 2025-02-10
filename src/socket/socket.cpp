@@ -70,7 +70,7 @@ std::string	createUrl(servIt server, ClientRequest *clientRequest, std::string &
 	location = whichLocation(server, clientRequest, clientUrl, "url");
 	if (location == server->locations.end()) {
 		if (server->root.empty()) file = "";
-		else { 
+		else {
 			file = server->root;
 			addIndexOrUrl(server, server->indexes, clientRequest, file, location);
 		}

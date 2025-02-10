@@ -1,7 +1,10 @@
 #include "cgiHandler.hpp"
 
 bool isCGIFile(std::string url) {
-	if (url.find(".py") != std::string::npos || url.find(".php") != std::string::npos)
+	size_t end = url.find_last_of('?');
+	if (end == std::string::npos)
+		end = url.size();
+	if (url.rfind(".py", end) != std::string::npos || url.rfind(".php", end) != std::string::npos)
 		return true;
 	return false;
 }
@@ -13,14 +16,20 @@ char **createCGIEnvironment(ssMap headerMap, std::string body, std::string uploa
 	// Convert to char array
 	char **envp = new char *[env.size() + 3];
 	size_t i = 0;
-	for (; i < env.size(); ++i)
-		envp[i] = strdup(env[i].c_str());
-	envp[i] = strdup(("upload_location=" + uploadLocation).c_str());
+	for (; i < env.size(); ++i) {
+		envp[i] = new char[env[i].size() + 1];
+		std::strcpy(envp[i], env[i].c_str());
+	}
+	std::string tmp;
+	tmp = "upload_location=" + uploadLocation;
+	envp[i] = new char[tmp.size() + 1];
+	std::strcpy(envp[i++], tmp.c_str());
 	if (body.empty())
 		return (envp[i] = NULL, envp);
-	++i;
-	envp[i] = strdup(("body=" + body).c_str());
-	envp[i + 1] = NULL;
+	tmp = "body=" + body;
+	envp[i] = new char[tmp.size() + 1];
+	std::strcpy(envp[i++], tmp.c_str());
+	envp[i] = NULL;
 	return envp;
 }
 
@@ -56,6 +65,8 @@ std::string executeCGI(std::string url, std::string root, ssMap headerMap, std::
 		close(pipefdIn[1]);
 		url = root.empty() ? url : root + url;
 		char *argv[] = {const_cast<char*>(url.c_str()), NULL};
+		if (body.empty())
+			body = parseURL(url);
 		char **envp = createCGIEnvironment(headerMap, body, uploadLocation);
 		execve(url.c_str(), argv, envp);
 		freeCGIEnvironment(envp);
