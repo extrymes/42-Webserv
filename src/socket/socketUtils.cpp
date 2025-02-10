@@ -53,12 +53,13 @@ void addIndexOrUrl(servIt server, std::vector<std::string> indexes, ClientReques
 			isMap::iterator errNum = server->errorPages.find(err);
 			path = errNum == server->errorPages.end() ? toString(err) : errNum->second;
 		}
-		if (err == 403 && server->autoindex != "on") {
+		if (err == 403 && location == server->locations.end() && server->autoindex != "on") {
 			isMap::iterator errNum = server->errorPages.find(err);
 			path = errNum == server->errorPages.end() ? toString(err) : errNum->second;
 		}
 	}
 	else {
+		std::cout << clientRequest->getValueHeader("url") << std::endl;
 		path += removeFirstSlash(clientRequest->getValueHeader("url")); // Ex: root=www, url=etch-a-sketch/index.html
 	}
 }

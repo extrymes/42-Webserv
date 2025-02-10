@@ -43,7 +43,7 @@ std::string createGoodUrl(std::string oldUrl) {
 std::string urlWithoutSlash(std::string location) {
 	std::string newLocation;
 	for(size_t i = location.find_first_not_of('/'); i < location.size(); i++) {
-		if (location[i] == '/' && !isalnum(location[i + 1]))
+		if (location[i] == '/')
 			break ;
 		newLocation += location[i];
 	}
@@ -108,6 +108,7 @@ int handlePollin(t_socket &socketConfig, std::vector<t_server> &servers, cMap &c
 	ssize_t size = recv(socketConfig.clients[i].fd, buffer, sizeof(buffer), 0);
 	if (size <= 0)
 		return (handleClientDisconnection(i, socketConfig.clients, clientMap), -1);
+	std::cout << buffer << std::endl;
 	clientMap[i]->parseBuffer(buffer, size);
 	std::string port = clientMap[i]->getValueHeader("port");
 	servIt server = findIf(port, servers);
