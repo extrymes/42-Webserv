@@ -112,7 +112,7 @@ std::string	displayDirectory(std::string index, std::string root) {
 std::string handleAutoIndex(std::string code, std::string index, servIt server, std::string clientUrl) {
 	locIt location;
 	for(location = server->locations.begin(); location != server->locations.end(); ++location) {
-		if (std::strncmp(location->path.c_str(), clientUrl.c_str(), location->path.size()) == 0)
+		if (std::strncmp(location->path.c_str(), clientUrl.c_str(), clientUrl.size()) == 0)
 			break;
 	}
 	if ((location != server->locations.end() && location->autoindex != "on") || (location == server->locations.end() && server->autoindex != "on"))
