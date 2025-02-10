@@ -33,8 +33,6 @@ void addIndexOrUrl(servIt server, std::vector<std::string> indexes, ClientReques
 	int err = 403;
 	if (clientRequest->getValueHeader("url").size() <= 1) {
 		std::vector<std::string>::iterator it = indexes.begin();
-		if (path[path.size() - 1] != '/')
-			path += '/';
 		for (; it != indexes.end(); ++it) {
 			err = 404;
 			std::string temp = path + *it;

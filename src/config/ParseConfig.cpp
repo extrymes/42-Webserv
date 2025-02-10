@@ -192,6 +192,9 @@ void ParseConfig::parseRoot(std::string args, std::string &root) {
 	// Remove slash at begin
 	if (args[0] == '/')
 		args = args.substr(1);
+	// Append slash at end
+	if (args[args.size() - 1] != '/')
+		args.append("/");
 	root = args;
 }
 
@@ -258,7 +261,7 @@ void ParseConfig::parseClientMaxBodySize(std::string args, long &clientMaxBodySi
 void ParseConfig::parseLocationPath(std::string args, std::string &path) {
 	if (countArgs(args) != 1)
 		error("invalid number of arguments in \"location\" directive");
-	// Add slash at end
+	// Append slash at end
 	if (args[args.size() - 1] != '/')
 		args.append("/");
 	path = args;
@@ -286,7 +289,7 @@ void ParseConfig::parseLocationCgiExtension(std::string args, std::string &cgiEx
 void ParseConfig::parseLocationUploadSave(std::string args, std::string &uploadSave) {
 	if (countArgs(args) != 1)
 		error("invalid number of arguments in \"upload_save\" directive");
-	// Add slash at end
+	// Append slash at end
 	if (args[args.size() - 1] != '/')
 		args.append("/");
 	uploadSave = args;
