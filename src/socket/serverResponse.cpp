@@ -41,7 +41,6 @@ std::string httpResponse(std::string file, std::string ext, std::string code) {
 }
 
 std::string httpResponse301(std::string file, std::string ext, locIt &location) {
-	std::cout << "ici" << std::endl;
 	std::string httpResponse = "HTTP/1.1 301 Moved Permanently\r\n";
 	httpResponse += "Location: " + location->path + "\r\n";
 	httpResponse += "Content-Type: " + ext + "\r\n";

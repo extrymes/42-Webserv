@@ -43,7 +43,7 @@ std::string createGoodUrl(std::string oldUrl) {
 std::string urlWithoutSlash(std::string location) {
 	std::string newLocation;
 	for(size_t i = location.find_first_not_of('/'); i < location.size(); i++) {
-		if (location[i] == '/')
+		if (location[i] == '/' && !isalnum(location[i + 1]))
 			break ;
 		newLocation += location[i];
 	}
@@ -72,11 +72,11 @@ std::string	createUrl(servIt server, ClientRequest *clientRequest, std::string &
 		if (server->root.empty()) file = "";
 		else { 
 			file = server->root;
-			addIndexOrUrl(server, server->indexes, clientRequest, file);
+			addIndexOrUrl(server, server->indexes, clientRequest, file, location);
 		}
 	} else {
 		file = location->root.empty() ? server->root + location->path : location->root;
-		addIndexOrUrl(server, location->indexes, clientRequest, file);
+		addIndexOrUrl(server, location->indexes, clientRequest, file, location);
 	}
 	return file;
 }

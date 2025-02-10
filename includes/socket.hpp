@@ -59,7 +59,7 @@ std::string errorHtml(std::string code);
 void initAddrInfo(std::vector<t_server> &servers, int i, struct addrinfo *hints, struct addrinfo **res);
 void handleClientDisconnection(int i, struct pollfd *clients, cMap &clientMap);
 void checkEmptyPlace(t_socket &socketConfig, cMap &clientMap, int server_fd);
-void addIndexOrUrl(servIt server, std::vector<std::string> indexes, ClientRequest *clientRequest, std::string &path);
+void addIndexOrUrl(servIt server, std::vector<std::string> indexes, ClientRequest *clientRequest, std::string &path, locIt &location);
 std::string toString(int nbr);
 std::string	handleDeleteMethod(std::string file);
 bool isMethodAllowed(std::string method, servIt server, ClientRequest *clientRequest, std::string clientUrl);
