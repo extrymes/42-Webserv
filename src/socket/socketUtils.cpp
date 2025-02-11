@@ -5,7 +5,7 @@ void initAddrInfo(std::vector<t_server> &servers, int i, struct addrinfo *hints,
 	hints->ai_family = AF_INET;
 	hints->ai_socktype = SOCK_STREAM;
 	if (int result = getaddrinfo(servers[i].host.c_str(), toString(servers[i].port).c_str(), hints, res) < 0)
-			throw std::runtime_error("getaddrinfo fail" + (std::string)gai_strerror(result));
+			throw HttpException(CODE500, "getaddrinfo fail" + (std::string)gai_strerror(result));
 }
 
 void handleClientDisconnection(int i, struct pollfd *clients, cMap &clientMap) {
@@ -23,7 +23,7 @@ void checkEmptyPlace(t_socket &socketConfig, cMap &clientMap, int server_fd) {
 				socklen_t len = sizeof(socketConfig.clientAddr);
 				socketConfig.clients[i].fd = accept(server_fd, (struct sockaddr *)&socketConfig.clientAddr, &len);
 				if (socketConfig.clients[i].fd < 0)
-					throw std::runtime_error("accept fail");
+					throw HttpException(CODE500, "accept fail");
 				clientMap[i] = new ClientRequest;
 				socketConfig.clients[i].events = POLLIN;
 				clientMap[i]->setStart();
@@ -49,14 +49,10 @@ void addIndexOrUrl(servIt server, std::vector<std::string> indexes, ClientReques
 				return;
 			}
 		}
-		if (err == 403 && location != server->locations.end() && location->autoindex != "on") {
-			isMap::iterator errNum = server->errorPages.find(err);
-			path = errNum == server->errorPages.end() ? toString(err) : errNum->second;
-		}
-		if (err == 403 && location == server->locations.end() && server->autoindex != "on") {
-			isMap::iterator errNum = server->errorPages.find(err);
-			path = errNum == server->errorPages.end() ? toString(err) : errNum->second;
-		}
+		if (err == 403 && location != server->locations.end() && location->autoindex != "on")
+			throw HttpServerException(server,CODE403, "");
+		if (err == 403 && location == server->locations.end() && server->autoindex != "on")
+			throw HttpServerException(server, CODE403, "");
 	}
 	else
 		path += removeFirstSlash(clientRequest->getValueHeader("url"));

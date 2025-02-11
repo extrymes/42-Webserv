@@ -1,4 +1,5 @@
 #pragma once
+# include "socket.hpp"
 // Success responses (2xx)
 #define CODE200 "200 OK"
 #define CODE201 "201 Created"
@@ -35,3 +36,50 @@
 #define CODE503 "503 Service Unavailable"
 #define CODE504 "504 Gateway Timeout"
 #define CODE505 "505 HTTP Version Not Supported"
+
+typedef std::vector<t_server>::iterator servIt;
+
+class HttpServerException : public std::exception {
+public:
+	HttpServerException(const servIt server, const std::string& codeMsg, const std::string& message)
+		: _server(server), _codeMsg(codeMsg), _message(message) {}
+
+	servIt getServ() const {
+		return _server;
+	}
+
+	std::string getCodeMsg() const {
+		return _codeMsg;
+	}
+
+	virtual const char* what() const throw() {
+		return _message.c_str();
+	}
+
+	virtual ~HttpServerException() throw() {}
+
+private:
+	servIt	_server;
+	std::string	_codeMsg;
+	std::string	_message;
+};
+
+class HttpException : public std::exception {
+public:
+	HttpException(const std::string& codeMsg, const std::string& message)
+		: _codeMsg(codeMsg), _message(message) {}
+
+	std::string getCodeMsg() const {
+		return _codeMsg;
+	}
+
+	virtual const char* what() const throw() {
+		return _message.c_str();
+	}
+
+	virtual ~HttpException() throw() {}
+
+private:
+	std::string	_codeMsg;
+	std::string	_message;
+};

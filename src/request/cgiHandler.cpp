@@ -1,4 +1,5 @@
 #include "cgiHandler.hpp"
+#include "socket.hpp"
 
 bool isCGIFile(std::string url) {
 	size_t end = url.find_last_of('?');
@@ -50,16 +51,16 @@ std::string executeCGI(std::string url, std::string root, ssMap headerMap, std::
 	int	pipefdOut[2];
 	int	pipefdIn[2];
 	if (pipe(pipefdOut) == -1 || pipe(pipefdIn) == -1)
-		throw std::runtime_error("pipe error");
+		throw HttpException(CODE500, "pipe error");
 	pid_t pid = fork();
 	if (pid < 0)
-		throw std::runtime_error("fork error");
+		throw HttpException(CODE500, "fork error");
 	std::string output = "";
 	if (pid == 0) {
 		// Child process
 		close(pipefdOut[0]);
 		if (dup2(pipefdOut[1], STDOUT_FILENO) < 0 || dup2(pipefdIn[0], STDIN_FILENO) < 0)
-			throw std::logic_error("Dup2 failed when executing CGI at url: " + url);
+			throw HttpException(CODE500, "Dup2 failed when executing CGI at url: " + url);
 		close(pipefdOut[1]);
 		close(pipefdIn[0]);
 		close(pipefdIn[1]);
@@ -70,7 +71,7 @@ std::string executeCGI(std::string url, std::string root, ssMap headerMap, std::
 		char **envp = createCGIEnvironment(headerMap, body, uploadLocation);
 		execve(url.c_str(), argv, envp);
 		freeCGIEnvironment(envp);
-		throw std::runtime_error("child process failed");
+		throw HttpException(CODE500, "child process failed");
 	} else {
 		// Parent process
 		write(pipefdIn[1], body.c_str(), body.size());
@@ -85,7 +86,7 @@ std::string executeCGI(std::string url, std::string root, ssMap headerMap, std::
 		int status;
 		waitpid(pid, &status, 0);
 		if (!WIFEXITED(status) || WEXITSTATUS(status) != 0)
-			throw std::runtime_error("CGI script execution failed");
+			throw HttpException(CODE500, "CGI script execution failed");
 		return output;
 	}
 }

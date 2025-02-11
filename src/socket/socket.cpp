@@ -144,9 +144,8 @@ int handlePollin(t_socket &socketConfig, std::vector<t_server> &servers, cMap &c
 void handleGetMethod(servIt server, locIt location, ClientRequest *clientRequest, std::string clientUrl, std::string file) {
 	if (!isMethodAllowed("GET", server, clientRequest, clientUrl))
 		return clientRequest->setServerResponse(readHtml("405", server, CODE405, ""));
-	if (!isCGIFile(clientUrl)) {
+	if (!isCGIFile(clientUrl))
 		return clientRequest->setServerResponse(readHtml(file, server, CODE200, clientUrl));
-	}
 	std::string root = (location != server->locations.end() && !location->root.empty()) ? location->root : server->root;
 	std::string uploadLoc = uploadLocation(server, clientRequest);
 	std::string output = executeCGI(clientUrl, root, clientRequest->getHeaderMap(), clientRequest->getBody(), uploadLoc);
@@ -222,14 +221,19 @@ void handleSocket(std::vector<t_server> &servers, t_socket &socketConfig) {
 						clientMap[i]->clearBody();
 					}
 				}
-				if (socketConfig.clients[i].revents & POLLOUT && socketConfig.clients[i].fd != 0) {
-					if (handlePollout(socketConfig, clientMap, i) == -1)
-						continue;
-				}
-			}
-			catch (const std::exception& e) {
+			} catch (const HttpException& e) {
+				socketConfig.clients[i].events = POLLOUT;
+				clientMap[i]->setServerResponse(errorHtml(e.getCodeMsg()));
+			} catch (const HttpServerException& e) {
+				socketConfig.clients[i].events = POLLOUT;
+				clientMap[i]->setServerResponse(errorPage(e.getServ() ,e.getCodeMsg()));
+			} catch (const std::exception& e) {
 				socketConfig.clients[i].events = POLLOUT;
 				clientMap[i]->setServerResponse(errorHtml(CODE500));
+			}
+			if (socketConfig.clients[i].revents & POLLOUT && socketConfig.clients[i].fd != 0) {
+				if (handlePollout(socketConfig, clientMap, i) == -1)
+					continue;
 			}
 		}
 	}

@@ -34,12 +34,12 @@ void ClientRequest::parseBuffer(char *buffer, ssize_t size) {
 void ClientRequest::parseRequestHost(std::istringstream &infileBuff) {
 	std::string	requestLine, hostLine, method, url, protocol, host, port, tmp;
 	if (!infileBuff)
-		throw std::runtime_error("opening buffer failed");
+		throw HttpException(CODE500, "opening buffer failed");
 	std::getline(infileBuff, requestLine);
 	std::istringstream iss(requestLine);
 	iss >> method, iss >> url, iss >> protocol;
 	if (method.empty() || url.empty() || protocol.empty())
-		throw std::runtime_error("invalid HTTP header");
+		throw HttpException(CODE500, "invalid HTTP header");
 	_header["method"] = method;
 	_header["url"] = url;
 	_header["protocol"] = protocol;

@@ -16,7 +16,7 @@ std::string checkExt(std::string file) {
 }
 
 bool isError(std::string &index) {
-	int nb = atoi(index.c_str());
+	int nb = std::atoi(index.c_str());
 	if (index.size() == 3 && (nb >= 300 && nb <= 527))
 		return true;
 	return false;
