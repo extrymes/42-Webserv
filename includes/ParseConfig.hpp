@@ -6,6 +6,7 @@
 # include <vector>
 # include <map>
 # include <cmath>
+# include <algorithm>
 
 // --- Structures ---
 typedef struct s_server t_server;
@@ -43,6 +44,7 @@ class ParseConfig {
 	private:
 		void fillServer(t_server &server);
 		void fillLocation(t_location &location);
+		void sortServerLocations(t_server &server);
 		bool parseLine(std::string line, std::string &directive, std::string &args);
 		void parseListen(std::string args, std::string &host, int &port);
 		void parseServerName(std::string args, std::string &serverName);

@@ -17,6 +17,7 @@ ParseConfig::ParseConfig(std::string filename, std::vector<t_server> &servers) :
 				error("syntax error \"" + line + "\"");
 			t_server server;
 			fillServer(server);
+			sortServerLocations(server);
 			if (server.host.empty())
 				error("missing directive \"listen\"");
 			servers.push_back(server);
@@ -105,6 +106,14 @@ void ParseConfig::fillLocation(t_location &location) {
 	}
 	if (!closed)
 		error("block \"location\" is not closed by \"}\"");
+}
+
+bool compareLocationPath(t_location &i, t_location &j) {
+	return (i.path.size() > j.path.size());
+}
+
+void ParseConfig::sortServerLocations(t_server &server) {
+	std::sort(server.locations.begin(), server.locations.end(), compareLocationPath);
 }
 
 bool ParseConfig::parseLine(std::string line, std::string &directive, std::string &args) {
