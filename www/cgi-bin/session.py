@@ -1,8 +1,10 @@
-#!/usr/bin/pyhon3
+#!/usr/bin/python3
 
 import os
-import http.cookies
+# import http.cookies
 import uuid
+import requests
+# import browser_cookie3
 
 SESSION_DIR = "/tmp/cgi_sessions"
 
@@ -10,23 +12,32 @@ class Session:
 	def __init__(self):
 		self.session_id = None
 		self.data = {}
-		# Ensure sessions directory exists
+		# Ensure sessions directory exis ts
 		if not os.path.exists(SESSION_DIR):
 			os.makedirs(SESSION_DIR, mode=0o700)
 
 	def load_session(self):
-		# Load session from cookie or create new one
-		cookie = http.cookies.SimpleCookie(os.environ.get("HTTP_COOKIE"))
-		if "SESSION_ID" in cookie:
-			self.session_id = cookie["SESSION_ID"].value
-			session_file = os.path.join(SESSION_DIR, self.session_id)
-			if os.path.exists(session_file):
-				with open(session_file, "r") as f:
-					for line in f:
-						key, value = line.strip().split("=", 1)
-						self.data[key] = value
-		else:
-			self.create_new_session()
+		# print(os.environ)
+		# host = "http://" + os.environ.get("host") + ":" + os.environ.get("port")
+		# Retrieve environment variables
+		host = os.environ.get("host")
+		port = os.environ.get("port")
+
+		# Check if environment variables are set
+		if not host or not port:
+			print("Environment variables 'host' and 'port' must be set.")
+			return
+
+		host = f"http://{host}:{port}"
+
+		try:
+			# send HTTP requests
+			response = requests.get("http://localhost:8083", timeout=2.50)
+			# print out Cookies
+			for cookie in response.cookies:
+				print(cookie.name, cookie.value)
+		except requests.exceptions.RequestException as e:
+			print(f"An error occurred: {e}")
 
 	def create_new_session(self):
 		# Create new session
@@ -53,6 +64,6 @@ class Session:
 	def get_cookie_header(self):
 		# Return the Set-Cookie header for new sessions
 		if self.session_id:
-			return f"Set-Cookie= SESSION_ID={self.session_id}; Path=/; HttpOnly"
+			return f"SESSION_ID={self.session_id}; Path=/; HttpOnly;"
 		else:
 			return ""

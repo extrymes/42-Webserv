@@ -7,6 +7,7 @@ extern sig_atomic_t stopRequested;
 int handlePollout(t_socket &socketConfig, cMap &clientMap, int i) {
 	std::string serverResponse = clientMap[i]->getServerResponse();
 	long totalLen = serverResponse.size();
+	std::cout << "serverResponse = " << serverResponse << std::endl;
 	long len = send(socketConfig.clients[i].fd, serverResponse.c_str(), totalLen, 0);
 	if (len < 0) {
 		handleClientDisconnection(i, socketConfig.clients, clientMap);
@@ -106,6 +107,7 @@ int handlePollin(t_socket &socketConfig, std::vector<t_server> &servers, cMap &c
 
 	char buffer[4096] = {0};
 	ssize_t size = recv(socketConfig.clients[i].fd, buffer, sizeof(buffer), 0);
+	// std::cerr << buffer << std::endl;
 	if (size <= 0)
 		return (handleClientDisconnection(i, socketConfig.clients, clientMap), -1);
 	clientMap[i]->parseBuffer(buffer, size);
@@ -149,7 +151,7 @@ void handleGetMethod(servIt server, locIt location, ClientRequest *clientRequest
 	std::string root = (location != server->locations.end() && !location->root.empty()) ? location->root : server->root;
 	std::string uploadLoc = uploadLocation(server, clientRequest);
 	std::string output = executeCGI(clientUrl, root, clientRequest->getHeaderMap(), clientRequest->getBody(), uploadLoc);
-	return clientRequest->setServerResponse(httpResponse(output, "text/html", CODE200));
+	return clientRequest->setServerResponse(output);
 }
 
 void handlePostMethod(servIt server, locIt location, ClientRequest *clientRequest, std::string clientUrl, std::string file) {
@@ -160,7 +162,7 @@ void handlePostMethod(servIt server, locIt location, ClientRequest *clientReques
 	std::string root = (location != server->locations.end() && !location->root.empty()) ? location->root : server->root;
 	std::string uploadLoc = uploadLocation(server, clientRequest);
 	std::string output = executeCGI(clientUrl, root, clientRequest->getHeaderMap(), clientRequest->getBody(), uploadLoc);
-	return clientRequest->setServerResponse(httpResponse(output, "text/html", CODE200));
+	return clientRequest->setServerResponse(output);
 }
 
 void handleDeleteMethod(servIt server, ClientRequest *clientRequest, std::string file) {

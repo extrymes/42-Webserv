@@ -5,10 +5,21 @@ import os
 
 # Get body in environment
 body = os.environ.get("body")
+
 if not body:
-	print("<!DOCTYPE html><html><body>")
-	print(f"<h1>Hello Guest!</h1>")
-	print("</html></body>")
+	# std::string httpResponse = "HTTP/1.1 " + code + "\r\n";
+	# httpResponse += "Content-Type: " + ext + "\r\n";
+	# httpResponse += "Content-Length: " + toString(file.length()) + "\r\n";
+
+	html = """
+	<!DOCTYPE html><html><body>
+	<h1>Hello Guest!</h1>
+	</html></body>"""
+	print("HTTP/1.1 200 OK")
+	print("Content-Type: text/html")
+	print("Content-Length: ", len(html))
+	print("Connection: close\r\n\r\n")
+	print(html)
 	exit()
 
 # Parse body into dictionary
@@ -46,11 +57,18 @@ else:
 	password = '*' * len(password)
 
 # Print HTML
-print("<!DOCTYPE html><html><body>")
-print(f"<h1>Hello {first_name}!</h1>")
-print(f"<p>First name: {first_name}</p>")
-print(f"<p>Last name: {last_name}</p>")
-print(f"<p>Email: {email}</p>")
-print(f"<p>Phone: {phone}</p>")
-print(f"<p>Password: {password}</p>")
-print("</html></body>")
+html = f"""
+	<!DOCTYPE html><html><body>
+	<h1>Hello {first_name}!</h1>
+	<p>First name: {first_name}</p>
+	<p>Last name: {last_name}</p>
+	<p>Email: {email}</p>
+	<p>Phone: {phone}</p>
+	<p>Password: {password}</p>
+	</html></body>"""
+
+print("HTTP/1.1 200 OK")
+print("Content-Type: text/html")
+print("Content-Length: ", len(html))
+print("Connection: close\r\n\r\n")
+print(html)

@@ -32,8 +32,8 @@ ParseConfig::ParseConfig(std::string filename, std::vector<t_server> &servers) :
 	size_t i, j;
 	for (i = 0; i < servers.size(); ++i) {
 		for (j = i + 1; j < servers.size(); ++j) {
-			if (servers[i].host == servers[j].host && servers[i].port == servers[j].port)
-				throw std::runtime_error("at least two servers have the same host");
+			if (servers[i].port == servers[j].port)
+				throw std::runtime_error("at least two servers have the same port");
 		}
 	}
 }

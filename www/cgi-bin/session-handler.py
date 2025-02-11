@@ -1,4 +1,4 @@
-#!/usr/bin/pyhon3
+#!/usr/bin/python3
 
 import os
 from session import Session
@@ -7,29 +7,44 @@ from session import Session
 session = Session()
 session.load_session()
 
-# Get username
-username = os.environ.get("username", None)
+# Get body
+body = os.environ.get("body", None)
 
-if username:
-	session.set("username", username)
+if body:
+	# Parse body into dictionary
+	data_dict = {}
+	splitted_body = body.split('&')
+	for item in splitted_body:
+		pair = item.split('=', 1)
+		if len(pair) == 2:
+			key, value = pair
+			data_dict[key] = value
+
+	username = data_dict["username"]
+	if username:
+		session.set("username", username)
+
+# Construct HTML
+html = """
+	<!DOCTYPE html><html><body>
+	<h1>Session Management with CGI</h1>"""
+if session.get("username"):
+	html += f"<p>Welcome, {session.get('username')}!</p>"
+else:
+	html += """
+	<p>Please enter your username:</p>
+	<form method=\"POST\">
+	<input type=\"text\" name=\"username\">
+	<button type=\"text\" placeholder=\"Your username\">SUBMIT</button>
+	</form>"""
+html += "</body></html>"
 
 # Print headers
-print("Content-Type: text/html")
-if "SESSION_ID" not in os.environ.get("HTTP_COOKIE", ""):
-	print(session.get_cookie_header())
-print("")
+print("HTTP/1.1 200 OK")
+print("Content-Type:", "text/html")
+print("Content-Length:", len(html))
+print("Set-Cookie:", session.get_cookie_header())
+print("Connection: close\r\n\r\n")
 
 # Print HTML
-print("<html><body>")
-print("<h1>Session Management with CGI</h1>")
-
-if session.get("username"):
-	print(f"<p>Welcome, {session.get("username")}!</p>")
-else:
-	print("<p>Please enter your username:></p>")
-	print("<form method=\"POST\">")
-	print("<input type=\"text\" name=\"username\">")
-	print("<button type=\"submit\" value=\"Submit\">")
-	print("</form>")
-
-print("</body></html>")
+print(html)

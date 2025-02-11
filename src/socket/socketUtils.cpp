@@ -75,7 +75,7 @@ std::string removeFirstSlash(std::string str) {
 std::string	handleDeleteMethod(std::string file) {
 	int status = std::remove(file.c_str());
 	if (status != 0) {
-		perror("Error deleting file");
+		throw std::runtime_error("Error deleting file");
 		return CODE404;
 	}
 	else {
