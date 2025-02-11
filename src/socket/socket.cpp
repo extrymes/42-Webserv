@@ -57,7 +57,7 @@ locIt whichLocation(servIt it, ClientRequest *clientRequest, std::string clientU
 		std::string newLocation = urlWithoutSlash(location->path);
 		std::string newClientUrl = urlWithoutSlash(goodUrl);
 		const int pathSize = newLocation.size();
-		if (std::strncmp(newLocation.c_str(), newClientUrl.c_str(), pathSize) == 0 && (newLocation.size() == newClientUrl.size())) {
+		if (std::strncmp(newLocation.c_str(), newClientUrl.c_str(), pathSize) == 0 && newClientUrl[pathSize] != '.') {
 			clientRequest->setValueHeader(str, goodUrl.substr(pathSize));
 			return location;
 		}
@@ -125,7 +125,6 @@ int handlePollin(t_socket &socketConfig, std::vector<t_server> &servers, cMap &c
 	std::string clientUrl = clientMap[i]->getValueHeader("url"), file;
 	locIt location;
 	file = createUrl(server, clientMap[i], clientUrl, location);
-	// std::cout << "file = " << file << std::endl;
 	if (location != server->locations.end() && !location->redirCode.empty())
 		return (clientMap[i]->setServerResponse(redir(location)), 0);
 
