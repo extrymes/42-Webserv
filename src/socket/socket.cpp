@@ -202,8 +202,9 @@ void initSocket(t_socket &socketConfig, std::vector<t_server> &servers) {
 
 void handleSocket(std::vector<t_server> &servers, t_socket &socketConfig) {
 	cMap clientMap;
+	socketConfig.clients = new struct pollfd[MAX_CLIENTS + servers.size()];
 	socketConfig.clientCount = servers.size();
-	std::memset(socketConfig.clients, 0, sizeof(socketConfig.clients));
+	std::memset(socketConfig.clients, 0, (MAX_CLIENTS + servers.size()) * sizeof(struct pollfd));
 	initSocket(socketConfig, servers);
 	setupSignalHandler();
 	while (!stopRequested) {
@@ -250,4 +251,5 @@ void closeAllFds(t_socket &socketConfig, cMap &clientMap) {
 			delete clientMap[i];
 		close(socketConfig.clients[i].fd);
 	}
+	delete[] socketConfig.clients;
 }

@@ -43,7 +43,7 @@ struct s_socket {
 	struct sockaddr_in clientAddr;
 	socklen_t clientLen;
 	int clientCount;
-	struct pollfd clients[MAX_CLIENTS];
+	struct pollfd *clients;
 };
 
 // --- Functions ---
