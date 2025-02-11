@@ -32,7 +32,7 @@ void checkEmptyPlace(t_socket &socketConfig, cMap &clientMap, int server_fd) {
 		}
 	}
 	catch (const std::exception& e) {
-		std::cout << RED << e.what() << RESET << std::endl;
+		std::cerr << RED << e.what() << RESET << std::endl;
 	}
 }
 
@@ -58,7 +58,7 @@ void addIndexOrUrl(servIt server, std::vector<std::string> indexes, ClientReques
 			path = errNum == server->errorPages.end() ? toString(err) : errNum->second;
 		}
 	}
-	else 
+	else
 		path += removeFirstSlash(clientRequest->getValueHeader("url"));
 }
 
@@ -100,7 +100,7 @@ bool isMethodAllowed(std::string method, servIt server, ClientRequest *clientReq
 	locIt location = whichLocation(server, clientRequest, referer, "");
 	if (location == server->locations.end() || location->allowedMethods.empty() || location->allowedMethods.find(method) != std::string::npos)
 		return true;
-	std::cout << RED << "error: method " << method << " is not allowed!" << RESET << std::endl;
+	std::cerr << RED << "error: method " << method << " is not allowed!" << RESET << std::endl;
 	return false;
 }
 

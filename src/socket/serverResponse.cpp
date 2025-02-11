@@ -114,7 +114,6 @@ std::string handleAutoIndex(std::string code, std::string index, servIt server, 
 	for (; location != server->locations.end(); ++location) {
 		std::string path = location->path;
 		int size = clientUrl[clientUrl.size() - 1] == '/' ? path.size() : path.size() - 1;
-		std::cout << size << std::endl;
 		if (std::strncmp(path.c_str(), clientUrl.c_str(), size) == 0)
 			break;
 	}
