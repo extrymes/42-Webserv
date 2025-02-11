@@ -96,14 +96,22 @@ std::string errorPage(servIt server, std::string code) {
 	return file;
 }
 
+bool is_directory(const char* path) {
+	struct stat stat_buf;
+	if (stat(path, &stat_buf) != 0)
+		return false;
+	return S_ISDIR(stat_buf.st_mode);
+}
+
 std::string	displayDirectory(std::string index, std::string root) {
-	std::string	display;
-	std::string newIndex(index, root.size());
+	std::string newIndex(index, root.size()), display;
 	DIR* dir = opendir(index.c_str());
 	struct dirent* entry;
 	while ((entry = readdir(dir)) != NULL) {
 		std::string dirName(entry->d_name);
-		display += "<p><a href=" + newIndex + "/" + dirName + ">" + dirName + "</a>\n" + "</p>";
+		if (is_directory((root + newIndex + dirName).c_str()))
+			dirName += "/";
+		display += "<p><a href= ./" + dirName + ">" + dirName + "</a>\n" + "</p>";
 	}
 	closedir(dir);
 	return display;
