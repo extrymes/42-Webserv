@@ -57,7 +57,7 @@ locIt whichLocation(servIt it, ClientRequest *clientRequest, std::string clientU
 		std::string newLocation = urlWithoutSlash(location->path);
 		std::string newClientUrl = urlWithoutSlash(goodUrl);
 		const int pathSize = newLocation.size();
-		if (strncmp(newLocation.c_str(), newClientUrl.c_str(), pathSize) == 0 && (newLocation.size() == newClientUrl.size())) {
+		if (std::strncmp(newLocation.c_str(), newClientUrl.c_str(), pathSize) == 0 && (newLocation.size() == newClientUrl.size())) {
 			clientRequest->setValueHeader(str, goodUrl.substr(pathSize));
 			return location;
 		}
