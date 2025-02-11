@@ -113,6 +113,15 @@ int handlePollin(t_socket &socketConfig, std::vector<t_server> &servers, cMap &c
 	clientMap[i]->parseBuffer(buffer, size);
 	std::string port = clientMap[i]->getValueHeader("port"), method;
 	servIt server = findIf(port, servers);
+	try {
+		if (checkServerName(clientMap[i], server) == -1)
+			throw std::runtime_error("bad server name");
+	}
+	catch (const std::exception& e){
+		socketConfig.clients[i].fd = 0;
+		std::cerr << e.what() << std::endl;
+		return 0;
+	}
 	socketConfig.clients[i].events = POLLOUT;
 	method = clientMap[i]->getValueHeader("method");
 	if (method != "GET" && method != "POST" && method != "DELETE")

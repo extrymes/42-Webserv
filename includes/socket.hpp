@@ -67,6 +67,7 @@ bool isMethodAllowed(std::string method, servIt server, ClientRequest *clientReq
 bool isCGIAllowed(std::string url, servIt server, ClientRequest *clientRequest);
 std::string	uploadLocation(servIt server, ClientRequest *clientRequest);
 std::string removeFirstSlash(std::string str);
+int checkServerName(ClientRequest *request, servIt &server);
 
 // socket.cpp
 int handlePollout(t_socket &socketConfig, cMap &clientMap, int i);

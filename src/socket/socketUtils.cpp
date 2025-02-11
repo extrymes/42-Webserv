@@ -36,6 +36,13 @@ void checkEmptyPlace(t_socket &socketConfig, cMap &clientMap, int server_fd) {
 	}
 }
 
+int checkServerName(ClientRequest *request, servIt &server) {
+	std::string host = request->getValueHeader("host");
+	if (host != "localhost" && host != server->host && host != server->name)
+		return -1;
+	return 0;
+}
+
 void addIndexOrUrl(servIt server, std::vector<std::string> indexes, ClientRequest *clientRequest, std::string &path, locIt &location) {
 	int err = 403;
 	if (clientRequest->getValueHeader("url").size() <= 1) {
