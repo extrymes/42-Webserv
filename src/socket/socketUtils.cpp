@@ -56,10 +56,13 @@ void addIndexOrUrl(servIt server, std::vector<std::string> indexes, ClientReques
 				return;
 			}
 		}
-		if (err == 403 && location != server->locations.end() && location->autoindex != "on")
-			throw HttpServerException(server,CODE403, "");
-		if (err == 403 && location == server->locations.end() && server->autoindex != "on")
-			throw HttpServerException(server, CODE403, "");
+		if ((err == 403 && location != server->locations.end() && location->autoindex != "on") ||
+			(err == 404 && location == server->locations.end() && server->autoindex != "on")) {
+			if (err == 403)
+				throw HttpServerException(server,CODE403, "");
+			else
+				throw HttpServerException(server, CODE404, "");
+		}
 	}
 	else
 		path += removeFirstSlash(clientRequest->getValueHeader("url"));
