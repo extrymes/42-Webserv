@@ -12,7 +12,7 @@ function deleteFile() {
 		return alert("Please complete the required field!");
 
 	fetch(filePath, {
-		method: 'DELETE'
+		method: "DELETE"
 	})
 	.then((response) => {
 		if (response.redirected)
@@ -21,7 +21,7 @@ function deleteFile() {
 			return alert("File deleted!");
 		if (response.status === 404)
 			return alert("Failed to delete file!");
-		return response.text().then(html => {
+		return response.text().then((html) => {
 			document.open();
 			document.write(html);
 			document.close();

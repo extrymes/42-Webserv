@@ -7,7 +7,6 @@ extern sig_atomic_t stopRequested;
 int handlePollout(t_socket &socketConfig, cMap &clientMap, int i) {
 	std::string serverResponse = clientMap[i]->getServerResponse();
 	long totalLen = serverResponse.size();
-	std::cout << "serverResponse = " << serverResponse << std::endl;
 	long len = send(socketConfig.clients[i].fd, serverResponse.c_str(), totalLen, 0);
 	if (len < 0) {
 		handleClientDisconnection(i, socketConfig.clients, clientMap);
@@ -107,7 +106,6 @@ int handlePollin(t_socket &socketConfig, std::vector<t_server> &servers, cMap &c
 
 	char buffer[4096] = {0};
 	ssize_t size = recv(socketConfig.clients[i].fd, buffer, sizeof(buffer), 0);
-	// std::cerr << buffer << std::endl;
 	if (size <= 0)
 		return (handleClientDisconnection(i, socketConfig.clients, clientMap), -1);
 	clientMap[i]->parseBuffer(buffer, size);
