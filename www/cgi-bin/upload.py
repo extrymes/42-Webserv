@@ -16,16 +16,24 @@ for content in split_input:
 	if b"filename" in content:
 		filename = content.split(b"filename=\"")[1].split(b"\"")[0].decode()
 		file_content = content.split(b"\r\n\r\n")[1]
-		if os.path.exists(upload_location):
+		if not os.path.exists(upload_location):
+			try:
+				os.makedirs(upload_location)
+			except:
+				body = """
+				<h3>Cannot create upload location!</h3>
+				<iframe src="https://giphy.com/embed/v2JqIt9EQKMFb1bGUh" width="480" height="269" style="" frameBorder="0" class="giphy-embed" allowFullScreen></iframe>"""
+		try:
 			with open(upload_location + filename, 'wb') as file:
 				file.write(file_content)
 				body = """
 				<h3>File succesfully uploaded!</h3>
 				<iframe src="https://giphy.com/embed/VJY3zeoK87CLBKnqqm" width="480" height="480" style="" frameBorder="0" class="giphy-embed" allowFullScreen></iframe>"""
-		else:
+		except:
 			body = """
-			<h3>Invalid upload save location!</h3>
+			<h3>Cannot create upload location!</h3>
 			<iframe src="https://giphy.com/embed/v2JqIt9EQKMFb1bGUh" width="480" height="269" style="" frameBorder="0" class="giphy-embed" allowFullScreen></iframe>"""
+
 		print("HTTP/1.1 200 OK")
 		print("Content-Type: text/html")
 		print("Content-Length: ", len(body))
