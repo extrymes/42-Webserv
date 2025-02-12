@@ -3,11 +3,17 @@
 <?php
 
 function print_html($name, $message) {
-	echo "<!DOCTYPE html><html><body>";
-	echo "<h1>Simple Form</h1>";
-	echo "<p>name: " . (htmlspecialchars($name) ?: "Unknown") . "</p>";
-	echo "<p>message: " . (htmlspecialchars($message) ?: "No message") . "</p>";
-	echo "</html></body>";
+	$html = "<!DOCTYPE html><html><body>";
+	$html .= "<h1>Simple Form</h1>";
+	$html .= "<p>name: " . (htmlspecialchars($name) ?: "Unknown") . "</p>";
+	$html .= "<p>message: " . (htmlspecialchars($message) ?: "No message") . "</p>";
+	$html .= "</html></body>";
+
+	echo "HTTP/1.1 200 OK\r\n";
+	echo "Content-Type: text/html\r\n";
+	echo "Content-Length: " . strlen($html) . "\r\n";
+	echo "Connection: close\r\n\r\n";
+	echo $html;
 }
 
 // Get body in environment
