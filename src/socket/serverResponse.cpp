@@ -111,9 +111,9 @@ std::string	displayDirectory(std::string index, std::string root) {
 	struct dirent* entry;
 	while ((entry = readdir(dir)) != NULL) {
 		std::string dirName(entry->d_name);
-		if (is_directory((root + newIndex + dirName).c_str()))
+		if (is_directory((root + newIndex + "/" + dirName).c_str()))
 			dirName += "/";
-		display += "<p><a href= ./" + dirName + ">" + dirName + "</a>\n" + "</p>";
+		display += "<p><a href=./" + dirName + ">" + dirName + "</a>" + "</p>\n";
 	}
 	closedir(dir);
 	return display;
