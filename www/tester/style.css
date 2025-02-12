@@ -40,25 +40,29 @@
 }
 
 .bg-blue {
-	background-color: blue
+	background-color: blue;
+	&:active {
+		background-color: darkblue
+	}
 }
 
 .bg-green {
-	background-color: green
+	background-color: green;
+	&:active {
+		background-color: darkgreen;
+	}
 }
 
 .bg-red {
-	background-color: red
+	background-color: red;
+	&:active {
+		background-color: darkred;
+	}
 }
 
-.bg-blue:active {
-	background-color: darkblue
-}
-
-.bg-green:active {
-	background-color: darkgreen;
-}
-
-.bg-red:active {
-	background-color: darkred;
+.bg-orange {
+	background-color: orange;
+	&:active {
+		background-color: darkorange;
+	}
 }
