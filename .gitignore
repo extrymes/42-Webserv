@@ -1,5 +1,6 @@
 bin/*
 .vscode/*
+_pycache__/*
 webserv
 .DS_Store
 text.txt
