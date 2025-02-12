@@ -1,7 +1,7 @@
 #include "socket.hpp"
 
 std::string checkExt(std::string file) {
-	const char *ext = strrchr(file.c_str(), '.');
+	const char *ext = std::strrchr(file.c_str(), '.');
 	if (!ext)
 		return "text/html";
 	std::string str = ext;

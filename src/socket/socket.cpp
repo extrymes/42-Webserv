@@ -179,13 +179,19 @@ void initSocket(t_socket &socketConfig, std::vector<t_server> &servers) {
 
 			socketConfig.serverFd.push_back(socket(res->ai_family, res->ai_socktype, 0));
 
-			if (socketConfig.serverFd[i] < 0)
+			if (socketConfig.serverFd[i] < 0) {
+				freeaddrinfo(res);
 				throw std::runtime_error("socket fail");
+			}
 			int opt = 1;
-			if (setsockopt(socketConfig.serverFd[i], SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0)
+			if (setsockopt(socketConfig.serverFd[i], SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0) {
+				freeaddrinfo(res);
 				throw std::runtime_error("setsockopt fail");
-			if (bind(socketConfig.serverFd[i], res->ai_addr, res->ai_addrlen) < 0)
+			}
+			if (bind(socketConfig.serverFd[i], res->ai_addr, res->ai_addrlen) < 0) {
+				freeaddrinfo(res);
 				throw std::runtime_error("bind fail");
+			}
 			freeaddrinfo(res);
 			if (listen(socketConfig.serverFd[i], 5) < 0)
 				throw std::runtime_error("listen fail");
