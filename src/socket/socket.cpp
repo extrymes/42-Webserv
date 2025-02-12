@@ -65,9 +65,8 @@ locIt whichLocation(servIt it, ClientRequest *clientRequest, std::string clientU
 	return location;
 }
 
-std::string	createUrl(servIt server, ClientRequest *clientRequest, std::string &clientUrl, locIt &location) {
+std::string	createUrl(servIt server, ClientRequest *clientRequest, locIt &location) {
 	std::string file;
-	location = whichLocation(server, clientRequest, clientUrl, "url");
 	if (location == server->locations.end()) {
 		if (server->root.empty()) file = "";
 		else {
@@ -125,10 +124,10 @@ int handlePollin(t_socket &socketConfig, std::vector<t_server> &servers, cMap &c
 	if ( isTooLarge < 1)
 		return isTooLarge;
 	std::string clientUrl = clientMap[i]->getValueHeader("url"), file;
-	locIt location = whichLocation(server, clientMap[i], clientUrl, "");
+	locIt location = whichLocation(server, clientMap[i], clientUrl, "url");
 	if (location != server->locations.end() && !location->redirCode.empty())
 		return (clientMap[i]->setServerResponse(redir(location)), 0);
-	file = createUrl(server, clientMap[i], clientUrl, location);
+	file = createUrl(server, clientMap[i], location);
 
 	std::cout << CYAN << method << RESET << " " << file << " " << clientMap[i]->getValueHeader("protocol") << std::endl;
 

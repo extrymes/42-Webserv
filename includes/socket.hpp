@@ -75,7 +75,7 @@ servIt findIf(std::string port, std::vector<t_server> &servers);
 std::string createGoodUrl(std::string oldUrl);
 std::string urlWithoutSlash(std::string location);
 locIt whichLocation(servIt it, ClientRequest *clientRequest, std::string clientUrl, std::string str);
-std::string	createUrl(servIt server, ClientRequest *clientRequest, std::string &clientUrl, locIt &location);
+std::string	createUrl(servIt server, ClientRequest *clientRequest, locIt &location);
 int checkLenBody(ClientRequest *clientRequest, servIt server, ssize_t size);
 int handlePollin(t_socket &socketConfig, std::vector<t_server> &servers, cMap &clientMap, int i);
 void handleGetMethod(servIt server, locIt location, ClientRequest *clientRequest, std::string clientUrl, std::string file);
