@@ -22,9 +22,10 @@ for content in split_input:
 				body = "File succesfully uploaded!"
 		else:
 			body = "Invalid upload save location!"
-		body_length = len(body)
-		print("Content-Type: text/plain\r")
-		print(f"Content-Length: {body_length}\r\n\r")
+		print("HTTP/1.1 200 OK")
+		print("Content-Type: text/html")
+		print("Content-Length: ", len(body))
+		print("Connection: close\r\n\r\n")
 		print(f"{body}")
 		sys.exit(0)
 

@@ -100,7 +100,7 @@ int handlePollin(t_socket &socketConfig, std::vector<t_server> &servers, cMap &c
 	if (it != socketConfig.serverFd.end()) {
 		socketConfig.clientLen = sizeof(socketConfig.clientAddr);
 		checkEmptyPlace(socketConfig, clientMap, *it);
-		if (socketConfig.clientCount < MAX_CLIENTS) // max Client
+		if (socketConfig.clientCount < MAX_CLIENTS)
 			socketConfig.clientCount++;
 		return 0;
 	}
