@@ -230,8 +230,8 @@ void handleSocket(std::vector<t_server> &servers, t_socket &socketConfig) {
 				socketConfig.clients[i].events = POLLOUT;
 				clientMap[i]->setServerResponse(errorPage(e.getServ() ,e.getCodeMsg()));
 			} catch (const std::exception& e) {
-				socketConfig.clients[i].events = POLLOUT;
-				clientMap[i]->setServerResponse(errorHtml(CODE500));
+				std::cerr << RED << e.what() << RESET << std::endl;
+				continue;
 			}
 			if (socketConfig.clients[i].revents & POLLOUT && socketConfig.clients[i].fd != 0) {
 				if (handlePollout(socketConfig, clientMap, i) == -1)
@@ -248,7 +248,7 @@ void closeAllFds(t_socket &socketConfig, cMap &clientMap) {
 	for (it = socketConfig.serverFd.begin(); it != socketConfig.serverFd.end(); ++it)
 		close(*it);
 	for (int i = 0; i < MAX_CLIENTS; ++i) {
-		if (socketConfig.clients[i].fd != 0)
+		if (socketConfig.clients[i].fd > 0)
 			delete clientMap[i];
 		close(socketConfig.clients[i].fd);
 	}

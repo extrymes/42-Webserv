@@ -23,7 +23,7 @@ void checkEmptyPlace(t_socket &socketConfig, cMap &clientMap, int server_fd) {
 				socklen_t len = sizeof(socketConfig.clientAddr);
 				socketConfig.clients[i].fd = accept(server_fd, (struct sockaddr *)&socketConfig.clientAddr, &len);
 				if (socketConfig.clients[i].fd < 0)
-					throw HttpException(CODE500, "accept fail");
+					throw std::runtime_error("accept fail");
 				clientMap[i] = new ClientRequest;
 				socketConfig.clients[i].events = POLLIN;
 				clientMap[i]->setStart();
