@@ -70,6 +70,20 @@
 				<button class="button bg-red" onclick="deleteFile()">DELETE</button>
 			</div>
 		</div>
+		<div>
+			<h2>FILE UPLOADER</h2>
+			<form enctype="multipart/form-data" action="../cgi-bin/upload.py" method="post">
+				<div>
+					<div>
+						<div>File name</div>
+						<input type="file" class="input" name="filename" />
+					</div>
+				</div>
+				<div class="mt">
+					<button class="button bg-orange" type="submit">UPLOAD</button>
+				</div>
+			</form>
+		</div>
 	</div>
 	<script src="script.js" ></script>
 </body>
