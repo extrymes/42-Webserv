@@ -1,57 +1,90 @@
+<!DOCTYPE html>
 <html lang="en">
 <head>
 	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>titre</title>
+	<title>Simple Form</title>
+	<link rel="stylesheet" href="style.css">
 </head>
-<body>
-	<div id="run"></div>
-	<style>
-		section {
-			width: 100vw;
-		}
-		#run {
-			border-radius: 50px;
-		}
-	</style>
+<body class="ml">
+	<h1>Methods tester</h1>
+	<div class="flex gap">
+		<div>
+			<h2>CGI - LOGIN.PY</h2>
+			<form action="../cgi-bin/login.py" method="get" id="form">
+				<div>
+					<div class="mt">
+						<div>First name</div>
+						<input class="input" type="text" name="first_name" placeholder="Simon" />
+					</div>
+					<div class="mt">
+						<div>Last name</div>
+						<input class="input" type="text" name="last_name" placeholder="Abras" />
+					</div>
+					<div class="mt">
+						<div>Email</div>
+						<input class="input" type="text" name="email" placeholder="sabras@student.42.fr" />
+					</div>
+					<div class="mt">
+						<div>Phone number</div>
+						<input class="input" type="text" name="phone" placeholder="06 06 06 06 06" />
+					</div>
+					<div class="mt">
+						<div>Password</div>
+						<input class="input" type="password" name="password" placeholder="Secret password" />
+					</div>
+				</div>
+				<div class="mt">
+					<button class="button bg-blue" type="submit" onclick="setMethod('get')">GET</button>
+					<button class="button bg-green mt" type="submit" onclick="setMethod('post')">POST</button>
+				</div>
+			</form>
+		</div>
+		<div>
+			<h2>CGI - FORM.PHP</h2>
+			<form action="../cgi-bin/form.php" method="get" id="form2">
+				<div>
+					<div>
+						<div class="mt">Name</div>
+						<input class="input" name="name" placeholder="Marie Gaelle" />
+					</div>
+					<div class="mt">
+						<div>Message</div>
+						<textarea class="input" name="message" placeholder="Hello guys!"></textarea>
+					</div>
+				</div>
+				<div class="mt">
+					<button class="button bg-blue" type="submit" onclick="setMethod2('get')">GET</button>
+					<button class="button bg-green mt" type="submit" onclick="setMethod2('post')">POST</button>
+				</div>
+			</form>
+		</div>
+		<div>
+			<h2>FILE ERASER</h2>
+			<div>
+				<div>
+					<div>File name</div>
+					<input class="input" placeholder="miguelita.txt" id="filename" />
+				</div>
+			</div>
+			<div class="mt">
+				<button class="button bg-red" onclick="deleteFile()">DELETE</button>
+			</div>
+		</div>
+		<div>
+			<h2>FILE UPLOADER</h2>
+			<form enctype="multipart/form-data" action="../cgi-bin/upload.py" method="post">
+				<div>
+					<div>
+						<div>File name</div>
+						<input type="file" class="input" name="filename" />
+					</div>
+				</div>
+				<div class="mt">
+					<button class="button bg-orange" type="submit">UPLOAD</button>
+				</div>
+			</form>
+		</div>
+	</div>
+	<script src="script.js" ></script>
 </body>
-<script>
-	const run = document.getElementById("run");
-
-	run.style.position = "absolute";
-	run.style.width = "100px";
-	run.style.height = "100px";
-	run.style.backgroundColor = "red";
-	run.style.top = "50%";
-	run.style.left = "50%";
-	run.style.transform = "translate(-50%, -50%)";
-
-	function moveDivAway() {
-		const viewportWidth = window.innerWidth;
-		const viewportHeight = window.innerHeight;
-
-		const newX = Math.random() * (viewportWidth - run.offsetWidth);
-		const newY = Math.random() * (viewportHeight - run.offsetHeight);
-
-		run.style.left = `${newX}px`;
-		run.style.top = `${newY}px`;
-	}
-
-	function handleMouseMove(event) {
-		const rect = run.getBoundingClientRect();
-		const mouseX = event.clientX;
-		const mouseY = event.clientY;
-
-		const distanceX = Math.abs(mouseX - (rect.left + rect.width / 2));
-		const distanceY = Math.abs(mouseY - (rect.top + rect.height / 2));
-
-		const threshold = 60;
-
-		if (distanceX < threshold && distanceY < threshold) {
-			moveDivAway();
-		}
-	}
-
-	document.addEventListener("mousemove", handleMouseMove);
-</script>
 </html>
