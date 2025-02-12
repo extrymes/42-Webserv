@@ -82,7 +82,6 @@ std::string executeCGI(std::string url, std::string root, ssMap headerMap, std::
 		int bytesRead;
 		while ((bytesRead = read(pipefdOut[0], buffer, sizeof(buffer))))
 			output.append(buffer, bytesRead);
-		// std::cerr << "output = " << output << std::endl;
 		close(pipefdOut[0]);
 		int status;
 		waitpid(pid, &status, 0);
