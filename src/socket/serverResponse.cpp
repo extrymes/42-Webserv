@@ -22,7 +22,9 @@ bool isError(std::string &index) {
 	return false;
 }
 
-std::string redir(locIt &location) {
+std::string redir(servIt server, locIt &location) {
+	if (location->redirCode != "301" && location->redirCode != "302" && location->redirCode != "303" && location->redirCode != "307" && location->redirCode != "308")
+		throw HttpServerException(server, CODE403, "invalid redirection code");
 	std::string httpResponse = "HTTP/1.1 " + location->redirCode + "\r\n";
 	httpResponse += "Location: " + location->redirPath + "\r\n";
 	httpResponse += "\r\n";

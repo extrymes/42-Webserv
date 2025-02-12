@@ -51,7 +51,7 @@ struct s_socket {
 // serverRespone.cpp
 std::string readHtml(std::string index, servIt server, std::string code, std::string clientUrl);
 std::string httpResponse(std::string file, std::string ext, std::string code);
-std::string redir(locIt &location);
+std::string redir(servIt server, locIt &location);
 std::string errorPage(servIt server, std::string code);
 std::string checkExt(std::string file);
 std::string errorHtml(std::string code);
