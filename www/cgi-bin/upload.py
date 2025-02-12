@@ -19,9 +19,13 @@ for content in split_input:
 		if os.path.exists(upload_location):
 			with open(upload_location + filename, 'wb') as file:
 				file.write(file_content)
-				body = "File succesfully uploaded!"
+				body = """
+				<h3>File succesfully uploaded!</h3>
+				<iframe src="https://giphy.com/embed/VJY3zeoK87CLBKnqqm" width="480" height="480" style="" frameBorder="0" class="giphy-embed" allowFullScreen></iframe>"""
 		else:
-			body = "Invalid upload save location!"
+			body = """
+			<h3>Invalid upload save location!</h3>
+			<iframe src="https://giphy.com/embed/v2JqIt9EQKMFb1bGUh" width="480" height="269" style="" frameBorder="0" class="giphy-embed" allowFullScreen></iframe>"""
 		print("HTTP/1.1 200 OK")
 		print("Content-Type: text/html")
 		print("Content-Length: ", len(body))
