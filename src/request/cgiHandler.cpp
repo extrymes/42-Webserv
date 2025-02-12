@@ -71,7 +71,14 @@ std::string executeCGI(std::string url, std::string root, ssMap headerMap, std::
 		char **envp = createCGIEnvironment(headerMap, body, uploadLocation);
 		execve(url.c_str(), argv, envp);
 		freeCGIEnvironment(envp);
-		throw HttpException(CODE500, "child process failed");
+		switch (errno) {
+			case ENOENT:
+				throw HttpException(CODE404, "CGI script not found");
+			case EACCES:
+				throw HttpException(CODE403, "Permission denied for CGI script");
+			default:
+				throw HttpException(CODE500, "CGI execution failed");
+		}
 	} else {
 		// Parent process
 		write(pipefdIn[1], body.c_str(), body.size());
