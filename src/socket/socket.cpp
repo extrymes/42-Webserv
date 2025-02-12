@@ -170,7 +170,7 @@ void handlePostMethod(servIt server, locIt location, ClientRequest *clientReques
 void handleDeleteMethod(servIt server, ClientRequest *clientRequest, std::string file) {
 	if (!isMethodAllowed("DELETE", server, clientRequest, ""))
 		return clientRequest->setServerResponse(readHtml("405", server, CODE405, ""));
-	return clientRequest->setServerResponse(httpResponse("", "", handleDeleteMethod(file)));
+	return clientRequest->setServerResponse(httpResponse("", "", handleDeleteMethod(server, file)));
 }
 
 void initSocket(t_socket &socketConfig, std::vector<t_server> &servers) {

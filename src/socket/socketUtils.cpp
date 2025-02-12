@@ -82,11 +82,15 @@ std::string removeFirstSlash(std::string str) {
 	return str;
 }
 
-std::string	handleDeleteMethod(std::string file) {
+std::string	handleDeleteMethod(servIt server, std::string file) {
 	int status = std::remove(file.c_str());
 	if (status != 0) {
-		throw std::runtime_error("Error deleting file");
-		return CODE404;
+		switch (errno) {
+			case ENOENT:
+				throw HttpServerException(server, CODE404, "File not found");
+			default:
+				throw HttpServerException(server, CODE500, "Error deleting file");
+		}
 	}
 	else {
 		std::cout << GREEN << "success: the file has been deleted!" << RESET << std::endl;

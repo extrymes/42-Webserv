@@ -107,7 +107,7 @@ std::string	displayDirectory(std::string index, std::string root) {
 	std::string newIndex(index, root.size()), display;
 	DIR* dir = opendir(index.c_str());
 	if (!dir)
-		throw std::runtime_error("opendir failed");
+		throw HttpException(CODE500, "opendir failed");
 	struct dirent* entry;
 	while ((entry = readdir(dir)) != NULL) {
 		std::string dirName(entry->d_name);
