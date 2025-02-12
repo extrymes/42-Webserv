@@ -8,11 +8,6 @@ void handleSignal(int signal) {
 }
 
 void setupSignalHandler() {
-	struct sigaction sa;
-	std::memset(&sa, 0, sizeof(sa));
-	sa.sa_handler = handleSignal;
-	sigemptyset(&sa.sa_mask);
-	sa.sa_flags = 0;
-	if (sigaction(SIGINT, &sa, NULL) == -1)
-		throw std::runtime_error("sigaction failed");
+	if (std::signal(SIGINT, handleSignal) == SIG_ERR)
+		throw std::runtime_error("Failed to set up SIGINT signal handler");
 }
