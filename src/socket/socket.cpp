@@ -125,10 +125,10 @@ int handlePollin(t_socket &socketConfig, std::vector<t_server> &servers, cMap &c
 	if ( isTooLarge < 1)
 		return isTooLarge;
 	std::string clientUrl = clientMap[i]->getValueHeader("url"), file;
-	locIt location;
-	file = createUrl(server, clientMap[i], clientUrl, location);
+	locIt location = whichLocation(server, clientMap[i], clientUrl, "");
 	if (location != server->locations.end() && !location->redirCode.empty())
 		return (clientMap[i]->setServerResponse(redir(location)), 0);
+	file = createUrl(server, clientMap[i], clientUrl, location);
 
 	std::cout << CYAN << method << RESET << " " << file << " " << clientMap[i]->getValueHeader("protocol") << std::endl;
 
