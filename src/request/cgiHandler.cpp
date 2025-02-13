@@ -85,11 +85,9 @@ std::string executeCGI(std::string url, std::string root, ssMap headerMap, std::
 		close(pipefdIn[0]);
 		close(pipefdIn[1]);
 		close(pipefdOut[1]);
-		char buffer[1024];
-		int bytesRead;
-		int	timeout = 5;
-		int status;
 		std::time_t start = std::time(0);
+		const int timeout = 5;
+		int status;
 		while (true)
 		{
 			std::time_t now = std::time(0);
@@ -105,6 +103,8 @@ std::string executeCGI(std::string url, std::string root, ssMap headerMap, std::
 			close(pipefdOut[0]);
 			throw HttpException(CODE500, "CGI script execution failed");
 		}
+		char buffer[1024];
+		int bytesRead;
 		while ((bytesRead = read(pipefdOut[0], buffer, sizeof(buffer))))
 			output.append(buffer, bytesRead);
 		close(pipefdOut[0]);

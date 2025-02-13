@@ -8,6 +8,7 @@
 # include <vector>
 # include <map>
 # include <sys/wait.h>
+# include <ctime>
 
 // --- Definitions ---
 typedef std::map<std::string, std::string> ssMap;
