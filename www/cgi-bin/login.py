@@ -6,6 +6,9 @@ import os
 # Get body in environment
 body = os.environ.get("body")
 
+while True:
+	print("bonjour")
+
 if not body:
 	# std::string httpResponse = "HTTP/1.1 " + code + "\r\n";
 	# httpResponse += "Content-Type: " + ext + "\r\n";

@@ -87,11 +87,27 @@ std::string executeCGI(std::string url, std::string root, ssMap headerMap, std::
 		close(pipefdOut[1]);
 		char buffer[1024];
 		int bytesRead;
+		int	timeout = 5;
+		int status;
+		std::time_t start = std::time(0);
+		while (true)
+		{
+			std::time_t now = std::time(0);
+			if (now - start >= timeout)
+				break;
+			if (waitpid(pid, &status, WNOHANG) != 0)
+				break;
+		}
+		int result = waitpid(pid, &status, WNOHANG);
+		if (result == 0)
+		{
+			kill(pid, SIGKILL);
+			close(pipefdOut[0]);
+			throw HttpException(CODE500, "CGI script execution failed");
+		}
 		while ((bytesRead = read(pipefdOut[0], buffer, sizeof(buffer))))
 			output.append(buffer, bytesRead);
 		close(pipefdOut[0]);
-		int status;
-		waitpid(pid, &status, 0);
 		if (!WIFEXITED(status) || WEXITSTATUS(status) != 0)
 			throw HttpException(CODE500, "CGI script execution failed");
 		return output;
